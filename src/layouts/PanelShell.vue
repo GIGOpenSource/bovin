@@ -46,10 +46,13 @@
           </div>
           <div class="api-config">
             <div class="system-online-badge"><span class="dot"></span><span id="topbarSystemText"></span></div>
-            <span id="rpcLiveBadge" class="rpc-live-badge hidden" role="status" data-i18n="live.rpcBadge">实时推送</span>
-            <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><span class="material-symbols-outlined">notifications</span></button>
-            <button type="button" class="icon-btn" id="topbarThemeBtn" data-i18n-aria="aria.theme" aria-label="主题"><span class="material-symbols-outlined">contrast</span></button>
-            <button type="button" class="icon-btn" id="topbarAccountBtn" data-i18n-aria="aria.account" aria-label="账户" aria-expanded="false" aria-haspopup="dialog"><span class="material-symbols-outlined">account_circle</span></button>
+            <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span>
+            <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button>
+            <button type="button" class="icon-btn" id="topbarThemeBtn" data-i18n-aria="aria.theme" aria-label="主题">
+              <BulbOutlined class="theme-icon theme-icon-off" />
+              <BulbFilled class="theme-icon theme-icon-on" />
+            </button>
+            <button type="button" class="icon-btn" id="topbarAccountBtn" data-i18n-aria="aria.account" aria-label="账户" aria-expanded="false" aria-haspopup="dialog"><UserOutlined /></button>
             <button id="langQuickToggle" type="button" class="lang-card-toggle">中 / EN</button>
             <select id="langSwitch" class="hidden-control">
               <option value="zh-CN">简体中文</option>
@@ -470,6 +473,7 @@
 
 <script setup>
 import { onMounted, nextTick } from "vue";
+import { BellOutlined, BulbOutlined, BulbFilled, UserOutlined } from "@ant-design/icons-vue";
 import { startPanelApp, registerSectionRouteNavigator } from "../app.js";
 import { panelRouter } from "../router/index.js";
 import { createSectionRouteNavigator } from "../router/bridge.js";

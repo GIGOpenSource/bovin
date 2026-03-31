@@ -16,9 +16,65 @@ import {
   getPanelAiOverview
 } from "./api/overview.js";
 import { renderControlHeroAndCards } from "./components/control-console.js";
+import { i18n } from "./i18n/index.js";
 
 function $(id) {
   return document.getElementById(id);
+}
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
+
+function tReplace(key, vars) {
+  let s = t(key);
+  if (vars && typeof vars === "object") {
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.split(`{${k}}`).join(String(v));
+    }
+  }
+  return s;
+}
+
+/**
+ * 顶栏文案与角标（与旧版 main.js 顶栏视觉一致：API 延迟 pill、市场说明、系统在线、HTTP 轮询）。
+ * @param {boolean} pingOk
+ * @param {number} latencyMs
+ */
+export function applyTopbarDecor(pingOk, latencyMs) {
+  const ok = Boolean(pingOk);
+  const ms = Math.round(Number(latencyMs) || 0);
+
+  const net = $("topbarNetwork");
+  if (net) net.textContent = tReplace("topbar.apiPingPill", { ms });
+
+  const mkt = $("topbarMarket");
+  if (mkt) {
+    const cfg =
+      uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : null;
+    const rawEx =
+      cfg?.exchange?.name ??
+      cfg?.exchange ??
+      cfg?.exchange_name ??
+      cfg?.exchangeName ??
+      "";
+    const exStr = typeof rawEx === "string" ? rawEx.trim() : String(rawEx || "").trim();
+    if (exStr) {
+      mkt.textContent = state.lang === "en" ? `Market: ${exStr}` : `市场: ${exStr}`;
+    } else {
+      mkt.textContent = t("topbar.marketPill");
+    }
+  }
+
+  const sys = $("topbarSystemText");
+  if (sys) sys.textContent = ok ? t("topbar.systemOnline") : t("topbar.systemOffline");
+
+  const rpc = $("rpcLiveBadge");
+  if (rpc) {
+    rpc.classList.remove("hidden");
+    rpc.textContent = t("live.httpPolling");
+  }
 }
 
 let pollTimer = null;
@@ -122,13 +178,7 @@ async function panelTick() {
     const heroLatency = $("heroLatency");
     if (heroLatency) heroLatency.textContent = `${Math.round(uiState.lastPingLatencyMs)}ms`;
 
-    const net = $("topbarNetwork");
-    if (net) {
-      net.textContent =
-        state.lang === "en"
-          ? `ping ${Math.round(uiState.lastPingLatencyMs)}ms · ${pingOk ? "up" : "down"}`
-          : `延迟 ${Math.round(uiState.lastPingLatencyMs)}ms · ${pingOk ? "可达" : "不可达"}`;
-    }
+    applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
     let daily = uiState.lastDaily;
     if (!state.mockMode) {

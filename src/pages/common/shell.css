@@ -410,16 +410,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 12px;
   margin-bottom: 0;
-  padding: 16px;
-  border-radius: 14px;
-  background: rgba(14, 23, 43, 0.88);
-  border: 1px solid rgba(var(--ft-line-rgb), 0.32);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+  padding: 12px 18px;
+  border-radius: 22px;
+  background: rgba(10, 14, 23, 0.92);
+  border: 1px solid rgba(var(--ft-line-rgb), 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
 }
 
 .topbar-left {
@@ -444,12 +444,37 @@ body {
 .topbar-statusline span {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.28);
-  background: rgba(23, 34, 65, 0.7);
+  border: 1px solid rgba(var(--ft-line-rgb), 0.32);
+  background: rgba(18, 26, 48, 0.92);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 11px;
-  color: var(--text-dim);
+  color: #aeb9db;
+}
+
+.topbar .system-online-badge {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4edea3;
+}
+
+.topbar .system-online-badge .dot {
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+}
+
+.rpc-live-badge--poll {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rpc-live-badge--poll::before {
+  background: #16a34a;
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.5);
 }
 
 .settings-grid {
@@ -2080,11 +2105,45 @@ button.ghost:active:not(:disabled) {
   transform: scale(0.94);
 }
 
+.icon-btn.is-active {
+  background: rgba(78, 222, 163, 0.2);
+  border-color: rgba(78, 222, 163, 0.52);
+  box-shadow: 0 0 0 1px rgba(78, 222, 163, 0.24);
+}
+
+.icon-btn.is-active .anticon {
+  color: #72f0bf;
+}
+
 .icon-btn .material-symbols-outlined {
   font-size: 18px;
   line-height: 1;
   color: #c2c6d9;
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Ant Design Icons（顶栏） */
+.icon-btn .anticon {
+  font-size: 18px;
+  line-height: 1;
+  color: #c2c6d9;
+  transition: color var(--ft-transition-fast);
+}
+
+#topbarThemeBtn .theme-icon-on {
+  display: none;
+}
+
+#topbarThemeBtn.is-active .theme-icon-off {
+  display: none;
+}
+
+#topbarThemeBtn.is-active .theme-icon-on {
+  display: inline-flex;
+}
+
+.icon-btn:hover:not(:disabled) .anticon {
+  color: var(--primary);
 }
 
 .system-online-badge {
@@ -2131,6 +2190,11 @@ button.ghost:active:not(:disabled) {
 
 .rpc-live-badge.hidden {
   display: none;
+}
+
+/* 与旧版一致：HTTP 轮询角标默认展示，勿用 .hidden 隐藏 */
+.rpc-live-badge.rpc-live-badge--poll {
+  display: inline-flex;
 }
 
 @keyframes rpc-live-pulse {

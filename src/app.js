@@ -11,7 +11,7 @@ import {
   clearFreqtradePasswordSession
 } from "./store/state-core.js";
 import { normalizeSectionIdCandidate } from "./router/bridge.js";
-import { startPanelPolling, stopPanelPolling } from "./panel-poll.js";
+import { startPanelPolling, stopPanelPolling, applyTopbarDecor } from "./panel-poll.js";
 
 /** 为 true：不拦截，直接进入面板（不弹登录）；为 false 时走 /panel/auth/login。 */
 export const SKIP_PANEL_LOGIN = true;
@@ -20,6 +20,7 @@ let sectionNavigate = null;
 let loginFormBound = false;
 let logoutBound = false;
 let navBound = false;
+let themeSystemMediaQuery = null;
 
 export function registerSectionRouteNavigator(nav) {
   sectionNavigate = typeof nav === "function" ? nav : null;
@@ -53,6 +54,52 @@ export function applyDomI18n(root = document) {
 
 function $(id) {
   return document.getElementById(id);
+}
+
+function resolveThemeMode(themeSetting) {
+  const mode = String(themeSetting || "dark").trim().toLowerCase();
+  if (mode === "light" || mode === "dark") return mode;
+  return window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+function syncThemeButtonUi() {
+  const btn = $("topbarThemeBtn");
+  if (!btn) return;
+  const isLight = resolveThemeMode(uiState.theme) === "light";
+  btn.setAttribute("aria-pressed", isLight ? "true" : "false");
+  btn.classList.toggle("is-active", isLight);
+}
+
+function applyThemeToDom(themeSetting) {
+  const mode = resolveThemeMode(themeSetting);
+  if (mode === "light") document.documentElement.setAttribute("data-theme", "light");
+  else document.documentElement.removeAttribute("data-theme");
+  syncThemeButtonUi();
+}
+
+function bindThemeToggleOnce() {
+  if (uiState.themeMediaBound) return;
+  uiState.themeMediaBound = true;
+
+  const fromStorage = localStorage.getItem("ft_theme");
+  uiState.theme = fromStorage === "light" || fromStorage === "dark" || fromStorage === "system" ? fromStorage : "dark";
+  applyThemeToDom(uiState.theme);
+
+  themeSystemMediaQuery = window.matchMedia?.("(prefers-color-scheme: light)") ?? null;
+  themeSystemMediaQuery?.addEventListener?.("change", () => {
+    if (uiState.theme === "system") applyThemeToDom("system");
+  });
+
+  $("topbarThemeBtn")?.addEventListener("click", () => {
+    const next = resolveThemeMode(uiState.theme) === "light" ? "dark" : "light";
+    uiState.theme = next;
+    try {
+      localStorage.setItem("ft_theme", next);
+    } catch {
+      /* ignore */
+    }
+    applyThemeToDom(next);
+  });
 }
 
 function syncLoginShell() {
@@ -135,6 +182,7 @@ function reconcileStaleAuth() {
 function bindPanelChromeOnce() {
   if (uiState.topbarChromeBound) return;
   uiState.topbarChromeBound = true;
+  bindThemeToggleOnce();
 
   const metaV = document.querySelector('meta[name="panel-version"]')?.getAttribute("content") || "";
   const verEl = $("appVersionLabel");
@@ -154,6 +202,7 @@ function bindPanelChromeOnce() {
       const shell = $("appRoot");
       if (shell) applyDomI18n(shell);
       syncMockPillUi();
+      applyTopbarDecor(uiState.lastPingOk, uiState.lastPingLatencyMs);
     });
   }
 
@@ -171,6 +220,7 @@ function bindPanelChromeOnce() {
       const shell = $("appRoot");
       if (shell) applyDomI18n(shell);
       syncMockPillUi();
+      applyTopbarDecor(uiState.lastPingOk, uiState.lastPingLatencyMs);
     });
   }
 
