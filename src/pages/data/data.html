@@ -1,0 +1,101 @@
+<section id="data" class="section">
+          <div class="ft-page da-wrap">
+            <header class="ft-page-hero ft-page-hero--data">
+              <div class="ft-page-hero__intro">
+                <span class="ft-page-hero__kicker ft-kicker-accent" data-i18n="page.kicker.data"></span>
+                <h1 class="ft-page-hero__title" data-i18n="page.title.data"></h1>
+                <p class="ft-page-hero__desc" data-i18n="page.desc.data"></p>
+                <div class="ft-page-hero__meta da-metrics">
+                  <span id="daNodeLine"><i class="dot ok"></i></span>
+                  <span id="daLatencyLine"><i class="dot"></i></span>
+                  <span id="daNetStatus" class="da-net-badge live"></span>
+                  <span id="daDataSource" class="da-source-badge"></span>
+                </div>
+              </div>
+              <div class="ft-page-hero__aside da-actions">
+                <button type="button" id="loadPairs" class="primary"><span class="material-symbols-outlined">list_alt</span><span data-i18n="btn.loadAvailablePairs">加载 available_pairs</span></button>
+                <button type="button" id="loadPairHistory" class="ghost"><span class="material-symbols-outlined">history</span><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
+                <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><span class="material-symbols-outlined">tune</span></button>
+              </div>
+            </header>
+
+            <div class="da-grid">
+              <aside class="da-left">
+                <div class="da-left-head">
+                  <h3 data-i18n="data.strategies">策略</h3>
+                  <span class="da-left-meta" data-i18n="data.strategiesRunningDemo">4 个运行中（演示）</span>
+                </div>
+                <div class="da-strategy-list">
+                  <div class="da-strategy-card"><strong>SampleStrategy</strong><em>+12.4%</em><small>胜率: 64%</small></div>
+                  <div class="da-strategy-card"><strong>RSITrendStrategy</strong><em>+8.1%</em><small>胜率: 58%</small></div>
+                  <div class="da-strategy-card"><strong>MomentumBreakout</strong><em class="negative">-2.4%</em><small>胜率: 42%</small></div>
+                  <div class="da-strategy-card"><strong>MeanReversionV2</strong><em>+24.9%</em><small>胜率: 71%</small></div>
+                </div>
+                <div class="da-volume">
+                  <h4 data-i18n="data.networkVol">全网约成交量</h4>
+                  <div class="bars da-vol-bars" id="daVolBars">
+                    <i style="--da-vol-h: 40%"></i><i style="--da-vol-h: 60%"></i><i style="--da-vol-h: 85%"></i><i style="--da-vol-h: 55%"></i>
+                    <i style="--da-vol-h: 95%"></i><i style="--da-vol-h: 45%"></i><i style="--da-vol-h: 70%"></i><i style="--da-vol-h: 30%"></i>
+                  </div>
+                </div>
+              </aside>
+
+              <div class="da-main">
+                <div class="da-chart">
+                  <div class="da-chart-head">
+                    <h3><span class="material-symbols-outlined">candlestick_chart</span><span id="daSymbolTicker">BTC_USDT_1H</span></h3>
+                    <div class="da-chart-stat">
+                      <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
+                      <span id="daChgLabel"><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span> <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span>
+                    </div>
+                    <div id="daPairButtons" class="da-switch-group" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
+                      <button type="button" class="da-switch-btn active" data-pair="BTC/USD">BTC/USD</button>
+                      <button type="button" class="da-switch-btn" data-pair="ETH/USD">ETH/USD</button>
+                      <button type="button" class="da-switch-btn" data-pair="SOL/USD">SOL/USD</button>
+                      <button type="button" class="da-switch-btn" data-pair="BNB/USD">BNB/USD</button>
+                      <button type="button" class="da-switch-btn" data-pair="XRP/USD">XRP/USD</button>
+                    </div>
+                    <div id="daTfButtons" class="da-switch-group" data-i18n-aria="aria.tfSwitch" aria-label="切换周期">
+                      <button type="button" class="da-switch-btn active" data-tf="5m">5m</button>
+                      <button type="button" class="da-switch-btn" data-tf="15m">15m</button>
+                      <button type="button" class="da-switch-btn" data-tf="1h">1h</button>
+                      <button type="button" class="da-switch-btn" data-tf="4h">4h</button>
+                      <button type="button" class="da-switch-btn" data-tf="1d">1d</button>
+                    </div>
+                    <div class="da-kline-mode-toolbar" role="toolbar" data-i18n-aria="aria.klineChartMode">
+                      <span class="da-kline-mode-label muted" data-i18n="kline.modeLabel">K 线</span>
+                      <button type="button" class="ghost tiny da-kline-mode-btn active" id="daKlineModeLw" data-i18n="kline.modeLw">
+                        Lightweight
+                      </button>
+                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModePanel" data-i18n="kline.modePanel">
+                        面板 K 线
+                      </button>
+                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG</button>
+                    </div>
+                  </div>
+                  <div id="daMarketBoard" class="da-market-board"></div>
+                  <div class="da-chart-body">
+                    <div class="mock-grid"></div>
+                    <div id="daKlineStatus" class="da-kline-status hidden" role="status" aria-live="polite"></div>
+                    <div id="pairData" class="log"></div>
+                  </div>
+                </div>
+
+                <div class="da-history">
+                  <div class="da-history-head">
+                    <h3 data-i18n="data.histLogs">历史日志</h3>
+                    <button type="button" class="ghost" id="exportHistoryCsv" data-i18n="data.exportCsv">导出 CSV</button>
+                  </div>
+                  <div id="availablePairs" class="log"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden-control">
+              <input id="historyStrategy" name="historyStrategy" value="SampleStrategy" autocomplete="off" />
+              <input id="historyPair" name="historyPair" value="BTC/USD" autocomplete="off" />
+              <input id="historyTf" name="historyTf" value="5m" autocomplete="off" />
+              <input id="historyRange" name="historyRange" value="20260324-20260327" autocomplete="off" />
+            </div>
+          </div>
+        </section>

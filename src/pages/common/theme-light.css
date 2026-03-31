@@ -1,0 +1,650 @@
+/* Light theme (resolved on html[data-theme="light"]) */
+html[data-theme="light"] {
+  --surface: #eef1f8;
+  --surface-low: #f7f8fc;
+  --surface-high: #ffffff;
+  --surface-highest: #e8ebf4;
+  --primary: #1a2a6c;
+  --primary-strong: #2d4acb;
+  --secondary: #0d8f6a;
+  --tertiary: #c45c52;
+  --warning: #9a7b12;
+  --ft-line-rgb: 60, 72, 110;
+  --ft-accent-rgb: 64, 102, 214;
+  --ft-primary-deep-rgb: 45, 74, 203;
+  --ft-deep-rgb: 220, 226, 240;
+  --outline: rgba(var(--ft-line-rgb), 0.22);
+  --text: #141826;
+  --text-dim: #4b5672;
+  --ft-focus-ring: 2px solid rgba(var(--ft-accent-rgb), 0.9);
+  --ft-login-surface: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
+  --ft-modal-surface: linear-gradient(180deg, #ffffff 0%, #eef0f8 100%);
+  --ft-card-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 248, 252, 0.98) 100%);
+  --ft-settings-block-bg: rgba(255, 255, 255, 0.78);
+  --ft-binding-column-bg: rgba(245, 247, 252, 0.96);
+  --ft-modal-mask: rgba(24, 30, 48, 0.38);
+  --ft-panel-surface: #ffffff;
+  --ft-panel-surface-raised: #e8ebf4;
+  --ft-panel-surface-inset: #eef1f6;
+  --ft-panel-head-bg: rgba(232, 235, 244, 0.96);
+  --ft-panel-head-bg-soft: rgba(232, 235, 244, 0.72);
+  --ft-table-header-bg: #dfe4f2;
+  --ft-panel-edge-rgb: 60, 72, 110;
+}
+
+html[data-theme="light"] body {
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(87, 130, 255, 0.12), transparent 38%),
+    radial-gradient(circle at 95% 100%, rgba(41, 223, 178, 0.06), transparent 42%);
+  scrollbar-color: rgba(80, 110, 200, 0.45) rgba(230, 234, 245, 0.95);
+}
+
+html[data-theme="light"] .ft-kicker-accent {
+  color: rgba(var(--ft-accent-rgb), 0.95);
+}
+
+html[data-theme="light"] .ds-card-top {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .ds-mini-metrics span,
+html[data-theme="light"] .pos-kpi p {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .icon-btn {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.18);
+  color: #30363d;
+}
+
+html[data-theme="light"] .strategy-row,
+html[data-theme="light"] .telemetry-row,
+html[data-theme="light"] .panel-backend-hint {
+  background: var(--surface-high);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .log {
+  background: var(--surface-high);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .settings-dual-tabs {
+  background: var(--surface-low);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] button:disabled:hover {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+  color: var(--text);
+}
+
+html[data-theme="light"] .ds-risk-cells .cell {
+  background: var(--surface-low);
+}
+
+html[data-theme="light"] .ds-telemetry h3,
+html[data-theme="light"] .ds-risk-cells .cell span,
+html[data-theme="light"] .ds-risk-head span {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .positions-block,
+html[data-theme="light"] .positions-table-shell {
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .positions-block-head span {
+  color: var(--text-dim);
+  background: rgba(var(--ft-accent-rgb), 0.08);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .positions-table th {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .sc-panel-config-card {
+  background: var(--surface-high);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .sc-rules-pre {
+  background: var(--surface-low);
+  border-color: var(--outline);
+  color: var(--text);
+}
+
+html[data-theme="light"] .monitor-metric {
+  background: var(--surface-high);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .sc-list.black {
+  background: rgba(196, 92, 82, 0.06);
+  border-left-color: var(--outline);
+}
+
+html[data-theme="light"] .sc-list.black .item strong {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .da-strategy-card,
+html[data-theme="light"] .da-volume,
+html[data-theme="light"] .da-chart,
+html[data-theme="light"] .da-history {
+  background: var(--ft-panel-surface);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-strategy-card small {
+  color: var(--text-dim);
+}
+
+/* 浅色：侧栏与主导航（与主内容区一致） */
+html[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #fafbff 0%, #eef1f8 100%);
+  box-shadow: inset -1px 0 0 rgba(var(--ft-panel-edge-rgb), 0.14), 6px 0 28px rgba(24, 30, 48, 0.06);
+}
+
+html[data-theme="light"] .nav-btn {
+  background: rgba(var(--ft-accent-rgb), 0.07);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.16);
+}
+
+html[data-theme="light"] .nav-btn:hover {
+  background: rgba(var(--ft-accent-rgb), 0.14);
+  border-color: rgba(var(--ft-accent-rgb), 0.38);
+}
+
+html[data-theme="light"] .nav-btn.active {
+  background: linear-gradient(135deg, rgba(var(--ft-accent-rgb), 0.22), rgba(var(--ft-accent-rgb), 0.1));
+  border-color: rgba(var(--ft-accent-rgb), 0.52);
+  box-shadow: 0 6px 16px rgba(var(--ft-primary-deep-rgb), 0.14);
+}
+
+html[data-theme="light"] .sidebar-version {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .status-pill {
+  background: rgba(var(--ft-accent-rgb), 0.1);
+  border-color: rgba(var(--ft-accent-rgb), 0.32);
+}
+
+/* 浅色：顶栏与工具条控件 */
+html[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--outline);
+  box-shadow: 0 10px 28px rgba(24, 30, 48, 0.08);
+}
+
+html[data-theme="light"] .topbar-statusline span {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .topbar-popover {
+  box-shadow: 0 16px 40px rgba(24, 30, 48, 0.12);
+}
+
+html[data-theme="light"] .icon-btn .material-symbols-outlined {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .icon-btn:hover:not(:disabled) .material-symbols-outlined {
+  color: var(--primary-strong);
+}
+
+html[data-theme="light"] button.ghost {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+  color: var(--text);
+}
+
+html[data-theme="light"] button.ghost:hover:not(:disabled) {
+  background: var(--surface-low);
+  border-color: rgba(var(--ft-accent-rgb), 0.42);
+  color: var(--primary-strong);
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+  background: var(--surface-high);
+  color: var(--text);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.26);
+}
+
+html[data-theme="light"] .lang-card-toggle {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+  color: var(--text);
+}
+
+html[data-theme="light"] .lang-card-toggle:hover:not(:disabled) {
+  background: var(--surface-low);
+  border-color: rgba(var(--ft-accent-rgb), 0.4);
+  color: var(--primary-strong);
+}
+
+html[data-theme="light"] .settings-dual-tab:hover {
+  color: var(--text);
+  background: rgba(var(--ft-panel-edge-rgb), 0.08);
+}
+
+html[data-theme="light"] .settings-dual-tab.active {
+  color: var(--primary-strong);
+  background: rgba(var(--ft-accent-rgb), 0.12);
+  box-shadow: inset 0 0 0 1px rgba(var(--ft-accent-rgb), 0.28);
+}
+
+html[data-theme="light"] .panel-backend-hint {
+  background: var(--surface-low);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .settings-db-source-hint {
+  color: #5c3d12;
+  background: rgba(255, 186, 90, 0.22);
+  border-color: rgba(200, 130, 40, 0.35);
+}
+
+html[data-theme="light"] .settings-strategy-list-title {
+  color: var(--text);
+}
+
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field textarea,
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea {
+  background: var(--surface-high);
+  color: var(--text);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.26);
+}
+
+html[data-theme="light"] .strategy-slot-name-select {
+  background: var(--surface-high);
+  color: var(--text);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.28);
+}
+
+html[data-theme="light"] .ft-page-hero--data {
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .bindings-list > .binding-row {
+  background: var(--surface-high);
+  border-color: var(--outline);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .bindings-empty {
+  background: var(--surface-low);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.22);
+}
+
+html[data-theme="light"] .bindings-empty code {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .binding-row--strategy-entry.strategy-entry-table-row {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .strategy-entry-table-row.strategy-entry-row--editable:hover {
+  border-color: rgba(var(--ft-accent-rgb), 0.35);
+  background: var(--surface-low);
+}
+
+html[data-theme="light"] .strategy-entry-name-head {
+  color: var(--text);
+}
+
+html[data-theme="light"] .strategy-entry-v {
+  color: var(--text);
+}
+
+html[data-theme="light"] .da-switch-btn {
+  color: var(--text);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-switch-btn.active {
+  color: var(--secondary);
+  border-color: rgba(13, 143, 106, 0.45);
+  background: rgba(13, 143, 106, 0.1);
+}
+
+html[data-theme="light"] .da-market-board {
+  background: var(--surface-low);
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .da-chart-head,
+html[data-theme="light"] .da-history-head {
+  background: var(--surface-highest);
+  border-bottom-color: var(--outline);
+}
+
+/* 浅色：通用模态与绑定类弹窗（底栏、分栏标题、阴影） */
+html[data-theme="light"] .modal-card:not(.modal-card--binding) {
+  border-color: var(--outline);
+  box-shadow: 0 18px 44px rgba(24, 30, 48, 0.1);
+}
+
+html[data-theme="light"] .modal-card--binding {
+  box-shadow:
+    0 22px 50px rgba(24, 30, 48, 0.12),
+    0 0 0 1px rgba(var(--ft-panel-edge-rgb), 0.14);
+}
+
+html[data-theme="light"] .modal-head--binding {
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .modal-card--binding .binding-column {
+  border-color: var(--outline);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+html[data-theme="light"] .modal-card--binding .binding-column h5 {
+  color: var(--primary-strong);
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .modal-card--binding .modal-actions {
+  background: linear-gradient(180deg, rgba(247, 248, 252, 0.98) 0%, #ffffff 100%);
+  border-top-color: var(--outline);
+}
+
+html[data-theme="light"] .modal-card--binding .llm-probe-feedback {
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .modal-card--binding .llm-probe-feedback--ok .llm-probe-feedback__text {
+  color: #0b6e4f;
+}
+
+html[data-theme="light"] .modal-card--binding .llm-probe-feedback--error .llm-probe-feedback__text {
+  color: #b42318;
+}
+
+html[data-theme="light"] .modal-body {
+  scrollbar-color: rgba(80, 110, 200, 0.42) rgba(230, 234, 245, 0.95);
+}
+
+/* 浅色：设置 · 策略备忘与摘要块 */
+html[data-theme="light"] .settings-strategy-memo-panel {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .settings-memo-kv {
+  background: var(--surface-low);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .settings-memo-row:nth-child(even) {
+  background: rgba(var(--ft-accent-rgb), 0.05);
+}
+
+html[data-theme="light"] .settings-memo-v {
+  color: var(--text);
+}
+
+html[data-theme="light"] .settings-memo-text-block,
+html[data-theme="light"] .settings-memo-pre {
+  background: var(--surface-high);
+  color: var(--text);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .settings-strategy-empty {
+  background: var(--surface-low);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.22);
+}
+
+/* 浅色：策略控制台卡片与提示条 */
+html[data-theme="light"] .sc-card,
+html[data-theme="light"] .sc-governance,
+html[data-theme="light"] .sc-feed {
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .sc-governance-head {
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .sc-governance-head p {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .sc-alert {
+  color: #7a2c28;
+  background: rgba(196, 92, 82, 0.1);
+  border-color: rgba(196, 92, 82, 0.28);
+}
+
+html[data-theme="light"] .sc-alert-demo {
+  background: rgba(var(--ft-accent-rgb), 0.1);
+  color: var(--text);
+  border-color: rgba(var(--ft-accent-rgb), 0.22);
+}
+
+html[data-theme="light"] .sc-alert-demo .material-symbols-outlined {
+  color: var(--primary-strong);
+}
+
+html[data-theme="light"] .sc-demo-tag {
+  color: var(--primary-strong);
+  background: rgba(var(--ft-accent-rgb), 0.14);
+}
+
+html[data-theme="light"] .sc-chip.idle {
+  color: var(--text-dim);
+  background: rgba(var(--ft-panel-edge-rgb), 0.12);
+}
+
+html[data-theme="light"] .sc-perf em {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .sc-kpi {
+  border-color: var(--outline);
+}
+
+/* 浅色：设置/接口等 .card、登录、全站表格 */
+html[data-theme="light"] .card {
+  border-color: var(--outline);
+  box-shadow: 0 8px 28px rgba(24, 30, 48, 0.07);
+}
+
+html[data-theme="light"] .login-card {
+  border-color: var(--outline);
+  box-shadow: 0 12px 36px rgba(24, 30, 48, 0.1);
+}
+
+html[data-theme="light"] th,
+html[data-theme="light"] td {
+  border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.14);
+}
+
+html[data-theme="light"] .data-table tbody tr:nth-child(even) td {
+  background: rgba(var(--ft-panel-edge-rgb), 0.055);
+}
+
+html[data-theme="light"] .ds-strategy-table .head {
+  border-bottom-color: var(--outline);
+}
+
+html[data-theme="light"] .ds-strategy-table .head .right {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .positions-table th,
+html[data-theme="light"] .positions-table td {
+  border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.12);
+}
+
+html[data-theme="light"] .positions-table tbody tr:nth-child(even) td {
+  background: rgba(var(--ft-panel-edge-rgb), 0.045);
+}
+
+html[data-theme="light"] .pair-cell small {
+  color: var(--text-dim);
+}
+
+/* 浅色：数据页 K 线区与行情 chip */
+html[data-theme="light"] .da-chart-stat {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .mock-grid {
+  background-image:
+    linear-gradient(to right, rgba(var(--ft-panel-edge-rgb), 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--ft-panel-edge-rgb), 0.1) 1px, transparent 1px);
+}
+
+html[data-theme="light"] .da-kline-status {
+  color: var(--text);
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-market-board .chip {
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-market-board .chip b {
+  color: var(--text);
+}
+
+html[data-theme="light"] .da-market-board .chip em {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] table.table-plain tbody tr:nth-child(even) td {
+  background: transparent;
+}
+
+html[data-theme="light"] table.table-plain th,
+html[data-theme="light"] table.table-plain td {
+  border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.09);
+}
+
+html[data-theme="light"] .da-chart-live .pill {
+  color: var(--text-dim);
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-chart-live .pill b {
+  color: var(--text);
+}
+
+html[data-theme="light"] .da-candle-strip {
+  border-color: var(--outline);
+  background: var(--surface-low);
+}
+
+html[data-theme="light"] .da-kline-mode-label {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .da-kline-mode-btn.active {
+  color: var(--secondary);
+  border-color: rgba(13, 143, 106, 0.45);
+  background: rgba(13, 143, 106, 0.1);
+}
+
+html[data-theme="light"] .da-ohlc-float {
+  color: var(--text);
+  background: var(--surface-high);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-kline-hint {
+  color: var(--text-dim);
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-mini-table {
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-mini-table th,
+html[data-theme="light"] .da-mini-table td {
+  border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.1);
+}
+
+html[data-theme="light"] .da-mini-table th {
+  background: var(--surface-highest);
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .da-history-table tbody tr:nth-child(even) {
+  background: rgba(var(--ft-panel-edge-rgb), 0.04);
+}
+
+html[data-theme="light"] .da-history-table tbody tr:hover {
+  background: rgba(var(--ft-accent-rgb), 0.06);
+}
+
+html[data-theme="light"] .da-tag.neutral {
+  color: var(--text-dim);
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  border-color: var(--outline);
+}
+
+/* 浅色：数据页 hero 指标条、操作条、网络/数据源徽章 */
+html[data-theme="light"] .da-metrics {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .da-net-badge:not(.live):not(.retry):not(.fallback) {
+  color: var(--text);
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-source-badge {
+  color: var(--primary-strong);
+  background: rgba(var(--ft-accent-rgb), 0.1);
+  border-color: rgba(var(--ft-accent-rgb), 0.22);
+}
+
+html[data-theme="light"] .da-actions {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+/* 浅色：WebKit 滚动条（与 body 浅色 scrollbar-color 一致） */
+html[data-theme="light"] .log::-webkit-scrollbar-track,
+html[data-theme="light"] .mono::-webkit-scrollbar-track,
+html[data-theme="light"] body::-webkit-scrollbar-track,
+html[data-theme="light"] .modal-body::-webkit-scrollbar-track {
+  background: rgba(230, 234, 245, 0.96);
+}
+
+html[data-theme="light"] .log::-webkit-scrollbar-thumb,
+html[data-theme="light"] .mono::-webkit-scrollbar-thumb,
+html[data-theme="light"] body::-webkit-scrollbar-thumb,
+html[data-theme="light"] .modal-body::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(230, 234, 245, 0.96);
+}
+
+html[data-theme="light"] .log::-webkit-scrollbar-thumb:hover,
+html[data-theme="light"] .mono::-webkit-scrollbar-thumb:hover,
+html[data-theme="light"] body::-webkit-scrollbar-thumb:hover,
+html[data-theme="light"] .modal-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(var(--ft-accent-rgb), 0.55), rgba(var(--ft-primary-deep-rgb), 0.5));
+}
+
+/* 浅色：日志行虚线分割 */
+html[data-theme="light"] .log-row {
+  border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.16);
+}

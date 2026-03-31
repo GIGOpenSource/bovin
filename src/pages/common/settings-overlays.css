@@ -1,0 +1,181 @@
+/* Panel users & per-menu read/edit */
+body.perm-no-edit-settings #savePanelBackend,
+body.perm-no-edit-settings #addApiBinding,
+body.perm-no-edit-settings #newManualStrategyBtn,
+body.perm-no-edit-settings .manual-strategy-edit-btn,
+body.perm-no-edit-settings .manual-strategy-remove-btn,
+body.perm-no-edit-settings .strategy-memo-edit-btn,
+body.perm-no-edit-settings .strategy-memo-clear-btn,
+body.perm-no-edit-settings #addPanelUserBtn,
+body.perm-no-edit-settings #mControlShowStrategyCards,
+body.perm-no-edit-settings #mStrategyShowOnConsole,
+body.perm-no-edit-settings .panel-user-edit,
+body.perm-no-edit-settings .panel-user-del {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+body.perm-no-edit-control #control .action-btn:not(:disabled),
+body.perm-no-edit-control #control #forceExit,
+body.perm-no-edit-control #control #btnSyncConfigAndStart,
+body.perm-no-edit-control #control #btnSyncConfigOnly,
+body.perm-no-edit-control #loadLists,
+body.perm-no-edit-control #addBlacklist,
+body.perm-no-edit-control #forceEnter {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+/* 槽位属面板偏好：仅当「设置」与「控制台」均不可编辑时才禁用 */
+body.perm-no-edit-settings.perm-no-edit-control #control .sc-strategy-slot-btn {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+body.perm-no-edit-positions #positions #pendingCancelAllBtn,
+body.perm-no-edit-positions #positions #pendingFilterBtn {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+body.perm-no-edit-data #data #loadPairs,
+body.perm-no-edit-data #data #loadPairHistory {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.panel-user-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 2fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(var(--ft-line-rgb), 0.22);
+}
+
+.panel-user-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+.pu-perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 14px;
+  margin-top: 0;
+}
+
+.pu-perm-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.pu-perm-item select {
+  width: 100%;
+}
+
+.settings-users-hint {
+  margin-top: 8px;
+}
+
+button.is-disabled {
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.modal-card--panel-user {
+  max-width: 640px;
+}
+
+/* Topbar: notifications & account popovers */
+.topbar-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: transparent;
+}
+
+.topbar-popover {
+  position: fixed;
+  z-index: 95;
+  top: calc(var(--topbar-estimate) + 6px);
+  right: max(16px, env(safe-area-inset-right));
+  width: min(380px, calc(100vw - 28px));
+  max-height: min(70vh, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-radius: var(--ft-panel-radius);
+  border: 1px solid var(--outline);
+  background: var(--surface-high);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.topbar-popover.hidden {
+  display: none !important;
+}
+
+.topbar-popover__title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.topbar-popover__user {
+  font-size: 13px;
+  color: var(--text-dim);
+  word-break: break-all;
+}
+
+.topbar-popover__body {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  font-size: 12px;
+}
+
+.topbar-popover__logs .log-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 6px 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(var(--ft-line-rgb), 0.2);
+  align-items: baseline;
+}
+
+.topbar-popover__logs .log-row:last-child {
+  border-bottom: none;
+}
+
+.topbar-popover__logs .log-time {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.topbar-popover__logs .log-level {
+  font-weight: 600;
+  color: var(--primary-strong);
+  white-space: nowrap;
+}
+
+.topbar-popover__logs .log-msg {
+  color: var(--text);
+  word-break: break-word;
+}
+
+.topbar-popover__foot.w-full,
+.topbar-popover .w-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.topbar-popover__danger {
+  color: #ff8a80 !important;
+  border-color: rgba(255, 138, 128, 0.35) !important;
+}
+
+.topbar-popover__muted {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.45;
+}

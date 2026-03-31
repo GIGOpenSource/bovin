@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node esbuild.config.mjs",
-    "build:dev": "node esbuild.config.mjs --dev",
-    "watch": "node esbuild.config.mjs --watch",
-    "extract-i18n": "node scripts/extract-i18n.mjs",
-    "generate-app-src": "node scripts/generate-app-src.mjs"
+    "dev": "serve -l 3000 .",
+    "build:index": "node scripts/build-index.mjs",
+    "materialize:app": "node scripts/materialize-app-vue.mjs",
+    "materialize:sections": "node scripts/materialize-section-sfcs.mjs",
+    "materialize": "node scripts/materialize-app-vue.mjs && node scripts/materialize-section-sfcs.mjs",
+    "build": "npm run materialize",
+    "build:dev": "npm run materialize",
+    "watch": "npm run materialize",
+    "extract-i18n": "node scripts/extract-i18n.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.27.4"
+    "serve": "^14.2.4"
+  },
+  "dependencies": {
+    "ant-design-vue": "^4.2.6",
+    "pinia": "^3.0.1",
+    "vue": "^3.5.31",
+    "vue-router": "^5.0.4"
   }
 }

@@ -1,0 +1,115 @@
+/* Unified page shell + hero (overview, positions, control, data) */
+.ft-page {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ft-page-stack-gap);
+}
+
+.ft-page-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--ft-page-stack-gap);
+  margin-bottom: 0;
+}
+
+.ft-page-hero__intro {
+  min-width: 0;
+  flex: 1;
+}
+
+.ft-page-hero__kicker {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ft-kicker-accent {
+  color: #b4c5ff;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+.ft-page-hero__title {
+  margin: 0;
+  font-family: var(--ft-font-display);
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.ft-page-hero__desc {
+  margin: 10px 0 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  max-width: 52rem;
+}
+
+.ft-page-hero__desc--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.ft-page-hero__desc--inline .material-symbols-outlined {
+  color: #4edea3;
+  font-size: 16px;
+}
+
+.ft-page-hero__meta {
+  margin-top: 10px;
+}
+
+.ft-page-hero__aside {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.ft-page-hero--data {
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+  padding-bottom: var(--ft-page-stack-gap);
+  margin-bottom: 0;
+}
+
+.ft-page > .log-pager {
+  margin-top: 0;
+}
+
+.ds-mini-metrics {
+  display: flex;
+  gap: 10px;
+}
+
+.ds-mini-metrics > div,
+.pos-kpi {
+  background: var(--ft-panel-surface);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.ds-mini-metrics span,
+.pos-kpi p {
+  display: block;
+  margin: 0;
+  font-size: 11px;
+  color: #8c90a2;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.ds-mini-metrics strong,
+.pos-kpi span {
+  font-family: var(--ft-font-display);
+  font-size: 24px;
+  line-height: 1.05;
+}

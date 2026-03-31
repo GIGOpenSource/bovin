@@ -1,0 +1,79 @@
+<section id="positions" class="section">
+          <div class="ft-page positions-wrap">
+            <header class="ft-page-hero">
+              <div class="ft-page-hero__intro">
+                <span class="ft-page-hero__kicker" data-i18n="page.kicker.positions"></span>
+                <h1 class="ft-page-hero__title" data-i18n="page.title.positions"></h1>
+                <p class="ft-page-hero__desc" data-i18n="page.desc.positions"></p>
+              </div>
+              <div class="ft-page-hero__aside">
+                <div class="positions-kpis">
+                  <div class="pos-kpi">
+                    <p data-i18n="positions.floatPnl">浮动盈亏合计</p>
+                    <div><span id="posTotalPnl">+$0.00</span></div>
+                  </div>
+                  <div class="pos-kpi">
+                    <p data-i18n="positions.exposure">当前敞口</p>
+                    <div><span id="posExposure">$0.00</span></div>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <section class="positions-block">
+              <div class="positions-block-head">
+                <h3 data-i18n="positions.active">当前持仓</h3>
+                <span data-i18n="positions.liveFeed">实时推送</span>
+              </div>
+              <div class="positions-table-shell">
+                <table class="positions-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="th.tradingPair">交易对</th>
+                      <th class="t-right" data-i18n="th.openingPrice">开仓价</th>
+                      <th class="t-right" data-i18n="th.currentPrice">现价</th>
+                      <th class="t-right" data-i18n="th.floatingPnl">浮动盈亏</th>
+                      <th class="t-right" data-i18n="th.positionSize">持仓规模</th>
+                      <th class="t-center" data-i18n="th.actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="statusTable"></tbody>
+                </table>
+              </div>
+              <div class="positions-pager">
+                <button type="button" id="statusPrev" class="ghost" data-i18n="btn.prevPage">上一页</button>
+                <span id="statusPageInfo" class="pager-info">1 / 1</span>
+                <button type="button" id="statusNext" class="ghost" data-i18n="btn.nextPage">下一页</button>
+              </div>
+            </section>
+
+            <section class="positions-block">
+              <div class="positions-block-head">
+                <h3 id="pendingSectionTitle">待成交（模拟）</h3>
+                <div class="pending-actions">
+                  <button type="button" class="ghost" id="pendingFilterBtn" data-i18n="positions.filter">筛选</button>
+                  <button type="button" class="ghost" id="pendingCancelAllBtn" data-i18n="positions.cancelAll">全部撤销</button>
+                </div>
+              </div>
+              <div class="positions-table-shell">
+                <table class="positions-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="th.orderType">订单类型</th>
+                      <th class="t-right" data-i18n="th.price">价格</th>
+                      <th class="t-right" data-i18n="th.quantity">数量</th>
+                      <th class="t-center" data-i18n="th.status">状态</th>
+                      <th class="t-center" data-i18n="th.actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pendingTable"></tbody>
+                </table>
+              </div>
+              <div class="positions-pager">
+                <button type="button" id="pendingPrev" class="ghost" data-i18n="btn.prevPage">上一页</button>
+                <span id="pendingPageInfo" class="pager-info">1 / 1</span>
+                <button type="button" id="pendingNext" class="ghost" data-i18n="btn.nextPage">下一页</button>
+              </div>
+            </section>
+          </div>
+        </section>

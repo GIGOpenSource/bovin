@@ -1,0 +1,91 @@
+<section id="control" class="section">
+          <div class="ft-page sc-wrap">
+            <header class="ft-page-hero">
+              <div class="ft-page-hero__intro">
+                <span class="ft-page-hero__kicker" data-i18n="page.kicker.control"></span>
+                <h1 class="ft-page-hero__title" data-i18n="page.title.control"></h1>
+                <p class="ft-page-hero__desc ft-page-hero__desc--inline">
+                  <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+                  <span data-i18n="page.desc.control"></span>
+                </p>
+              </div>
+              <div class="ft-page-hero__aside">
+                <div class="sc-hero-kpis">
+                  <div class="sc-kpi">
+                    <div>
+                      <em data-i18n="control.estAnnualReturn">年化收益预估</em>
+                      <strong id="controlHeroAnnual">—</strong>
+                    </div>
+                    <span class="material-symbols-outlined" aria-hidden="true">query_stats</span>
+                  </div>
+                  <div class="sc-kpi">
+                    <div>
+                      <em data-i18n="control.pnl24h">24h 盈亏</em>
+                      <strong id="controlHeroPnl">+$14,204.42</strong>
+                    </div>
+                    <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <section class="sc-panel-config-card" id="panelStrategyConfigCard" data-i18n-aria="aria.panelStrategyConfig" aria-label="面板策略配置">
+              <div class="sc-panel-config-head">
+                <h3 data-i18n="control.panelStrategyConfig">面板策略配置</h3>
+                <div class="sc-panel-config-actions">
+                  <button type="button" id="btnSyncConfigAndStart" class="primary" data-i18n="btn.syncConfigStart">同步配置并启动交易器</button>
+                  <button type="button" id="btnSyncConfigOnly" class="ghost" data-i18n="btn.syncConfigOnly">仅同步配置到服务端</button>
+                </div>
+              </div>
+              <p id="controlStrategyConfigSummary" class="sc-panel-config-summary"></p>
+              <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
+              <div class="sc-panel-config-rules">
+                <h4 data-i18n="control.strategyRulesOut">AI / 接管 — 策略规则输出</h4>
+                <pre id="controlStrategyRulesOut" class="mono sc-rules-pre"></pre>
+              </div>
+            </section>
+
+            <div class="sc-console-grid">
+            <section class="sc-strategy-grid" id="controlStrategyCards" aria-live="polite"></section>
+
+            <section class="sc-bottom">
+              <div class="sc-governance">
+                <div class="sc-governance-head">
+                  <div>
+                    <h2 data-i18n="sc.gov.title">资产访问治理</h2>
+                    <p id="scGovPolicy" class="sc-gov-policy" data-i18n="sc.gov.policy">交易对白名单策略 v4.0</p>
+                  </div>
+                  <button type="button" class="ghost" data-i18n="sc.gov.export">导出配置</button>
+                </div>
+                <div class="sc-governance-grid">
+                  <div class="sc-list white">
+                    <div class="sc-list-head"><h4 data-i18n="sc.gov.activeWl">当前白名单</h4><span id="scWlCount">—</span></div>
+                    <div class="sc-list-items" id="scGovernanceWlItems"></div>
+                  </div>
+                  <div class="sc-list black">
+                    <div class="sc-list-head"><h4 data-i18n="sc.gov.globalBl">全局黑名单</h4><span id="scBlCount">—</span></div>
+                    <div class="sc-list-items" id="scGovernanceBlItems"></div>
+                  </div>
+                </div>
+              </div>
+              <aside class="sc-feed">
+                <h3><span class="material-symbols-outlined">analytics</span><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                <div id="scFeedRows"></div>
+                <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
+              </aside>
+            </section>
+            </div>
+
+            <div class="hidden-control">
+              <button id="loadLists" class="ghost">刷新名单</button>
+              <input id="blacklistPair" name="blacklistPair" placeholder="如 PEPE/USDT" value="PEPE/USDT" autocomplete="off" />
+              <button id="addBlacklist" class="ghost">加入黑名单</button>
+              <input id="forcePair" name="forcePair" value="BTC/USDT" autocomplete="off" />
+              <select id="forceSide"><option value="long">long</option><option value="short">short</option></select>
+              <button type="button" id="forceEnter" class="primary" data-i18n="btn.forceEnter">强制开仓</button>
+              <input id="forceExitTradeId" name="forceExitTradeId" value="all" autocomplete="off" />
+              <div id="whitelist" class="mono"></div>
+              <div id="blacklist" class="mono"></div>
+            </div>
+          </div>
+        </section>

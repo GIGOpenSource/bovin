@@ -1,0 +1,64 @@
+/* System monitor page */
+.monitor-page-card {
+  padding: clamp(14px, 2vw, 22px);
+}
+
+.monitor-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: clamp(16px, 2.5vw, 24px);
+}
+
+.monitor-page-head h3 {
+  margin: 0 0 6px;
+}
+
+.monitor-page-sub {
+  margin: 0;
+  font-size: 13px;
+  max-width: 52rem;
+  line-height: 1.5;
+}
+
+.monitor-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.monitor-metric {
+  border: 1px solid rgba(var(--ft-accent-rgb), 0.28);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: rgba(26, 43, 82, 0.35);
+}
+
+.monitor-metric--wide {
+  grid-column: 1 / -1;
+}
+
+.monitor-metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.monitor-metric-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.monitor-metric-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+}

@@ -31,8 +31,8 @@ if (end < 0) throw new Error("could not match i18n object");
 const expr = code.slice(start + marker.length, end);
 // eslint-disable-next-line no-new-func
 const i18n = Function(`"use strict"; return (${expr})`)();
-const zhLocale = path.join(root, "src", "locales", "zh-CN.json");
-const enLocale = path.join(root, "src", "locales", "en.json");
+const zhLocale = path.join(root, "src", "i18n", "locales", "zh-CN.json");
+const enLocale = path.join(root, "src", "i18n", "locales", "en.json");
 fs.mkdirSync(path.dirname(zhLocale), { recursive: true });
 fs.writeFileSync(zhLocale, `${JSON.stringify(i18n["zh-CN"], null, 2)}\n`);
 fs.writeFileSync(enLocale, `${JSON.stringify(i18n.en, null, 2)}\n`);
