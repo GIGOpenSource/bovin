@@ -22,11 +22,10 @@ function defaultBovinRestApiV1BaseFirstVisit() {
     if (typeof location === "undefined") return "";
     const h = String(location.hostname || "").toLowerCase();
     if (h === "localhost" || h === "127.0.0.1" || h === "[::1]") {
-      return "http://192.168.77.46:8000/api/v1";
+      return "http://127.0.0.1:19090/api/v1";
     }
     if (location.protocol === "http:" && isPrivateLanIPv4ForProxy(h)) {
-      // return `http://${h}:19090/api/v1`;
-      return `http://192.168.77.46:8000/api/v1`
+      return `http://127.0.0.1:19090/api/v1`;
     }
   } catch {
     // ignore

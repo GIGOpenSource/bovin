@@ -6,7 +6,7 @@
                 <span class="ft-page-hero__kicker" data-i18n="page.kicker.control"></span>
                 <h1 class="ft-page-hero__title" data-i18n="page.title.control"></h1>
                 <p class="ft-page-hero__desc ft-page-hero__desc--inline">
-                  <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+                  <CheckCircleOutlined class="sc-verify-icon" aria-hidden="true" />
                   <span data-i18n="page.desc.control"></span>
                 </p>
               </div>
@@ -17,14 +17,14 @@
                       <em data-i18n="control.estAnnualReturn">年化收益预估</em>
                       <strong id="controlHeroAnnual">—</strong>
                     </div>
-                    <span class="material-symbols-outlined" aria-hidden="true">query_stats</span>
+                    <LineChartOutlined aria-hidden="true" />
                   </div>
                   <div class="sc-kpi">
                     <div>
                       <em data-i18n="control.pnl24h">24h 盈亏</em>
                       <strong id="controlHeroPnl">+$14,204.42</strong>
                     </div>
-                    <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+                    <RiseOutlined aria-hidden="true" />
                   </div>
                 </div>
               </div>
@@ -42,7 +42,7 @@
               <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
               <div class="sc-panel-config-rules">
                 <h4 data-i18n="control.strategyRulesOut">AI / 接管 — 策略规则输出</h4>
-                <pre id="controlStrategyRulesOut" class="mono sc-rules-pre"></pre>
+                <pre id="controlStrategyRulesOut" class="mono sc-rules-pre">（暂无规则输出）</pre>
               </div>
             </section>
 
@@ -60,18 +60,33 @@
                 </div>
                 <div class="sc-governance-grid">
                   <div class="sc-list white">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.activeWl">当前白名单</h4><span id="scWlCount">—</span></div>
-                    <div class="sc-list-items" id="scGovernanceWlItems"></div>
+                    <div class="sc-list-head"><h4 data-i18n="sc.gov.activeWl">当前白名单</h4><span id="scWlCount">0 个交易对</span></div>
+                    <div class="sc-list-items" id="scGovernanceWlItems">
+                      <div class="item dashed item-placeholder" data-i18n="pairlist.addRpc">添加（请使用 API）</div>
+                    </div>
                   </div>
                   <div class="sc-list black">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.globalBl">全局黑名单</h4><span id="scBlCount">—</span></div>
-                    <div class="sc-list-items" id="scGovernanceBlItems"></div>
+                    <div class="sc-list-head"><h4 data-i18n="sc.gov.globalBl">全局黑名单</h4><span id="scBlCount">0 个交易对</span></div>
+                    <div class="sc-list-items" id="scGovernanceBlItems">
+                      <div class="item">
+                        <strong>Bovin</strong>
+                        <small>名单数据来自 RPC。</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               <aside class="sc-feed">
-                <h3><span class="material-symbols-outlined">analytics</span><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                <h3><BarChartOutlined /><span data-i18n="sc.feed.title">实时成交流</span></h3>
                 <div id="scFeedRows"></div>
+                <div class="feed-row feed-row-demo">
+                  <i class="pri"></i>
+                  <div>
+                    <b>暂无成交</b>
+                    <small>—</small>
+                    <em>—</em>
+                  </div>
+                </div>
                 <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
               </aside>
             </section>
@@ -602,6 +617,24 @@
   font-size: 18px;
 }
 
+.sc-kpi .anticon {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(78, 222, 163, 0.12);
+  border: 1px solid rgba(78, 222, 163, 0.34);
+  color: #7ee7bd;
+  font-size: 18px;
+}
+
+.sc-verify-icon {
+  color: #4edea3;
+  font-size: 16px;
+}
+
 .sc-governance-head p {
   margin: 3px 0 0;
   font-size: 10px;
@@ -657,34 +690,38 @@
 .sc-list-items {
   display: grid;
   gap: 8px;
+  min-height: 64px;
 }
 
 .sc-list .item {
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  background: var(--ft-panel-surface-inset);
+  background: rgba(35, 46, 74, 0.72);
   border-radius: 8px;
-  padding: 9px 10px;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 4px;
+  /* min-height: 40px; */
 }
 
 .sc-list .item strong {
   font-size: 12px;
+  line-height: 1.2;
 }
 
 .sc-list .item small {
   font-size: 10px;
   color: #8c90a2;
+  line-height: 1.35;
 }
 
 .sc-list.black .item {
-  background: rgba(147, 0, 10, 0.08);
-  border-color: rgba(255, 180, 171, 0.15);
+  background: #222a3d;
 }
 
 .sc-list.black .item strong {
-  text-decoration: line-through;
+  /* text-decoration: line-through; */
   color: #aeb9db;
 }
 
@@ -708,6 +745,18 @@
   border-style: dashed;
 }
 
+.sc-list .item.item-placeholder {
+  align-items: center;
+  text-align: center;
+  color: #7f8aa8;
+  font-size: 13px;
+  font-weight: 700;
+  height: 50px !important;
+  border: 1px solid rgba(var(--ft-line-rgb), 0.42);
+    border-radius: var(--ft-radius-control);
+    background: rgba(23, 34, 65, 0.75);
+}
+
 .sc-feed {
   grid-column: 3 / 4;
   background: var(--ft-panel-surface-raised);
@@ -727,6 +776,11 @@
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.08em;
+}
+
+.sc-feed h3 .anticon {
+  color: #86b2ff;
+  font-size: 14px;
 }
 
 .feed-row {
@@ -772,9 +826,21 @@
 }
 
 .sc-feed-btn {
-  margin-top: 6px;
+  margin-top: 4px;
+  height: 50px;
+  padding: 5px 10px;
+  font-size: 12px;
 }
 </style>
+
+<script setup>
+import {
+  BarChartOutlined,
+  CheckCircleOutlined,
+  LineChartOutlined,
+  RiseOutlined
+} from "@ant-design/icons-vue";
+</script>
 
 <script>
 export * from "../../api/control.js";

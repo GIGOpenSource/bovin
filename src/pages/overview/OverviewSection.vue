@@ -34,12 +34,14 @@
                 </article>
               </div>
               <article class="ds-risk">
+                <!-- 对接 -->
                 <div class="ds-risk-head"><h3 data-i18n="overview.risk.title">风险敞口矩阵（按加密资产分层）</h3><div><span data-i18n="overview.risk.leverage">杠杆 / 敞口</span><b id="riskLeverageValue">—</b></div></div>
                 <div class="ds-risk-cells" id="riskMatrixCells"></div>
               </article>
+              <!-- 对接 -->
               <article class="ds-telemetry">
                 <h3 data-i18n="overview.telemetry">本机状态</h3>
-                <div id="sysinfo" class="mono"></div>
+                <div id="sysinfo" class="mono">本机指标暂不可用</div>
               </article>
             </div>
 
@@ -65,4 +67,33 @@
 
 <script>
 export * from "../../api/overview.js";
+</script>
+
+<script setup>
+import { onMounted, onUnmounted } from "vue";
+import { i18n } from "../../i18n/index.js";
+import { state, uiState } from "../../store/state-core.js";
+
+const t = (key) => i18n[state.lang || "zh-CN"]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+
+let timer = null;
+onMounted(() => {
+  const syncEmptyRow = () => {
+    const body = document.getElementById("overviewStrategiesBody");
+    if (!body) return;
+    const list = Array.isArray(uiState.panelStrategyList) ? uiState.panelStrategyList : [];
+    if (list.length === 0) {
+      body.innerHTML = `<tr><td class="muted" colspan="6" style="text-align:center;">${t("overview.strategies.empty")}</td></tr>`;
+      return;
+    }
+    const single = body.querySelector("tr td.muted");
+    if (single && body.querySelectorAll("tr").length === 1) body.innerHTML = "";
+  };
+  syncEmptyRow();
+  timer = window.setInterval(syncEmptyRow, 1000);
+});
+
+onUnmounted(() => {
+  if (timer != null) window.clearInterval(timer);
+});
 </script>

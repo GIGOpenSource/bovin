@@ -3,10 +3,10 @@
  */
 import { state } from "../store/state-core.js";
 
-export const LOCAL_API_PROXY_BASE = "http://192.168.77.46:8000/api/v1";
+export const LOCAL_API_PROXY_BASE = "http://127.0.0.1:19090/api/v1";
 
 /** 直连 Bovin api_server 时的默认 …/api/v1（WebSocket 等须走可连通的源） */
-export const DEFAULT_BOVIN_UPSTREAM_API_V1 = "http://192.168.77.46:8000/api/v1";
+export const DEFAULT_BOVIN_UPSTREAM_API_V1 = "http://127.0.0.1:19090/api/v1";
 
 /**
  * 用户在设置里填写的 REST 根地址：若只写了 `http://host:port` 而未带 `/api/v1`，
@@ -52,7 +52,7 @@ export function httpDevProxyBase() {
         return LOCAL_API_PROXY_BASE.replace(/\/+$/, "");
       }
       if (isPrivateOrLoopbackLanIPv4(host)) {
-        return `http://192.168.77.46:8000/api/v1`.replace(/\/+$/, "");
+        return `http://127.0.0.1:19090/api/v1`.replace(/\/+$/, "");
       }
     }
   } catch {
@@ -117,12 +117,12 @@ export function localDevProxyOrigin() {
       const hl = host.toLowerCase();
       if (hl === "localhost" || hl === "127.0.0.1" || hl === "[::1]") {
         const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
-        return raw || "http://192.168.77.46:8000";
+        return raw || "http://127.0.0.1:19090";
       }
       if (isPrivateOrLoopbackLanIPv4(host)) {
         const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
         if (raw) return raw;
-        return `http://192.168.77.46:8000`;
+        return `http://127.0.0.1:19090`;
       }
     }
   } catch {
@@ -130,9 +130,9 @@ export function localDevProxyOrigin() {
   }
   try {
     const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
-    return raw || "http://192.168.77.46:8000";
+    return raw || "http://127.0.0.1:19090";
   } catch {
-    return "http://192.168.77.46:8000";
+    return "http://127.0.0.1:19090";
   }
 }
 
@@ -192,7 +192,7 @@ export function apiUrlBasesCandidates() {
   let bases;
   if (override) {
     bases = [override];
-    if (!override.includes(":8000")) bases.push(devFallback);
+    if (!override.includes(":19090")) bases.push(devFallback);
     bases = [...new Set(bases)];
   } else {
     const same = sameOriginApiV1Base();
@@ -297,7 +297,7 @@ export function bovinUpstreamApiV1From19090RestBase(rest) {
     const host = u.hostname;
     if (!host) return DEFAULT_BOVIN_UPSTREAM_API_V1;
 
-    return `${u.protocol}//192.168.77.46:8000/api/v1`.replace(/\/+$/, "");
+    return `${u.protocol}//127.0.0.1:19090/api/v1`.replace(/\/+$/, "");
   } catch {
     return DEFAULT_BOVIN_UPSTREAM_API_V1;
   }
@@ -309,7 +309,7 @@ export function effectiveWsApiV1Base() {
   const rest = effectiveApiBasePrimary();
   if (!rest) return DEFAULT_BOVIN_UPSTREAM_API_V1;
   const low = rest.toLowerCase();
-  if (low.includes(":8000")) {
+  if (low.includes(":19090")) {
     const derived = bovinUpstreamApiV1From19090RestBase(rest);
     return (derived || DEFAULT_BOVIN_UPSTREAM_API_V1).replace(/\/+$/, "");
   }

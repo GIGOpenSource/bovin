@@ -67,7 +67,11 @@
                       <th class="t-center" data-i18n="th.actions">操作</th>
                     </tr>
                   </thead>
-                  <tbody id="pendingTable"></tbody>
+                  <tbody id="pendingTable">
+                    <tr data-empty-row="pending">
+                      <td colspan="5" class="empty-row-cell">无挂单</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
               <div class="positions-pager">
@@ -196,8 +200,45 @@
   gap: 8px;
   padding: 10px 4px 2px;
 }
+
+.empty-row-cell {
+  text-align: center;
+}
 </style>
 
 <script>
 export * from "../../api/positions.js";
+</script>
+
+<script setup>
+import { onMounted, onUnmounted } from "vue";
+
+let emptyRowTimer = null;
+
+onMounted(() => {
+  const syncPendingEmptyRow = () => {
+    const tbody = document.getElementById("pendingTable");
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const placeholder = rows.find((r) => r.getAttribute("data-empty-row") === "pending") || null;
+    const realRows = rows.filter((r) => r.getAttribute("data-empty-row") !== "pending");
+    if (realRows.length === 0) {
+      if (!placeholder) {
+        tbody.insertAdjacentHTML(
+          "beforeend",
+          '<tr data-empty-row="pending"><td colspan="5" class="empty-row-cell">无挂单</td></tr>'
+        );
+      }
+    } else if (placeholder) {
+      placeholder.remove();
+    }
+  };
+
+  syncPendingEmptyRow();
+  emptyRowTimer = window.setInterval(syncPendingEmptyRow, 1000);
+});
+
+onUnmounted(() => {
+  if (emptyRowTimer != null) window.clearInterval(emptyRowTimer);
+});
 </script>

@@ -45,7 +45,7 @@
               </article>
               <article class="monitor-metric monitor-metric--wide">
                 <div class="monitor-metric-label" data-i18n="monitor.metric.uptime">程序运行时长</div>
-                <div class="monitor-metric-value mono" id="monitorUptime">—</div>
+                <div class="monitor-metric-value mono" id="monitorUptime">暂无启动时间</div>
                 <p class="monitor-metric-hint muted" data-i18n="monitor.hint.uptime">优先使用 /health.bot_startup_ts，否则使用 /profit.bot_start_timestamp。</p>
               </article>
             </div>

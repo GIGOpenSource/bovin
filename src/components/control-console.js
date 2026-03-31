@@ -9,6 +9,22 @@ function t(key) {
 
 const $ = (id) => document.getElementById(id);
 
+function alertIconSvg(kind) {
+  if (kind === "warning") {
+    return `<span class="anticon sc-alert-anticon" aria-hidden="true"><svg viewBox="64 64 896 896" focusable="false"><path fill="currentColor" d="M511.5 175.6a35.31 35.31 0 0 1 61 0l353.4 611.9c13.7 23.8-3.4 53.5-30.5 53.5H158.6c-27.1 0-44.2-29.7-30.5-53.5l353.4-611.9zM512 406c-22.1 0-40 17.9-40 40v176c0 22.1 17.9 40 40 40s40-17.9 40-40V446c0-22.1-17.9-40-40-40zm0 364a48 48 0 1 0 0-96 48 48 0 0 0 0 96z"></path></svg></span>`;
+  }
+  if (kind === "info") {
+    return `<span class="anticon sc-alert-anticon" aria-hidden="true"><svg viewBox="64 64 896 896" focusable="false"><path fill="currentColor" d="M512 140a372 372 0 1 0 0 744 372 372 0 0 0 0-744zm0 664a292 292 0 1 1 0-584 292 292 0 0 1 0 584zm-36-414a36 36 0 1 0 72 0 36 36 0 0 0-72 0zm76 334h-80V470h80v254z"></path></svg></span>`;
+  }
+  if (kind === "swap") {
+    return `<span class="anticon sc-alert-anticon" aria-hidden="true"><svg viewBox="64 64 896 896" focusable="false"><path fill="currentColor" d="M848 504H280.8l67.6-67.6a40 40 0 0 0-56.6-56.6l-136 136a40 40 0 0 0 0 56.6l136 136a40 40 0 1 0 56.6-56.6L280.8 584H848a40 40 0 1 0 0-80zM176 440h567.2l-67.6 67.6a40 40 0 1 0 56.6 56.6l136-136a40 40 0 0 0 0-56.6l-136-136a40 40 0 1 0-56.6 56.6l67.6 67.6H176a40 40 0 1 0 0 80z"></path></svg></span>`;
+  }
+  if (kind === "hidden") {
+    return `<span class="anticon sc-alert-anticon" aria-hidden="true"><svg viewBox="64 64 896 896" focusable="false"><path fill="currentColor" d="M942.2 486.2C847.6 346.5 694.9 256 512 256c-53.4 0-104.3 7.8-151.9 22.2l62.6 62.6A373 373 0 0 1 512 332c149.5 0 277.8 79.4 353.8 180-32.6 43.1-72 81.8-116.6 113.6l54.7 54.7c55.3-39.5 103.8-88.2 138.3-148.1a40 40 0 0 0 0-45.8zM130.8 181.1l97.7 97.7C156.4 330 96.7 411.9 81.8 486.2a40 40 0 0 0 0 45.8C176.4 671.7 329.1 762.2 512 762.2c82 0 157.8-18.3 225.2-51.7l106 106a38 38 0 0 0 53.7-53.7L184.5 127.4a38 38 0 0 0-53.7 53.7zm289.7 289.7 122.7 122.7A84 84 0 0 1 512 600c-48.6 0-88-39.4-88-88 0-11.2 2.1-21.9 6.5-31.2z"></path></svg></span>`;
+  }
+  return "";
+}
+
 function resolveBotStartUnixSec(health, profit) {
   const h = health && typeof health === "object" ? health : {};
   const p = profit && typeof profit === "object" ? profit : {};
@@ -121,7 +137,7 @@ export function panelBotTradingApisAvailable(showConfig, proxyHealth, botHealth)
 function runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth) {
   if (panelBotTradingApisAvailable(showConfig, proxyHealth, botHealth)) return "";
   return `<article class="sc-card sc-card-alert" role="status"><div class="sc-alert sc-alert--stack">
-      <span class="material-symbols-outlined">warning</span>
+      ${alertIconSvg("warning")}
       <div class="sc-alert-text"><span>${escapeHtml(t("sc.tradeMode.bannerTitle"))}</span>
       <p class="muted sc-alert-sub">${escapeHtml(t("sc.tradeMode.bannerBody"))}</p></div>
     </div></article>`;
@@ -139,7 +155,7 @@ function webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth) {
       : t("sc.tradeMode.splitRelayBodyImplicit")
   );
   return `<article class="sc-card sc-card--info-soft" role="status"><div class="sc-alert sc-alert--stack">
-      <span class="material-symbols-outlined">swap_horiz</span>
+      ${alertIconSvg("swap")}
       <div class="sc-alert-text"><span>${escapeHtml(t("sc.tradeMode.splitRelayTitle"))}</span>
       <p class="muted sc-alert-sub mono">${sub}</p></div>
     </div></article>`;
@@ -440,7 +456,7 @@ function formatStrategyGridOffCard(name, showConfig) {
   });
   return `<article class="sc-card sc-card-alert sc-card--strategy-grid-off" data-strategy-card="${escapeHtml(name)}">
     <div class="sc-alert sc-alert--stack">
-      <span class="material-symbols-outlined">visibility_off</span>
+      ${alertIconSvg("hidden")}
       <div class="sc-alert-text"><strong>${title}</strong><p class="muted sc-alert-sub">${sub}</p></div>
     </div>
     ${actions}
@@ -573,7 +589,7 @@ export function renderControlStrategyCards(
     state.manualStrategyNames
   );
   if (!names.length) {
-    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert"><span class="material-symbols-outlined">info</span><span>${escapeHtml(t("sc.strategy.noFiles"))}</span></div></article>`;
+    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert">${alertIconSvg("info")}<span>${escapeHtml(t("sc.strategy.noFiles"))}</span></div></article>`;
     return;
   }
   const hiddenSet = new Set(
@@ -586,14 +602,14 @@ export function renderControlStrategyCards(
     return key && !hiddenSet.has(key);
   });
   if (!visibleNames.length) {
-    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert"><span class="material-symbols-outlined">visibility_off</span><span>${escapeHtml(t("sc.strategy.allHiddenByPref"))}</span></div></article>`;
+    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert">${alertIconSvg("hidden")}<span>${escapeHtml(t("sc.strategy.allHiddenByPref"))}</span></div></article>`;
     return;
   }
   if (visibleNames.length > 0 && visibleNames.every((n) => !entryWantsStrategyGrid(n))) {
     const namesLine = visibleNames.map((n) => escapeHtml(n)).join(" · ");
     const lead = escapeHtml(t("sc.strategy.allVisibleGridOffLead"));
     root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert sc-alert--stack">
-      <span class="material-symbols-outlined">visibility_off</span>
+      ${alertIconSvg("hidden")}
       <div class="sc-alert-text"><span>${lead}</span><p class="mono sc-alert-names">${namesLine}</p>
       <p class="muted sc-alert-sub">${escapeHtml(t("sc.strategy.entryGridOffHint"))}</p></div>
     </div></article>`;

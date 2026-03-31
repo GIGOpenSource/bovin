@@ -6,6 +6,12 @@
 .ft-page-hero__title {
   font-size: 50px;
   letter-spacing: -0.03em;
+  padding-right: 0.08em;
+}
+
+.ft-page-hero__kicker,
+.ft-page-hero__desc {
+  padding-right: 2px;
 }
 
 .ds-mini-metrics {
@@ -64,6 +70,10 @@
   padding: 12px 14px;
 }
 
+.ds-card {
+  min-height: 180px;
+}
+
 .ds-dashboard-grid > .ds-card,
 .ds-dashboard-grid > .ds-risk,
 .ds-dashboard-grid > .ds-telemetry {
@@ -75,13 +85,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   color: #a6b6e4;
 }
 
 .ds-card-top em {
   font-style: normal;
   font-weight: 700;
+  font-size: 12px;
 }
 
 .ds-card-value {
