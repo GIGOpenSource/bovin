@@ -4,7 +4,7 @@
 }
 
 .ft-page-hero__title {
-  font-size: 50px;
+  font-size: 38px;
   letter-spacing: -0.03em;
   padding-right: 0.08em;
 }
@@ -247,7 +247,7 @@
 
 @media (max-width: 1100px) {
   .ft-page-hero__title {
-    font-size: 38px;
+    font-size: 32px;
   }
 
   .ds-dashboard-grid {
