@@ -1,6 +1,6 @@
 import { i18n } from "../i18n/index.js";
 import { state, uiState, normalizeStrategyEntries } from "../store/state-core.js";
-import { normalizeUserRestApiV1Base } from "../api/api-bases.js";
+import { normalizeUserRestApiV1Base } from "../api/config.js";
 import { escapeHtml } from "../utils/html-utils.js";
 
 function t(key) {

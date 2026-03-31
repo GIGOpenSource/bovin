@@ -16,7 +16,7 @@
 const LEGACY_PWD_LS = "ft_pwd";
 const API_PWD_SS = "ft_pwd_session";
 
-/** 首次打开面板且未存过 ft_base_url 时，指向 binance_proxy（与 api-bases.httpDevProxyBase 一致），避免 POST 误达静态页 501。 */
+/** 首次打开面板且未存过 ft_base_url 时，指向 binance_proxy（与 api/config.js 的 httpDevProxyBase 一致），避免 POST 误达静态页 501。 */
 function defaultBovinRestApiV1BaseFirstVisit() {
   try {
     if (typeof location === "undefined") return "";
@@ -347,7 +347,7 @@ function migrateLocalFlatToStrategyEntries() {
 
 export const state = {
   /**
-   * 留空：自动候选含同源 …/api/v1 与 binance_proxy（见 api-bases）；显式填 …/api/v1 可避免误连静态站。
+   * 留空：自动候选含同源 …/api/v1 与 binance_proxy（见 api/config.js）；显式填 …/api/v1 可避免误连静态站。
    * 从未写入 ft_base_url 时：本机/局域网 http 开发默认 `http://192.168.77.46:8000/api/v1` 或 `http://<LAN>:19090/api/v1`，并清除 ft_api_base_last_ok。
    */
   baseUrl: (() => {

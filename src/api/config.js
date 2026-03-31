@@ -1,8 +1,11 @@
+/**
+ * REST …/api/v1 基址解析、候选与 WebSocket 推导（纯前端，无服务端逻辑）。
+ */
 import { state } from "../store/state-core.js";
 
 export const LOCAL_API_PROXY_BASE = "http://192.168.77.46:8000/api/v1";
 
-/** 与 binance_proxy 默认 FREQTRADE_UPSTREAM 对齐；REST 走 :19090 时 WebSocket 须直连 Bovin api_server */
+/** 直连 Bovin api_server 时的默认 …/api/v1（WebSocket 等须走可连通的源） */
 export const DEFAULT_BOVIN_UPSTREAM_API_V1 = "http://192.168.77.46:8000/api/v1";
 
 /**
@@ -21,7 +24,7 @@ export function normalizeUserRestApiV1Base(raw) {
 
 const LS_LAST_OK_BASE = "ft_api_base_last_ok";
 
-/** 是否为 RFC1918 / 回环 IPv4（用于 HTTP 下推断「代理应连宿主机哪台」） */
+/** 是否为 RFC1918 / 回环 IPv4（用于 HTTP 下推断本机/局域网） */
 export function isPrivateOrLoopbackLanIPv4(hostname) {
   const h = String(hostname || "").toLowerCase();
   if (!h || h.includes(":")) return false;
@@ -38,9 +41,7 @@ export function isPrivateOrLoopbackLanIPv4(hostname) {
 }
 
 /**
- * HTTP 场景下直连 binance_proxy / 聚合端口的 /api/v1（无反代时）。
- * - 本机：192.168.77.46:8000
- * - 手机访问 http://192.168.x.x:3000 时：须连宿主机 192.168.x.x:19090（不能写 127.0.0.1）
+ * HTTP 开发场景下常用聚合 …/api/v1 基址（与当前页 host 协议/网段相关）。
  */
 export function httpDevProxyBase() {
   try {
@@ -69,7 +70,7 @@ export function rememberSuccessfulApiBase(base) {
   }
 }
 
-/** 清除「上次成功 REST 基址」，避免静态页 :3000 的 GET 成功把 POST 永远钉死在 501。 */
+/** 清除「上次成功 REST 基址」 */
 export function clearStoredPreferredApiBase() {
   try {
     localStorage.removeItem(LS_LAST_OK_BASE);
@@ -99,9 +100,7 @@ export function sameOriginApiV1Base() {
 }
 
 /**
- * binance_proxy 根地址（无路径）。
- * HTTPS 页面必须用当前 origin（配合 serve_https_lan 反代 /api/v1 与 /health），
- * 否则 fetch http://192.168.77.46:8000 会触发混合内容，K 线实时链路失败。
+ * 本地开发代理根 origin（无路径）。HTTPS 页宜用当前 origin，避免混合内容。
  */
 export function localDevProxyOrigin() {
   try {
@@ -145,7 +144,6 @@ export function localProxyHealthUrl() {
   return `${localDevProxyOrigin().replace(/\/+$/, "")}/health`;
 }
 
-/** 本地静态页（如 :3000）或本机 IP 访问时，允许回退到常见本机 API 端口 */
 export function isLikelyLocalDevFront() {
   try {
     const h = String(location.hostname || "").toLowerCase();
@@ -165,8 +163,7 @@ export function httpNeedsDevProxyFallback() {
 }
 
 /**
- * POST /panel/* 须由 Bovin 或 binance_proxy 处理；同源静态页 …/api/v1 常对 POST 返回 501。
- * 「上次成功基址」若指向前端端口会排在首位导致失败；本地 http 开发时把聚合代理提前。
+ * POST /panel/* 须到达真实 API；本地静态页同源 …/api/v1 常返回 501。HTTP 开发时把已知代理基址提前。
  */
 export function reorderBasesForPanelPost(bases) {
   const arr = Array.isArray(bases) ? bases.filter(Boolean) : [];
@@ -177,7 +174,6 @@ export function reorderBasesForPanelPost(bases) {
     const dev = httpDevProxyBase().replace(/\/+$/, "");
     const norm = (b) => String(b || "").replace(/\/+$/, "");
     const ix = arr.findIndex((b) => norm(b) === dev);
-    // 候选里没有当前页面对应的 binance_proxy（例如仅 192.168.77.46:8000 而页面在 192.168.*），POST 会先打同源静态页 → 501
     if (ix === -1) {
       return [dev, ...arr];
     }
@@ -190,9 +186,6 @@ export function reorderBasesForPanelPost(bases) {
   }
 }
 
-/**
- * 所有候选 REST …/api/v1 基址（去重、未按「上次成功」重排），供延迟探测与每分钟择优。
- */
 export function apiUrlBasesCandidates() {
   const devFallback = httpDevProxyBase();
   const override = normalizeUserRestApiV1Base(String(state.baseUrl || "").trim());
@@ -226,13 +219,7 @@ export function apiUrlBasesCandidates() {
   }
   const same = sameOriginApiV1Base();
   try {
-    if (
-      typeof location !== "undefined" &&
-      location.protocol === "https:" &&
-      same &&
-      !override
-    ) {
-      // 用户显式填了 Bovin Base URL 时不要用同源盖住：否则静态页 …/api/v1 会先于真实 API，POST /panel/* → 501
+    if (typeof location !== "undefined" && location.protocol === "https:" && same && !override) {
       const rest = bases.filter((b) => b !== same);
       bases = [same, ...rest];
     }
@@ -263,10 +250,6 @@ export function apiUrlBases() {
   return bases;
 }
 
-/**
- * 对各候选基址并发探测 GET /ping 延迟，将最快可达的写入 localStorage（与 apiCall 成功时一致）。
- * `pingOnce(base)` 应返回成功解析的 JSON 或抛错。
- */
 export async function probeApiBasesByPing(pingOnce) {
   const bases = apiUrlBasesCandidates().filter(Boolean);
   if (!bases.length || typeof pingOnce !== "function") return null;
@@ -305,10 +288,6 @@ export function effectiveApiBasePrimary() {
   return list[0] || "";
 }
 
-/**
- * 从指向 binance_proxy :19090 的 REST 基址推导同 host 的 Bovin api_server（默认 :18080）…/api/v1。
- * 局域网用 http://192.168.x.x:19090 时须得到 http://192.168.x.x:18080，不能写死 127.0.0.1。
- */
 export function bovinUpstreamApiV1From19090RestBase(rest) {
   const raw = String(rest || "").trim().replace(/\/+$/, "");
   if (!raw || !raw.toLowerCase().includes(":19090")) return null;
@@ -317,18 +296,13 @@ export function bovinUpstreamApiV1From19090RestBase(rest) {
     if (u.port !== "19090") return DEFAULT_BOVIN_UPSTREAM_API_V1;
     const host = u.hostname;
     if (!host) return DEFAULT_BOVIN_UPSTREAM_API_V1;
-    
+
     return `${u.protocol}//192.168.77.46:8000/api/v1`.replace(/\/+$/, "");
   } catch {
     return DEFAULT_BOVIN_UPSTREAM_API_V1;
   }
 }
 
-/**
- * WebSocket 使用的 REST 根（…/api/v1）。聚合代理仅支持 HTTP，WS 须直连 Bovin。
- * - 可填 `state.wsApiV1Base` 覆盖；
- * - 留空且当前 REST 经 :19090 代理时，推导 http://<同 host>:18080/api/v1（与 httpDevProxyBase 主机一致）。
- */
 export function effectiveWsApiV1Base() {
   const override = String(state.wsApiV1Base || "").trim().replace(/\/+$/, "");
   if (override) return override;
