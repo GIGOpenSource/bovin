@@ -249,4 +249,6 @@
 }
 </style>
 
-<script setup src="./overview.js"></script>
+<script>
+export * from "../../api/overview.js";
+</script>

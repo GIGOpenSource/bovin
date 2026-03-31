@@ -121,4 +121,6 @@
 }
 </style>
 
-<script setup src="./monitor.js"></script>
+<script>
+export * from "../../api/monitor.js";
+</script>

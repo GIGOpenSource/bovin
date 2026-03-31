@@ -1,7 +1,7 @@
 node_modules/
 .certs/
-# 构建产物：watch/build 会生成；首次克隆后请先 npm run build:dev 或 npm run dev
-/index.html
+dist/
+# 历史：根目录 index/main 曾为生成物；现为 Vite 源码入口于仓库根 index.html
 /main.js
 # 生产构建不生成 sourcemap；勿将开发机上的大体积 map 提交进库
 main.js.map

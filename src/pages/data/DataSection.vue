@@ -1004,4 +1004,6 @@
 }
 </style>
 
-<script setup src="./data.js"></script>
+<script>
+export * from "../../api/data.js";
+</script>

@@ -29,4 +29,6 @@
 /* api */
 </style>
 
-<script setup src="./api.js"></script>
+<script>
+export * from "../../api/api.js";
+</script>

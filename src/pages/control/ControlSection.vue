@@ -776,4 +776,15 @@
 }
 </style>
 
-<script setup src="./control.js"></script>
+<script>
+export * from "../../api/control.js";
+export {
+  computeEstimatedAnnualReturn,
+  normalizeBotState,
+  panelBotTradingApisAvailable,
+  orderedStrategyNames,
+  resolvePanelConfigSummary,
+  renderControlStrategyCards,
+  renderControlHeroAndCards
+} from "../../components/control-console.js";
+</script>

@@ -91,4 +91,6 @@
 /* settings */
 </style>
 
-<script setup src="./settings.js"></script>
+<script>
+export * from "../../api/settings.js";
+</script>

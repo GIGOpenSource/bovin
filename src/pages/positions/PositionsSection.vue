@@ -198,4 +198,6 @@
 }
 </style>
 
-<script setup src="./positions.js"></script>
+<script>
+export * from "../../api/positions.js";
+</script>
