@@ -7,16 +7,16 @@
                 <h1 class="ft-page-hero__title" data-i18n="page.title.data"></h1>
                 <p class="ft-page-hero__desc" data-i18n="page.desc.data"></p>
                 <div class="ft-page-hero__meta da-metrics">
-                  <span id="daNodeLine"><i class="dot ok"></i></span>
-                  <span id="daLatencyLine"><i class="dot"></i></span>
-                  <span id="daNetStatus" class="da-net-badge live"></span>
-                  <span id="daDataSource" class="da-source-badge"></span>
+                  <span id="daNodeLine"><i class="dot ok"></i>节点离线</span>
+                  <span id="daLatencyLine"><i class="dot"></i>延迟 15ms</span>
+                  <span id="daNetStatus" class="da-net-badge live">网络正常</span>
+                  <span id="daDataSource" class="da-source-badge">数据源：Bovin</span>
                 </div>
               </div>
               <div class="ft-page-hero__aside da-actions">
-                <button type="button" id="loadPairs" class="primary"><span class="material-symbols-outlined">list_alt</span><span data-i18n="btn.loadAvailablePairs">加载 available_pairs</span></button>
-                <button type="button" id="loadPairHistory" class="ghost"><span class="material-symbols-outlined">history</span><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
-                <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><span class="material-symbols-outlined">tune</span></button>
+                <button type="button" id="loadPairs" class="primary"><UnorderedListOutlined /><span data-i18n="btn.loadAvailablePairs">加载 available_pairs</span></button>
+                <button type="button" id="loadPairHistory" class="ghost"><HistoryOutlined /><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
+                <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><FilterOutlined /></button>
               </div>
             </header>
 
@@ -44,7 +44,7 @@
               <div class="da-main">
                 <div class="da-chart">
                   <div class="da-chart-head">
-                    <h3><span class="material-symbols-outlined">candlestick_chart</span><span id="daSymbolTicker">BTC_USDT_1H</span></h3>
+                    <h3><LineChartOutlined /><span id="daSymbolTicker">BTC_USDT_1H</span></h3>
                     <div class="da-chart-stat">
                       <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
                       <span id="daChgLabel"><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span> <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span>
@@ -78,6 +78,14 @@
                   <div class="da-chart-body">
                     <div class="mock-grid"></div>
                     <div id="daKlineStatus" class="da-kline-status hidden" role="status" aria-live="polite"></div>
+                    <svg id="daMaLayerDemo" class="da-ma-layer hidden" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <polyline class="ma7" points="0,68 10,64 20,66 30,58 40,62 50,54 60,56 70,48 80,51 90,44 100,46"></polyline>
+                      <polyline class="ma25" points="0,74 10,72 20,70 30,69 40,67 50,66 60,64 70,63 80,61 90,60 100,58"></polyline>
+                    </svg>
+                    <div id="daKlineHintDemo" class="da-kline-hint hidden" role="status" aria-live="polite">
+                      <span>实时数据源不可达，当前未获取到可渲染 K 线</span>
+                      <button type="button" class="ghost tiny" id="daKlineRetryBtnMini">立即重试</button>
+                    </div>
                     <div id="pairData" class="log"></div>
                   </div>
                 </div>
@@ -87,7 +95,16 @@
                     <h3 data-i18n="data.histLogs">历史日志</h3>
                     <button type="button" class="ghost" id="exportHistoryCsv" data-i18n="data.exportCsv">导出 CSV</button>
                   </div>
-                  <div id="availablePairs" class="log"></div>
+                  <div id="availablePairs" class="log">
+                    <div id="daHistoryEmpty" class="da-history-empty">
+                      <div class="da-history-empty-meta">
+                        <span class="da-history-pill">长度 0</span>
+                        <span class="da-history-pill">交易对数 0</span>
+                        <span class="da-history-pill">行数 0</span>
+                      </div>
+                      <div class="da-history-empty-text">暂无历史日志数据</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,22 +199,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(45, 52, 73, 0.6);
-  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  border-radius: var(--ft-panel-radius);
-  padding: 10px;
+  background: rgba(30, 39, 61, 0.72);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.28);
+  border-radius: 14px;
+  padding: 8px;
 }
 
 .da-actions button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 34px;
+}
+
+.da-actions .anticon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .da-actions .icon-only {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   justify-content: center;
+  padding: 0;
 }
 
 .da-grid {
@@ -554,7 +578,6 @@
   display: block;
   width: 100%;
   height: 100%;
-  vertical-align: top;
 }
 
 .da-kline-mode-toolbar {
@@ -684,6 +707,39 @@
 
 .da-history-table tbody tr:hover {
   background: rgba(34, 42, 61, 0.7);
+}
+
+.da-history-empty {
+  min-height: 180px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.da-history-empty-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.da-history-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
+  background: rgba(20, 30, 52, 0.55);
+  color: #9fb0d8;
+  font-size: 11px;
+}
+
+.da-history-empty-text {
+  margin-top: 14px;
+  text-align: center;
+  color: #8fa2d0;
+  font-size: 13px;
 }
 
 .da-tag {
@@ -1003,6 +1059,156 @@
   background: rgba(227, 233, 255, 0.45);
 }
 </style>
+
+<script setup>
+import { onMounted, onUnmounted } from "vue";
+import {
+  FilterOutlined,
+  HistoryOutlined,
+  LineChartOutlined,
+  UnorderedListOutlined
+} from "@ant-design/icons-vue";
+
+let disposePairTf = null;
+let historyEmptyTimer = null;
+
+onMounted(() => {
+  const pairWrap = document.getElementById("daPairButtons");
+  const tfWrap = document.getElementById("daTfButtons");
+  const modeWrap = document.querySelector(".da-kline-mode-toolbar");
+  const ticker = document.getElementById("daSymbolTicker");
+  const klineStatus = document.getElementById("daKlineStatus");
+  const maLayerDemo = document.getElementById("daMaLayerDemo");
+  const klineHintDemo = document.getElementById("daKlineHintDemo");
+  const historyRoot = document.getElementById("availablePairs");
+  const historyEmpty = document.getElementById("daHistoryEmpty");
+  if (!pairWrap || !tfWrap || !modeWrap) return;
+
+  const applyActive = (wrap, attr, value) => {
+    const buttons = Array.from(wrap.querySelectorAll("button.da-switch-btn"));
+    for (const btn of buttons) {
+      const on = btn.getAttribute(attr) === value;
+      btn.classList.toggle("active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  };
+
+  const currentPair = () =>
+    pairWrap.querySelector("button.da-switch-btn.active")?.getAttribute("data-pair") || "BTC/USD";
+  const currentTf = () =>
+    tfWrap.querySelector("button.da-switch-btn.active")?.getAttribute("data-tf") || "5m";
+
+  const syncTicker = () => {
+    if (!ticker) return;
+    const p = currentPair().replace("/", "_");
+    const tf = currentTf().toUpperCase();
+    ticker.textContent = `${p}_${tf}`;
+  };
+
+  const onPairClick = (e) => {
+    const btn = e.target instanceof Element ? e.target.closest("button.da-switch-btn[data-pair]") : null;
+    if (!btn) return;
+    const value = btn.getAttribute("data-pair");
+    if (!value) return;
+    applyActive(pairWrap, "data-pair", value);
+    syncTicker();
+  };
+
+  const onTfClick = (e) => {
+    const btn = e.target instanceof Element ? e.target.closest("button.da-switch-btn[data-tf]") : null;
+    if (!btn) return;
+    const value = btn.getAttribute("data-tf");
+    if (!value) return;
+    applyActive(tfWrap, "data-tf", value);
+    syncTicker();
+  };
+
+  const onModeClick = (e) => {
+    const btn = e.target instanceof Element ? e.target.closest("button.da-kline-mode-btn") : null;
+    if (!btn) return;
+    const buttons = Array.from(modeWrap.querySelectorAll("button.da-kline-mode-btn"));
+    for (const b of buttons) {
+      const on = b === btn;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    syncModePanel();
+  };
+
+  const syncModePanel = () => {
+    if (!klineStatus) return;
+    const lwActive = document.getElementById("daKlineModeLw")?.classList.contains("active");
+    if (lwActive) {
+      klineStatus.classList.remove("hidden");
+      maLayerDemo?.classList.remove("hidden");
+      klineHintDemo?.classList.remove("hidden");
+      klineStatus.innerHTML =
+        '<span>实时数据源不可达，当前未获取到可渲染 K 线</span><span class="da-kline-status-actions"><button type="button" class="ghost tiny" id="daKlineRetryBtn">立即重试</button></span>';
+    } else {
+      klineStatus.classList.add("hidden");
+      maLayerDemo?.classList.add("hidden");
+      klineHintDemo?.classList.add("hidden");
+      klineStatus.textContent = "";
+    }
+  };
+
+  const onRetryClick = (e) => {
+    const btn =
+      e.target instanceof Element ? e.target.closest("#daKlineRetryBtn, #daKlineRetryBtnMini") : null;
+    if (!btn) return;
+    btn.textContent = "重试中...";
+    window.setTimeout(() => {
+      btn.textContent = "立即重试";
+    }, 800);
+  };
+
+  const syncHistoryEmptyState = () => {
+    if (!historyRoot || !historyEmpty) return;
+    const rows = Array.from(historyRoot.querySelectorAll(".da-history-table tbody tr"));
+    let hasData = false;
+    for (const tr of rows) {
+      const tds = Array.from(tr.querySelectorAll("td"));
+      if (!tds.length) continue;
+      const anyReal = tds.some((td) => {
+        const txt = String(td.textContent || "").trim();
+        return txt && txt !== "-" && txt !== "—";
+      });
+      if (anyReal) {
+        hasData = true;
+        break;
+      }
+    }
+    historyEmpty.classList.toggle("hidden", hasData);
+  };
+
+  pairWrap.addEventListener("click", onPairClick);
+  tfWrap.addEventListener("click", onTfClick);
+  modeWrap.addEventListener("click", onModeClick);
+  klineStatus?.addEventListener("click", onRetryClick);
+  klineHintDemo?.addEventListener("click", onRetryClick);
+  syncTicker();
+  syncModePanel();
+  syncHistoryEmptyState();
+  historyEmptyTimer = window.setInterval(syncHistoryEmptyState, 1000);
+
+  disposePairTf = () => {
+    pairWrap.removeEventListener("click", onPairClick);
+    tfWrap.removeEventListener("click", onTfClick);
+    modeWrap.removeEventListener("click", onModeClick);
+    klineStatus?.removeEventListener("click", onRetryClick);
+    klineHintDemo?.removeEventListener("click", onRetryClick);
+    if (historyEmptyTimer != null) {
+      window.clearInterval(historyEmptyTimer);
+      historyEmptyTimer = null;
+    }
+  };
+});
+
+onUnmounted(() => {
+  disposePairTf?.();
+  disposePairTf = null;
+});
+</script>
 
 <script>
 export * from "../../api/data.js";
