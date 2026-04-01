@@ -13,19 +13,21 @@
  * - uiState.菜单权限：本地可篡改，仅 UI 约束；写操作仍由 Bovin api_server 鉴权。
  */
 
+import { DEFAULT_REST_API_V1_BASE } from "../api/default-api-base.js";
+
 const LEGACY_PWD_LS = "ft_pwd";
 const API_PWD_SS = "ft_pwd_session";
 
-/** 首次打开面板且未存过 ft_base_url 时，指向 binance_proxy（与 api/config.js 的 httpDevProxyBase 一致），避免 POST 误达静态页 501。 */
+/** 首次打开面板且未存过 ft_base_url 时，与 api/config.js 的 httpDevProxyBase 一致，避免 POST 误达静态页 501。 */
 function defaultBovinRestApiV1BaseFirstVisit() {
   try {
     if (typeof location === "undefined") return "";
     const h = String(location.hostname || "").toLowerCase();
     if (h === "localhost" || h === "127.0.0.1" || h === "[::1]") {
-      return "http://127.0.0.1:19090/api/v1";
+      return DEFAULT_REST_API_V1_BASE;
     }
     if (location.protocol === "http:" && isPrivateLanIPv4ForProxy(h)) {
-      return `http://127.0.0.1:19090/api/v1`;
+      return DEFAULT_REST_API_V1_BASE;
     }
   } catch {
     // ignore
@@ -44,6 +46,37 @@ function isPrivateLanIPv4ForProxy(hostname) {
   if (a === 172 && b >= 16 && b <= 31) return true;
   if (a === 127) return true;
   return false;
+}
+
+/** 若为历史开发机 `192.168.77.46:8000`，改为当前默认 …/api/v1；否则原样返回（已 trim、去尾斜杠）。 */
+function rewriteLegacyLan8000BaseUrl(v) {
+  const s = String(v ?? "").trim().replace(/\/+$/, "");
+  if (!s) return "";
+  try {
+    const u = new URL(s.includes("://") ? s : `http://${s}`);
+    if (u.hostname === "192.168.77.46" && u.port === "8000") {
+      return DEFAULT_REST_API_V1_BASE.replace(/\/+$/, "");
+    }
+  } catch {
+    // ignore
+  }
+  return s;
+}
+
+/** 读 localStorage 前执行：把旧默认基址写回 DEFAULT_REST_API_V1_BASE。 */
+function migrateLegacyLan8000BaseUrlIfNeeded() {
+  try {
+    const raw = localStorage.getItem("ft_base_url");
+    if (raw == null) return;
+    const cur = String(raw).trim().replace(/\/+$/, "");
+    if (!cur) return;
+    const next = rewriteLegacyLan8000BaseUrl(cur);
+    if (next === cur) return;
+    localStorage.setItem("ft_base_url", next);
+    localStorage.removeItem("ft_api_base_last_ok");
+  } catch {
+    // quota / private mode
+  }
 }
 
 (function migrateLegacyPasswordToSessionStorage() {
@@ -346,11 +379,13 @@ function migrateLocalFlatToStrategyEntries() {
 
 export const state = {
   /**
-   * 留空：自动候选含同源 …/api/v1 与 binance_proxy（见 api/config.js）；显式填 …/api/v1 可避免误连静态站。
-   * 从未写入 ft_base_url 时：本机/局域网 http 开发默认 `http://192.168.77.46:8000/api/v1` 或 `http://<LAN>:19090/api/v1`，并清除 ft_api_base_last_ok。
+   * 留空：自动候选含同源 …/api/v1 与默认上游（见 api/config.js）；显式填 …/api/v1 可避免误连静态站。
+   * 从未写入 ft_base_url 时：本机/局域网 http 开发写入 default-api-base.js 中的默认 …/api/v1，并清除 ft_api_base_last_ok。
+   * 若本地仍存历史 `192.168.77.46:8000`，启动时迁移为当前默认基址。
    */
   baseUrl: (() => {
     try {
+      migrateLegacyLan8000BaseUrlIfNeeded();
       const raw = localStorage.getItem("ft_base_url");
       if (raw !== null) return String(raw).trim().replace(/\/+$/, "");
       const d = defaultBovinRestApiV1BaseFirstVisit();
@@ -566,9 +601,18 @@ export function applyPanelProfileFromPrefs(prefs) {
   const hadEntries = Array.isArray(rawEntries);
   if ("baseUrl" in prefs) {
     const fromServer = String(prefs.baseUrl ?? "").trim().replace(/\/+$/, "");
-    // 服务端未存或为空时不要用 "" 覆盖本地 ft_base_url（否则会冲掉默认/手填的 :19090，POST 又落到静态页 501）
+    // 服务端未存或为空时不要用 "" 覆盖本地 ft_base_url（否则会冲掉默认/手填基址，POST 又落到静态页 501）
     if (fromServer !== "") {
-      state.baseUrl = fromServer;
+      const next = rewriteLegacyLan8000BaseUrl(fromServer);
+      state.baseUrl = next;
+      if (next !== fromServer) {
+        try {
+          localStorage.setItem("ft_base_url", next);
+          localStorage.removeItem("ft_api_base_last_ok");
+        } catch {
+          // quota / private mode
+        }
+      }
     }
   }
   /**

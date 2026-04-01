@@ -42,38 +42,68 @@
 
               <div class="da-main">
                 <div class="da-chart">
-                  <div class="da-chart-head">
-                    <h3><span class="material-symbols-outlined">candlestick_chart</span><span id="daSymbolTicker">BTC_USDT_1H</span></h3>
-                    <div class="da-chart-stat">
-                      <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
-                      <span id="daChgLabel"><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span> <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span>
+                  <div class="da-chart-head da-chart-head--toolbar">
+                    <div class="da-chart-head__meta">
+                      <h3><span class="material-symbols-outlined">candlestick_chart</span><span id="daSymbolTicker">BTC_USDT_5M</span></h3>
+                      <div class="da-chart-stat">
+                        <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
+                        <span id="daChgLabel"><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span> <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span>
+                      </div>
                     </div>
-                    <div id="daPairButtons" class="da-switch-group" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
-                      <button type="button" class="da-switch-btn active" data-pair="BTC/USD">BTC/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="ETH/USD">ETH/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="SOL/USD">SOL/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="BNB/USD">BNB/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="XRP/USD">XRP/USD</button>
+                    <!-- 顶栏交易对胶囊（与第二行行情卡重复时可隐藏）
+                    <div id="daPairButtons" class="da-switch-group da-chart-head__seg" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
+                      <button type="button" class="da-switch-btn active" data-pair="BTC/USDT">BTC/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="ETH/USDT">ETH/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="SOL/USDT">SOL/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="BNB/USDT">BNB/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="XRP/USDT">XRP/USDT</button>
                     </div>
-                    <div id="daTfButtons" class="da-switch-group" data-i18n-aria="aria.tfSwitch" aria-label="切换周期">
+                    -->
+                    <div id="daTfButtons" class="da-switch-group da-chart-head__seg" data-i18n-aria="aria.tfSwitch" aria-label="切换周期">
                       <button type="button" class="da-switch-btn active" data-tf="5m">5m</button>
                       <button type="button" class="da-switch-btn" data-tf="15m">15m</button>
                       <button type="button" class="da-switch-btn" data-tf="1h">1h</button>
                       <button type="button" class="da-switch-btn" data-tf="4h">4h</button>
                       <button type="button" class="da-switch-btn" data-tf="1d">1d</button>
                     </div>
-                    <div class="da-kline-mode-toolbar" role="toolbar" data-i18n-aria="aria.klineChartMode">
+                    <div class="da-kline-mode-toolbar da-chart-head__seg" role="toolbar" data-i18n-aria="aria.klineChartMode">
                       <span class="da-kline-mode-label muted" data-i18n="kline.modeLabel">K 线</span>
                       <button type="button" class="ghost tiny da-kline-mode-btn active" id="daKlineModeLw" data-i18n="kline.modeLw">
-                        Lightweight
+                        轻量图库
                       </button>
                       <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModePanel" data-i18n="kline.modePanel">
-                        面板 K 线
+                        面板原生
                       </button>
-                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG</button>
+                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG 兜底</button>
                     </div>
                   </div>
-                  <div id="daMarketBoard" class="da-market-board"></div>
+                  <div id="daMarketBoard" class="da-market-board da-market-board--tickers" data-i18n-aria="aria.dataTickerStrip" aria-label="行情快览">
+                    <button type="button" class="da-ticker-card is-active" data-board-pair="BTC/USDT" aria-pressed="true">
+                      <span class="da-ticker-card__pair">BTC/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="ETH/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">ETH/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="BNB/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">BNB/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="XRP/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">XRP/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="SOL/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">SOL/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                  </div>
                   <div class="da-chart-body">
                     <div class="mock-grid"></div>
                     <div id="daKlineStatus" class="da-kline-status hidden" role="status" aria-live="polite"></div>

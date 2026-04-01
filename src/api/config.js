@@ -1,12 +1,15 @@
 /**
  * REST …/api/v1 基址解析、候选与 WebSocket 推导（纯前端，无服务端逻辑）。
  */
+import { DEFAULT_REST_API_V1_BASE, DEFAULT_REST_ORIGIN } from "./default-api-base.js";
 import { state } from "../store/state-core.js";
 
-export const LOCAL_API_PROXY_BASE = "http://127.0.0.1:19090/api/v1";
+export { DEFAULT_REST_API_V1_BASE, DEFAULT_REST_ORIGIN } from "./default-api-base.js";
+
+export const LOCAL_API_PROXY_BASE = DEFAULT_REST_API_V1_BASE;
 
 /** 直连 Bovin api_server 时的默认 …/api/v1（WebSocket 等须走可连通的源） */
-export const DEFAULT_BOVIN_UPSTREAM_API_V1 = "http://127.0.0.1:19090/api/v1";
+export const DEFAULT_BOVIN_UPSTREAM_API_V1 = LOCAL_API_PROXY_BASE;
 
 /**
  * 用户在设置里填写的 REST 根地址：若只写了 `http://host:port` 而未带 `/api/v1`，
@@ -52,7 +55,7 @@ export function httpDevProxyBase() {
         return LOCAL_API_PROXY_BASE.replace(/\/+$/, "");
       }
       if (isPrivateOrLoopbackLanIPv4(host)) {
-        return `http://127.0.0.1:19090/api/v1`.replace(/\/+$/, "");
+        return LOCAL_API_PROXY_BASE.replace(/\/+$/, "");
       }
     }
   } catch {
@@ -117,12 +120,12 @@ export function localDevProxyOrigin() {
       const hl = host.toLowerCase();
       if (hl === "localhost" || hl === "127.0.0.1" || hl === "[::1]") {
         const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
-        return raw || "http://127.0.0.1:19090";
+        return raw || DEFAULT_REST_ORIGIN;
       }
       if (isPrivateOrLoopbackLanIPv4(host)) {
         const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
         if (raw) return raw;
-        return `http://127.0.0.1:19090`;
+        return DEFAULT_REST_ORIGIN;
       }
     }
   } catch {
@@ -130,9 +133,9 @@ export function localDevProxyOrigin() {
   }
   try {
     const raw = String(localStorage.getItem("ft_binance_proxy_base") || "").trim().replace(/\/+$/, "");
-    return raw || "http://127.0.0.1:19090";
+    return raw || DEFAULT_REST_ORIGIN;
   } catch {
-    return "http://127.0.0.1:19090";
+    return DEFAULT_REST_ORIGIN;
   }
 }
 
@@ -192,7 +195,8 @@ export function apiUrlBasesCandidates() {
   let bases;
   if (override) {
     bases = [override];
-    if (!override.includes(":19090")) bases.push(devFallback);
+    const norm = (s) => String(s || "").replace(/\/+$/, "").toLowerCase();
+    if (norm(override) !== norm(devFallback)) bases.push(devFallback);
     bases = [...new Set(bases)];
   } else {
     const same = sameOriginApiV1Base();

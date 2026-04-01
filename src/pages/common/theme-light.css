@@ -526,6 +526,37 @@ html[data-theme="light"] .da-market-board .chip em {
   color: var(--text-dim);
 }
 
+html[data-theme="light"] .da-ticker-card {
+  background: var(--surface-highest);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] .da-ticker-card:hover {
+  background: #fff;
+  border-color: rgba(13, 143, 106, 0.35);
+}
+
+html[data-theme="light"] .da-ticker-card.is-active {
+  border-color: rgba(13, 143, 106, 0.45);
+  box-shadow: 0 0 0 1px rgba(13, 143, 106, 0.1);
+}
+
+html[data-theme="light"] .da-ticker-card__pair {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .da-ticker-card__price {
+  color: var(--text);
+}
+
+html[data-theme="light"] .da-ticker-card__pct.positive {
+  color: var(--secondary);
+}
+
+html[data-theme="light"] .da-ticker-card__pct.negative {
+  color: var(--tertiary);
+}
+
 html[data-theme="light"] table.table-plain tbody tr:nth-child(even) td {
   background: transparent;
 }
@@ -554,10 +585,30 @@ html[data-theme="light"] .da-kline-mode-label {
   color: var(--text-dim);
 }
 
-html[data-theme="light"] .da-kline-mode-btn.active {
-  color: var(--secondary);
-  border-color: rgba(13, 143, 106, 0.45);
-  background: rgba(13, 143, 106, 0.1);
+html[data-theme="light"] .da-kline-mode-toolbar .da-kline-mode-btn {
+  background: rgba(244, 246, 251, 0.98);
+  color: var(--text);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.2);
+}
+
+html[data-theme="light"] .da-kline-mode-toolbar .da-kline-mode-btn:hover:not(.active) {
+  color: var(--text);
+  background: #fff;
+}
+
+html[data-theme="light"] .da-kline-mode-toolbar .da-kline-mode-btn.active {
+  color: #0d8f6a;
+  border-color: rgba(13, 143, 106, 0.55);
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(13, 143, 106, 0.18),
+    0 0 12px rgba(13, 143, 106, 0.12);
+}
+
+html[data-theme="light"] .da-chart-head--toolbar .da-kline-mode-toolbar .da-kline-mode-btn.active {
+  box-shadow:
+    0 0 0 1px rgba(13, 143, 106, 0.14),
+    0 0 8px rgba(13, 143, 106, 0.1);
 }
 
 html[data-theme="light"] .da-ohlc-float {

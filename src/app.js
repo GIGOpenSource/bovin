@@ -13,8 +13,8 @@ import {
 import { normalizeSectionIdCandidate } from "./router/bridge.js";
 import { startPanelPolling, stopPanelPolling, applyTopbarDecor } from "./panel-poll.js";
 
-/** 为 true：不拦截，直接进入面板（不弹登录）；为 false 时走 /panel/auth/login。 */
-export const SKIP_PANEL_LOGIN = true;
+/** 为 true：不拦截，直接进入面板（不弹登录）；为 false 时须先登录（/panel/auth/login）再进入。 */
+export const SKIP_PANEL_LOGIN = false;
 
 let sectionNavigate = null;
 let loginFormBound = false;
@@ -114,6 +114,10 @@ function syncLoginShell() {
   } else {
     loginEl.classList.remove("hidden");
     appRoot.classList.add("hidden");
+    const u = $("loginUsername");
+    if (u instanceof HTMLInputElement && String(state.username || "").trim()) {
+      u.value = String(state.username || "").trim();
+    }
   }
 }
 
@@ -265,6 +269,11 @@ function enterShellAfterAuth() {
   const shell = $("appRoot");
   if (shell) applyDomI18n(shell);
   startPanelPolling();
+  try {
+    window.dispatchEvent(new CustomEvent("bovin-panel-auth"));
+  } catch {
+    /* ignore */
+  }
 }
 
 function bindLoginOnce() {

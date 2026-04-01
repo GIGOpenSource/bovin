@@ -527,6 +527,7 @@
   "history.pill.length": "长度",
   "history.pill.pairs": "交易对数",
   "history.pill.rows": "行数",
+  "aria.dataTickerStrip": "多交易对行情快览",
   "aria.klineChartMode": "K 线渲染模式",
   "kline.modeLabel": "K 线",
   "kline.modeLw": "轻量图库",

@@ -504,6 +504,7 @@
   "history.pill.length": "Length",
   "history.pill.pairs": "Pairs",
   "history.pill.rows": "Rows",
+  "aria.dataTickerStrip": "Multi-pair ticker strip",
   "aria.klineChartMode": "Candle chart render mode",
   "kline.modeLabel": "Chart",
   "kline.modeLw": "Lightweight",

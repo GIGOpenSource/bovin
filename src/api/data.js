@@ -47,3 +47,6 @@ export const getPanelBinanceKlines = (params) => {
   const q = new URLSearchParams(params || {}).toString();
   return http.get(q ? `/panel/binance_klines?${q}` : "/panel/binance_klines");
 };
+
+/** 面板行情条：24h ticker 列表（同源转发币安） */
+export const getPanelBinanceBoard = () => http.get("/panel/binance_board");

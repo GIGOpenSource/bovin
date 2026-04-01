@@ -43,38 +43,76 @@
 
               <div class="da-main">
                 <div class="da-chart">
-                  <div class="da-chart-head">
-                    <h3><LineChartOutlined /><span id="daSymbolTicker">BTC_USDT_1H</span></h3>
-                    <div class="da-chart-stat">
-                      <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
-                      <span id="daChgLabel"><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span> <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span>
+                  <div class="da-chart-head da-chart-head--toolbar">
+                    <div class="da-chart-head__meta">
+                      <h3><LineChartOutlined /><span id="daSymbolTicker">BTC_USDT_5M</span></h3>
+                      <div class="da-chart-stat">
+                        <span><span data-i18n="data.price">价格</span> <b id="daPriceNow">64,281.40</b></span>
+                        <span id="daChgLabel"
+                          ><span class="da-chg-prefix" data-i18n="data.chg24h">24h 涨跌</span>
+                          <b id="daPriceChg" class="positive da-chg-value">+2.15%</b></span
+                        >
+                      </div>
                     </div>
-                    <div id="daPairButtons" class="da-switch-group" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
-                      <button type="button" class="da-switch-btn active" data-pair="BTC/USD">BTC/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="ETH/USD">ETH/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="SOL/USD">SOL/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="BNB/USD">BNB/USD</button>
-                      <button type="button" class="da-switch-btn" data-pair="XRP/USD">XRP/USD</button>
+                    <!-- 顶栏交易对胶囊（与第二行行情卡重复时可隐藏）
+                    <div id="daPairButtons" class="da-switch-group da-chart-head__seg" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
+                      <button type="button" class="da-switch-btn active" data-pair="BTC/USDT">BTC/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="ETH/USDT">ETH/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="SOL/USDT">SOL/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="BNB/USDT">BNB/USDT</button>
+                      <button type="button" class="da-switch-btn" data-pair="XRP/USDT">XRP/USDT</button>
                     </div>
-                    <div id="daTfButtons" class="da-switch-group" data-i18n-aria="aria.tfSwitch" aria-label="切换周期">
+                    -->
+                    <div id="daTfButtons" class="da-switch-group da-chart-head__seg" data-i18n-aria="aria.tfSwitch" aria-label="切换周期">
                       <button type="button" class="da-switch-btn active" data-tf="5m">5m</button>
                       <button type="button" class="da-switch-btn" data-tf="15m">15m</button>
                       <button type="button" class="da-switch-btn" data-tf="1h">1h</button>
                       <button type="button" class="da-switch-btn" data-tf="4h">4h</button>
                       <button type="button" class="da-switch-btn" data-tf="1d">1d</button>
                     </div>
-                    <div class="da-kline-mode-toolbar" role="toolbar" data-i18n-aria="aria.klineChartMode">
+                    <div class="da-kline-mode-toolbar da-chart-head__seg" role="toolbar" data-i18n-aria="aria.klineChartMode">
                       <span class="da-kline-mode-label muted" data-i18n="kline.modeLabel">K 线</span>
                       <button type="button" class="ghost tiny da-kline-mode-btn active" id="daKlineModeLw" data-i18n="kline.modeLw">
-                        Lightweight
+                        轻量图库
                       </button>
                       <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModePanel" data-i18n="kline.modePanel">
-                        面板 K 线
+                        面板原生
                       </button>
-                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG</button>
+                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG 兜底</button>
                     </div>
                   </div>
-                  <div id="daMarketBoard" class="da-market-board"></div>
+                  <div
+                    id="daMarketBoard"
+                    class="da-market-board da-market-board--tickers"
+                    data-i18n-aria="aria.dataTickerStrip"
+                    aria-label="行情快览"
+                  >
+                    <button type="button" class="da-ticker-card" data-board-pair="BTC/USDT" aria-pressed="true">
+                      <span class="da-ticker-card__pair">BTC/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="ETH/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">ETH/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="BNB/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">BNB/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="XRP/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">XRP/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                    <button type="button" class="da-ticker-card" data-board-pair="SOL/USDT" aria-pressed="false">
+                      <span class="da-ticker-card__pair">SOL/USDT</span>
+                      <span class="da-ticker-card__price">—</span>
+                      <span class="da-ticker-card__pct muted">—</span>
+                    </button>
+                  </div>
                   <div class="da-chart-body">
                     <div class="mock-grid"></div>
                     <div id="daKlineStatus" class="da-kline-status hidden" role="status" aria-live="polite"></div>
@@ -111,7 +149,7 @@
 
             <div class="hidden-control">
               <input id="historyStrategy" name="historyStrategy" value="SampleStrategy" autocomplete="off" />
-              <input id="historyPair" name="historyPair" value="BTC/USD" autocomplete="off" />
+              <input id="historyPair" name="historyPair" value="BTC/USDT" autocomplete="off" />
               <input id="historyTf" name="historyTf" value="5m" autocomplete="off" />
               <input id="historyRange" name="historyRange" value="20260324-20260327" autocomplete="off" />
             </div>
@@ -349,14 +387,76 @@
 
 .da-chart-head,
 .da-history-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+  background: rgba(34, 42, 61, 0.5);
+}
+
+.da-history-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  background: rgba(34, 42, 61, 0.5);
+}
+
+/** 第一行：标题+价格、交易对、周期、K 线模式同一行（窄屏横向滚动） */
+.da-chart-head--toolbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/** 周期：与左右区块留出间距 */
+.da-chart-head--toolbar #daTfButtons {
+  padding: 0 clamp(12px, 3vw, 24px);
+  box-sizing: border-box;
+}
+
+/** 顶栏内 K 线模式：紧凑但保留足够点击高度 */
+.da-chart-head--toolbar .da-kline-mode-toolbar {
+  margin-top: 0;
+  gap: 6px;
+  align-items: center;
+}
+
+.da-chart-head--toolbar .da-kline-mode-label {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.da-chart-head--toolbar .da-kline-mode-toolbar .da-kline-mode-btn {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-radius: 7px;
+  padding: 6px 12px;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+
+.da-chart-head--toolbar .da-kline-mode-toolbar .da-kline-mode-btn.active {
+  box-shadow:
+    0 0 0 1px rgba(78, 222, 163, 0.22),
+    0 0 10px rgba(78, 222, 163, 0.14);
+}
+
+.da-chart-head__meta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px 16px;
+  flex-shrink: 0;
+}
+
+.da-chart-head__seg {
+  flex-shrink: 0;
 }
 
 .da-chart-head h3,
@@ -368,6 +468,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .da-switch-group {
@@ -403,6 +504,76 @@
   padding: 10px 12px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.15);
   background: rgba(12, 20, 38, 0.72);
+}
+
+/** 第二行：五档行情卡片，等分一行 */
+.da-market-board--tickers {
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+
+.da-ticker-card {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  margin: 0;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.28);
+  border-radius: 10px;
+  background: rgba(19, 27, 46, 0.88);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.da-ticker-card:hover {
+  border-color: rgba(78, 222, 163, 0.35);
+  background: rgba(24, 34, 58, 0.95);
+}
+
+.da-ticker-card.is-active {
+  border-color: rgba(78, 222, 163, 0.5);
+  box-shadow: 0 0 0 1px rgba(78, 222, 163, 0.12);
+}
+
+.da-ticker-card__pair {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8c90a2;
+}
+
+.da-ticker-card__price {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #f0f3fc;
+  line-height: 1.2;
+}
+
+.da-ticker-card__pct {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.da-ticker-card__pct.muted {
+  color: #8c90a2;
+}
+
+.da-ticker-card__pct.positive {
+  color: #4edea3;
+}
+
+.da-ticker-card__pct.negative {
+  color: #ffb4ab;
 }
 
 .da-market-board .chip {
@@ -594,10 +765,32 @@
   margin-right: 2px;
 }
 
-.da-kline-mode-btn.active {
-  border-color: rgba(78, 222, 163, 0.45);
+/* 仅 K 线模式切换：未选白字深蓝底；选中薄荷绿字 + 绿色细边与微光（不影响其他 ghost 按钮） */
+.da-kline-mode-toolbar .da-kline-mode-btn {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  background: rgba(19, 27, 46, 0.92);
+  color: #f0f3fc;
+  box-shadow: none;
+}
+
+.da-kline-mode-toolbar .da-kline-mode-btn:hover:not(.active) {
+  color: #ffffff;
+  background: rgba(26, 36, 62, 0.96);
+}
+
+.da-kline-mode-toolbar .da-kline-mode-btn.active {
   color: #b8f5d4;
-  background: rgba(78, 222, 163, 0.1);
+  border-color: rgba(78, 222, 163, 0.75);
+  background: rgba(11, 19, 38, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(78, 222, 163, 0.28),
+    0 0 14px rgba(78, 222, 163, 0.2);
 }
 
 .da-kline-mount.fallback-interactive {
@@ -1068,23 +1261,149 @@ import {
   LineChartOutlined,
   UnorderedListOutlined
 } from "@ant-design/icons-vue";
+import { getPanelBinanceBoard, getPanelBinanceKlines } from "../../api/data.js";
+import { HttpError } from "../../utils/http.js";
+import { state, uiState } from "../../store/state-core.js";
+import {
+  pairForBinanceKlinesRequest,
+  parseBinanceKlinesRows,
+  createLwcKline,
+  buildKlineShellHtml,
+  maLegendValues,
+  renderSvgFallbackKline,
+  sortKlineRowsByTime
+} from "./data-panel-kline.js";
+import {
+  drawPanelKlineCanvas,
+  ensurePanelKlineCanvas,
+  disconnectPanelKlineResizeObserver,
+  observePanelKlineResize
+} from "./panel-kline-canvas.js";
 
 let disposePairTf = null;
 let historyEmptyTimer = null;
 
 onMounted(() => {
-  const pairWrap = document.getElementById("daPairButtons");
-  const tfWrap = document.getElementById("daTfButtons");
-  const modeWrap = document.querySelector(".da-kline-mode-toolbar");
-  const ticker = document.getElementById("daSymbolTicker");
-  const klineStatus = document.getElementById("daKlineStatus");
-  const maLayerDemo = document.getElementById("daMaLayerDemo");
-  const klineHintDemo = document.getElementById("daKlineHintDemo");
-  const historyRoot = document.getElementById("availablePairs");
-  const historyEmpty = document.getElementById("daHistoryEmpty");
-  if (!pairWrap || !tfWrap || !modeWrap) return;
+  const dataRoot = document.getElementById("data");
+  if (!dataRoot) return;
+  const pairWrap = dataRoot.querySelector("#daPairButtons");
+  const tfWrap = dataRoot.querySelector("#daTfButtons");
+  const modeWrap = dataRoot.querySelector(".da-kline-mode-toolbar");
+  const ticker = dataRoot.querySelector("#daSymbolTicker");
+  const klineStatus = dataRoot.querySelector("#daKlineStatus");
+  const maLayerDemo = dataRoot.querySelector("#daMaLayerDemo");
+  const klineHintDemo = dataRoot.querySelector("#daKlineHintDemo");
+  const historyRoot = dataRoot.querySelector("#availablePairs");
+  const historyEmpty = dataRoot.querySelector("#daHistoryEmpty");
+  const pairData = dataRoot.querySelector("#pairData");
+  const daDataSource = dataRoot.querySelector("#daDataSource");
+  const marketBoard = dataRoot.querySelector("#daMarketBoard");
+  if (!tfWrap || !modeWrap || !pairData) return;
+
+  let pairSelection =
+    pairWrap?.querySelector("button.da-switch-btn.active")?.getAttribute("data-pair") || "BTC/USDT";
+
+  let boardTimer = null;
+  const BOARD_POLL_MS = 20000;
+
+  const pairToBoardSymbol = (pair) => {
+    const [a, b] = String(pair || "")
+      .split("/")
+      .map((s) => s.trim().toUpperCase());
+    return `${a || "BTC"}${b || "USDT"}`;
+  };
+
+  const formatBoardPrice = (p) => {
+    const n = Number(p);
+    if (!Number.isFinite(n)) return "—";
+    if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    if (n >= 1) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  };
+
+  const syncBoardActive = () => {
+    if (!marketBoard) return;
+    const cur = pairSelection;
+    marketBoard.querySelectorAll(".da-ticker-card").forEach((el) => {
+      const p = el.getAttribute("data-board-pair") || "";
+      const on = p === cur;
+      el.classList.toggle("is-active", on);
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  };
+
+  const applyMarketBoardPayload = (raw) => {
+    if (!marketBoard || !raw || typeof raw !== "object") return;
+    const list = Array.isArray(raw.board) ? raw.board : [];
+    const map = new Map();
+    for (const row of list) {
+      const sym = String(row.symbol || "")
+        .replace(/\//g, "")
+        .toUpperCase();
+      if (sym) map.set(sym, row);
+    }
+    marketBoard.querySelectorAll(".da-ticker-card").forEach((card) => {
+      const p = card.getAttribute("data-board-pair");
+      if (!p) return;
+      const key = pairToBoardSymbol(p);
+      const row = map.get(key);
+      const priceEl = card.querySelector(".da-ticker-card__price");
+      const pctEl = card.querySelector(".da-ticker-card__pct");
+      if (!priceEl || !pctEl) return;
+      if (!row) {
+        priceEl.textContent = "—";
+        pctEl.textContent = "—";
+        pctEl.classList.remove("positive", "negative");
+        pctEl.classList.add("muted");
+        return;
+      }
+      const price = Number(row.lastPrice ?? row.price ?? 0);
+      const pct = Number(row.priceChangePercent ?? row.pct ?? 0);
+      priceEl.textContent = formatBoardPrice(price);
+      pctEl.textContent = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+      pctEl.classList.remove("muted", "positive", "negative");
+      pctEl.classList.add(pct >= 0 ? "positive" : "negative");
+    });
+  };
+
+  const refreshMarketBoard = async () => {
+    if (!canFetchKlines() || !marketBoard) return;
+    try {
+      const raw = await getPanelBinanceBoard();
+      applyMarketBoardPayload(raw);
+    } catch {
+      /* 行情条失败不影响 K 线 */
+    }
+  };
+
+  const onBoardCardClick = (e) => {
+    const card = e.target instanceof Element ? e.target.closest(".da-ticker-card[data-board-pair]") : null;
+    if (!card) return;
+    const p = card.getAttribute("data-board-pair");
+    if (!p) return;
+    pairSelection = p;
+    if (pairWrap) applyActive(pairWrap, "data-pair", p);
+    syncTicker();
+    syncBoardActive();
+    void refreshBinanceKlines();
+  };
+
+  let lwcApi = null;
+  let lastRows = [];
+  let loadGen = 0;
+  let abortCtl = null;
+
+  const disposeLwc = () => {
+    try {
+      lwcApi?.dispose();
+    } catch {
+      // ignore
+    }
+    lwcApi = null;
+  };
 
   const applyActive = (wrap, attr, value) => {
+    if (!wrap) return;
     const buttons = Array.from(wrap.querySelectorAll("button.da-switch-btn"));
     for (const btn of buttons) {
       const on = btn.getAttribute(attr) === value;
@@ -1093,10 +1412,15 @@ onMounted(() => {
     }
   };
 
-  const currentPair = () =>
-    pairWrap.querySelector("button.da-switch-btn.active")?.getAttribute("data-pair") || "BTC/USD";
+  const currentPair = () => pairSelection;
   const currentTf = () =>
     tfWrap.querySelector("button.da-switch-btn.active")?.getAttribute("data-tf") || "5m";
+
+  const renderMode = () => {
+    if (dataRoot.querySelector("#daKlineModeSvg")?.classList.contains("active")) return "svg";
+    if (dataRoot.querySelector("#daKlineModePanel")?.classList.contains("active")) return "panel";
+    return "lw";
+  };
 
   const syncTicker = () => {
     if (!ticker) return;
@@ -1105,13 +1429,165 @@ onMounted(() => {
     ticker.textContent = `${p}_${tf}`;
   };
 
+  const clearKlineError = () => {
+    klineStatus?.classList.add("hidden");
+    klineStatus && (klineStatus.innerHTML = "");
+    klineHintDemo?.classList.add("hidden");
+    maLayerDemo?.classList.add("hidden");
+  };
+
+  const showKlineError = (err) => {
+    const msg =
+      err instanceof HttpError
+        ? `K 线加载失败（${err.status}）`
+        : String(err?.message || err || "K 线加载失败");
+    if (klineStatus) {
+      klineStatus.classList.remove("hidden");
+      klineStatus.innerHTML = `<span>${msg}</span><span class="da-kline-status-actions"><button type="button" class="ghost tiny" id="daKlineRetryBtn">立即重试</button></span>`;
+    }
+    klineHintDemo?.classList.remove("hidden");
+    if (daDataSource) daDataSource.textContent = "数据源：—";
+  };
+
+  const ensureShell = (pair, tf) => {
+    const key = `${pair}\u001f${tf}`;
+    if (pairData.dataset.daShellKey === key && pairData.querySelector("#daKlineMount")) return;
+    const prevMount = pairData.querySelector("#daKlineMount");
+    if (prevMount) disconnectPanelKlineResizeObserver(prevMount);
+    disposeLwc();
+    pairData.dataset.daShellKey = key;
+    pairData.innerHTML = buildKlineShellHtml("MA(7): —", "MA(25): —");
+  };
+
+  const movingAvg = (closes, period) =>
+    closes.map((_, i) => {
+      if (i < period - 1) return null;
+      const win = closes.slice(i - period + 1, i + 1);
+      return win.reduce((s, v) => s + Number(v || 0), 0) / period;
+    });
+
+  const applyRowsToRenderer = (rows) => {
+    const sorted = sortKlineRowsByTime(rows);
+    lastRows = sorted;
+    const mount = pairData.querySelector("#daKlineMount");
+    if (!mount) return;
+    const { ma7Text, ma25Text } = maLegendValues(sorted);
+    const leg7 = pairData.querySelector(".da-ma-legend .ma7");
+    const leg25 = pairData.querySelector(".da-ma-legend .ma25");
+    if (leg7) leg7.textContent = ma7Text;
+    if (leg25) leg25.textContent = ma25Text;
+
+    const closes = sorted.map((r) => Number(r[4] || 0));
+    const ma7 = movingAvg(closes, 7);
+    const ma25 = movingAvg(closes, 25);
+    const pairLabel = currentPair();
+    const tfLabel = currentTf();
+
+    const mode = renderMode();
+    if (mode === "lw") {
+      disconnectPanelKlineResizeObserver(mount);
+      mount.innerHTML = "";
+      if (!lwcApi) lwcApi = createLwcKline(mount);
+      lwcApi.setCandleRows(sorted);
+    } else if (mode === "panel") {
+      disposeLwc();
+      const cv = ensurePanelKlineCanvas(mount);
+      const drawPanel = () => {
+        drawPanelKlineCanvas(cv, {
+          mini: sorted,
+          viewStart: 0,
+          viewEnd: sorted.length,
+          ma7,
+          ma25,
+          pair: pairLabel,
+          tf: tfLabel
+        });
+      };
+      drawPanel();
+      observePanelKlineResize(mount, drawPanel);
+    } else {
+      disconnectPanelKlineResizeObserver(mount);
+      disposeLwc();
+      mount.innerHTML = sorted.length ? renderSvgFallbackKline(sorted, ma7, ma25) : "";
+    }
+  };
+
+  const updateHeaderFromRows = (rows) => {
+    const ordered = sortKlineRowsByTime(rows);
+    const latest = ordered[ordered.length - 1];
+    const prev = ordered[ordered.length - 2];
+    const close = Number(latest?.[4] || 0);
+    const prevClose = Number(prev?.[4] || close || 1);
+    const pct = prevClose ? ((close - prevClose) / prevClose) * 100 : 0;
+    const priceNow = dataRoot.querySelector("#daPriceNow");
+    const priceChg = dataRoot.querySelector("#daPriceChg");
+    if (priceNow) {
+      priceNow.textContent = close
+        ? close.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : "—";
+    }
+    if (priceChg) {
+      priceChg.textContent = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+      priceChg.classList.toggle("positive", pct >= 0);
+      priceChg.classList.toggle("negative", pct < 0);
+    }
+  };
+
+  const canFetchKlines = () =>
+    Boolean(uiState.authed && String(state.password || "").trim().length > 0);
+
+  const refreshBinanceKlines = async () => {
+    if (!canFetchKlines()) return;
+    const pair = currentPair();
+    const tf = currentTf();
+    syncTicker();
+    ensureShell(pair, tf);
+
+    abortCtl?.abort();
+    abortCtl = new AbortController();
+    const myGen = ++loadGen;
+
+    try {
+      const raw = await getPanelBinanceKlines(
+        {
+          pair: pairForBinanceKlinesRequest(pair),
+          timeframe: tf,
+          limit: 500
+        },
+        { signal: abortCtl.signal }
+      );
+      if (myGen !== loadGen) return;
+      const rows = parseBinanceKlinesRows(raw);
+      if (!rows.length) throw new Error("接口返回的 K 线为空");
+      updateHeaderFromRows(rows);
+      applyRowsToRenderer(rows);
+      syncBoardActive();
+      clearKlineError();
+      if (daDataSource) daDataSource.textContent = "数据源：BOVIN_BINANCE";
+    } catch (e) {
+      if (e?.name === "AbortError") return;
+      if (myGen !== loadGen) return;
+      disposeLwc();
+      const mount = pairData.querySelector("#daKlineMount");
+      if (mount) {
+        disconnectPanelKlineResizeObserver(mount);
+        mount.innerHTML = "";
+      }
+      lastRows = [];
+      showKlineError(e);
+    }
+  };
+
   const onPairClick = (e) => {
     const btn = e.target instanceof Element ? e.target.closest("button.da-switch-btn[data-pair]") : null;
     if (!btn) return;
     const value = btn.getAttribute("data-pair");
     if (!value) return;
-    applyActive(pairWrap, "data-pair", value);
+    pairSelection = value;
+    if (pairWrap) applyActive(pairWrap, "data-pair", value);
     syncTicker();
+    syncBoardActive();
+    void refreshBinanceKlines();
   };
 
   const onTfClick = (e) => {
@@ -1121,9 +1597,11 @@ onMounted(() => {
     if (!value) return;
     applyActive(tfWrap, "data-tf", value);
     syncTicker();
+    void refreshBinanceKlines();
   };
 
   const onModeClick = (e) => {
+    if (!modeWrap) return;
     const btn = e.target instanceof Element ? e.target.closest("button.da-kline-mode-btn") : null;
     if (!btn) return;
     const buttons = Array.from(modeWrap.querySelectorAll("button.da-kline-mode-btn"));
@@ -1132,35 +1610,31 @@ onMounted(() => {
       b.classList.toggle("active", on);
       b.setAttribute("aria-pressed", on ? "true" : "false");
     }
-    syncModePanel();
-  };
-
-  const syncModePanel = () => {
-    if (!klineStatus) return;
-    const lwActive = document.getElementById("daKlineModeLw")?.classList.contains("active");
-    if (lwActive) {
-      klineStatus.classList.remove("hidden");
-      maLayerDemo?.classList.remove("hidden");
-      klineHintDemo?.classList.remove("hidden");
-      klineStatus.innerHTML =
-        '<span>实时数据源不可达，当前未获取到可渲染 K 线</span><span class="da-kline-status-actions"><button type="button" class="ghost tiny" id="daKlineRetryBtn">立即重试</button></span>';
-    } else {
-      klineStatus.classList.add("hidden");
-      maLayerDemo?.classList.add("hidden");
-      klineHintDemo?.classList.add("hidden");
-      klineStatus.textContent = "";
-    }
+    if (lastRows.length) applyRowsToRenderer(lastRows);
+    else void refreshBinanceKlines();
   };
 
   const onRetryClick = (e) => {
     const btn =
       e.target instanceof Element ? e.target.closest("#daKlineRetryBtn, #daKlineRetryBtnMini") : null;
     if (!btn) return;
-    btn.textContent = "重试中...";
-    window.setTimeout(() => {
+    if (!canFetchKlines()) return;
+    btn.textContent = "重试中…";
+    void refreshBinanceKlines().finally(() => {
       btn.textContent = "立即重试";
-    }, 800);
+    });
   };
+
+  const tryRefreshKlinesIfAuthed = () => {
+    if (!canFetchKlines()) return;
+    void refreshBinanceKlines();
+    void refreshMarketBoard();
+    if (boardTimer != null) window.clearInterval(boardTimer);
+    boardTimer = window.setInterval(() => void refreshMarketBoard(), BOARD_POLL_MS);
+  };
+
+  const onPanelAuthed = () => tryRefreshKlinesIfAuthed();
+  window.addEventListener("bovin-panel-auth", onPanelAuthed);
 
   const syncHistoryEmptyState = () => {
     if (!historyRoot || !historyEmpty) return;
@@ -1181,26 +1655,40 @@ onMounted(() => {
     historyEmpty.classList.toggle("hidden", hasData);
   };
 
-  pairWrap.addEventListener("click", onPairClick);
-  tfWrap.addEventListener("click", onTfClick);
-  modeWrap.addEventListener("click", onModeClick);
+  pairWrap?.addEventListener("click", onPairClick);
+  tfWrap?.addEventListener("click", onTfClick);
+  modeWrap?.addEventListener("click", onModeClick);
+  marketBoard?.addEventListener("click", onBoardCardClick);
   klineStatus?.addEventListener("click", onRetryClick);
   klineHintDemo?.addEventListener("click", onRetryClick);
   syncTicker();
-  syncModePanel();
+  syncBoardActive();
+  clearKlineError();
   syncHistoryEmptyState();
   historyEmptyTimer = window.setInterval(syncHistoryEmptyState, 1000);
+  tryRefreshKlinesIfAuthed();
 
   disposePairTf = () => {
-    pairWrap.removeEventListener("click", onPairClick);
-    tfWrap.removeEventListener("click", onTfClick);
-    modeWrap.removeEventListener("click", onModeClick);
+    if (boardTimer != null) {
+      window.clearInterval(boardTimer);
+      boardTimer = null;
+    }
+    marketBoard?.removeEventListener("click", onBoardCardClick);
+    const km = pairData.querySelector("#daKlineMount");
+    if (km) disconnectPanelKlineResizeObserver(km);
+    window.removeEventListener("bovin-panel-auth", onPanelAuthed);
+    pairWrap?.removeEventListener("click", onPairClick);
+    tfWrap?.removeEventListener("click", onTfClick);
+    modeWrap?.removeEventListener("click", onModeClick);
     klineStatus?.removeEventListener("click", onRetryClick);
     klineHintDemo?.removeEventListener("click", onRetryClick);
     if (historyEmptyTimer != null) {
       window.clearInterval(historyEmptyTimer);
       historyEmptyTimer = null;
     }
+    abortCtl?.abort();
+    abortCtl = null;
+    disposeLwc();
   };
 });
 
