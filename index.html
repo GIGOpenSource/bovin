@@ -23,11 +23,11 @@
   </head>
   <body>
     <div id="loginScreen" class="login-screen">
-      <form id="loginForm" class="login-card">
+      <form id="loginForm" class="login-card" method="post" action="#">
         <div class="login-title" data-i18n="login.title">Bovin</div>
         <div class="login-sub" data-i18n="login.sub">面板登录</div>
-        <label><span data-i18n="login.username">用户名</span><input id="loginUsername" name="username" type="text" autocomplete="username" required /></label>
-        <label><span data-i18n="login.password">密码</span><input id="loginPassword" name="password" type="password" autocomplete="current-password" required /></label>
+        <label><span data-i18n="login.username">用户名</span><input id="loginUsername" name="username" type="text" autocomplete="username" value="admin" required /></label>
+        <label><span data-i18n="login.password">密码</span><input id="loginPassword" name="password" type="password" autocomplete="current-password" value="admin" required /></label>
         <button type="submit" class="primary" data-i18n="login.submit">登录</button>
         <div id="loginError" class="login-error"></div>
       </form>

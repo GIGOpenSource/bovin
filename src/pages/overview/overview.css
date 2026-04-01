@@ -7,6 +7,7 @@
   font-size: 38px;
   letter-spacing: -0.03em;
   padding-right: 0.08em;
+  color: var(--text);
 }
 
 .ft-page-hero__kicker,
@@ -23,15 +24,15 @@
 .ds-mini-metrics > div {
   min-width: 88px;
   border-radius: 8px;
-  border: 1px solid rgba(62, 85, 135, 0.42);
-  background: rgba(13, 24, 45, 0.9);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
+  background: var(--ft-panel-surface-inset);
   padding: 8px 10px;
 }
 
 .ds-mini-metrics > div span {
   display: block;
   font-size: 10px;
-  color: #96a8d8;
+  color: var(--text-dim);
 }
 
 .ds-mini-metrics > div strong {
@@ -39,7 +40,7 @@
   margin-top: 2px;
   font-size: 32px;
   line-height: 1;
-  color: #dbe7ff;
+  color: var(--text);
 }
 
 .ds-dashboard-grid {
@@ -64,8 +65,8 @@
 
 .ds-card,
 .ds-telemetry {
-  background: linear-gradient(180deg, rgba(13, 24, 47, 0.94), rgba(12, 20, 38, 0.92));
-  border: 1px solid rgba(53, 78, 128, 0.42);
+  background: var(--ft-card-surface);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
   border-radius: 12px;
   padding: 12px 14px;
 }
@@ -87,7 +88,7 @@
   align-items: center;
   font-size: 12px;
   font-weight: 600;
-  color: #a6b6e4;
+  color: var(--text-dim);
 }
 
 .ds-card-top em {
@@ -98,7 +99,8 @@
 
 .ds-card-top em.muted {
   font-weight: 600;
-  color: #7a87ad;
+  color: var(--text-dim);
+  opacity: 0.92;
 }
 
 .ds-card-value {
@@ -108,6 +110,7 @@
   font-size: 34px;
   font-weight: 800;
   letter-spacing: -0.03em;
+  color: var(--text);
 }
 
 .ds-card svg {
@@ -115,13 +118,13 @@
   width: 100%;
   height: 42px;
   fill: none;
-  stroke: rgba(78, 222, 163, 0.9);
+  stroke: var(--secondary);
   stroke-width: 1.8;
 }
 
 .ds-risk {
-  background: linear-gradient(180deg, rgba(30, 41, 71, 0.9), rgba(27, 38, 67, 0.88));
-  border: 1px solid rgba(64, 88, 136, 0.45);
+  background: var(--ft-card-surface);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
   border-radius: 12px;
   padding: 12px 14px;
   min-height: 74px;
@@ -139,18 +142,19 @@
   font-family: var(--ft-font-display);
   font-size: 15px;
   font-weight: 700;
+  color: var(--text);
 }
 
 .ds-risk-head span {
   display: block;
   font-size: 10px;
-  color: #95a8dc;
+  color: var(--text-dim);
 }
 
 .ds-risk-head b {
   font-size: 22px;
   font-family: var(--ft-font-display);
-  color: #c3d3ff;
+  color: var(--text);
 }
 
 .ds-risk-cells {
@@ -160,8 +164,8 @@
 }
 
 .ds-risk-cells .cell {
-  background: rgba(15, 24, 45, 0.8);
-  border: 1px solid rgba(65, 85, 128, 0.36);
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 9px;
   padding: 10px;
 }
@@ -178,6 +182,7 @@
   margin-top: 6px;
   font-size: 24px;
   font-family: var(--ft-font-display);
+  color: var(--text);
 }
 
 .ds-risk-cells .bar {
@@ -197,8 +202,12 @@
   background: rgba(var(--ft-accent-rgb), 0.88);
 }
 
-.ds-risk-cells .bar i.sec { background: #4edea3; }
-.ds-risk-cells .bar i.dim { background: rgba(218, 226, 253, 0.45); }
+.ds-risk-cells .bar i.sec {
+  background: var(--secondary);
+}
+.ds-risk-cells .bar i.dim {
+  background: rgba(var(--ft-line-rgb), 0.38);
+}
 
 .ds-telemetry {
   min-height: 74px;
@@ -209,7 +218,7 @@
   font-family: var(--ft-font-display);
   font-size: 14px;
   font-weight: 700;
-  color: #d8e3ff;
+  color: var(--text);
 }
 
 .ds-telemetry .mono {
@@ -218,13 +227,13 @@
   max-height: 72px;
   overflow: auto;
   font-size: 11px;
-  color: #a8b7df;
+  color: var(--text-dim);
 }
 
 .ds-sysinfo {
   margin: 0;
   font-size: 13px;
-  color: #dbe7ff;
+  color: var(--text);
   line-height: 1.45;
 }
 
@@ -235,7 +244,7 @@
 .ds-sysinfo-unavailable {
   margin: 0;
   font-size: 13px;
-  color: #7a87ad;
+  color: var(--text-dim);
 }
 
 .ds-sysinfo-row {
@@ -243,7 +252,7 @@
   grid-template-columns: minmax(96px, 34%) 1fr;
   gap: 8px 12px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(62, 85, 135, 0.28);
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
   align-items: start;
 }
 
@@ -259,7 +268,7 @@
 .ds-sysinfo-k {
   font-size: 13px;
   font-weight: 600;
-  color: #96a8d8;
+  color: var(--text-dim);
   line-height: 1.4;
 }
 
@@ -270,7 +279,7 @@
 .ds-sysinfo-main {
   font-size: 14px;
   font-weight: 600;
-  color: #e8eeff;
+  color: var(--text);
   word-break: break-word;
 }
 
@@ -285,14 +294,14 @@
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.45;
-  color: #7a87ad;
+  color: var(--text-dim);
 }
 
 .ds-sysinfo-percore {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.55;
-  color: #c4d0f0;
+  color: var(--text-dim);
 }
 
 .ds-strategy-table {
@@ -309,7 +318,7 @@
   align-items: center;
   padding: 10px 14px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  background: rgba(14, 24, 45, 0.88);
+  background: var(--ft-panel-head-bg-soft);
 }
 
 .ds-strategy-table .head h3 {
@@ -317,11 +326,12 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  color: var(--text);
 }
 
 .ds-strategy-table .head .right {
   font-size: 11px;
-  color: #91a4d5;
+  color: var(--text-dim);
 }
 
 .ds-strategy-table tbody tr.ds-strategy-table-empty td {
