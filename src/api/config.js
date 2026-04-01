@@ -44,18 +44,17 @@ export function isPrivateOrLoopbackLanIPv4(hostname) {
 }
 
 /**
- * HTTP 开发场景下常用聚合 …/api/v1 基址（与当前页 host 协议/网段相关）。
+ * HTTP 开发场景下常用聚合 …/api/v1 基址。
+ * Vite 开发时走当前页同源 `/api/v1`（由 dev server 代理到机器人），避免浏览器 CORS；构建产物或非 dev 仍回退到 default-api-base。
  */
 export function httpDevProxyBase() {
   try {
-    if (typeof location !== "undefined" && location.protocol === "http:") {
+    if (import.meta.env?.DEV === true && typeof location !== "undefined" && location.protocol === "http:") {
       const host = String(location.hostname || "");
       const hl = host.toLowerCase();
-      if (hl === "localhost" || hl === "127.0.0.1" || hl === "[::1]") {
-        return LOCAL_API_PROXY_BASE.replace(/\/+$/, "");
-      }
-      if (isPrivateOrLoopbackLanIPv4(host)) {
-        return LOCAL_API_PROXY_BASE.replace(/\/+$/, "");
+      if (hl === "localhost" || hl === "127.0.0.1" || hl === "[::1]" || isPrivateOrLoopbackLanIPv4(host)) {
+        const same = sameOriginApiV1Base();
+        if (same) return same.replace(/\/+$/, "");
       }
     }
   } catch {
@@ -168,6 +167,36 @@ export function httpNeedsDevProxyFallback() {
 /**
  * POST /panel/* 须到达真实 API；本地静态页同源 …/api/v1 常返回 501。HTTP 开发时把已知代理基址提前。
  */
+/**
+ * 设置里填了公网/远端 …/api/v1 时，Vite dev 下仍优先走同源代理，避免 CORS。
+ * @param {string[]} bases
+ */
+function prependSameOriginInViteDev(bases) {
+  const arr = Array.isArray(bases) ? [...bases] : [];
+  try {
+    if (import.meta.env?.DEV !== true || typeof location === "undefined" || location.protocol !== "http:") {
+      return arr;
+    }
+    if (!httpNeedsDevProxyFallback()) return arr;
+    const same = sameOriginApiV1Base();
+    if (!same) return arr;
+    const pageOrigin = location.origin;
+    const sameNorm = same.replace(/\/+$/, "").toLowerCase();
+    const hasCrossOrigin = arr.some((b) => {
+      try {
+        return new URL(String(b).trim().replace(/\/+$/, "")).origin !== pageOrigin;
+      } catch {
+        return false;
+      }
+    });
+    if (!hasCrossOrigin) return arr;
+    const rest = arr.filter((b) => String(b).replace(/\/+$/, "").toLowerCase() !== sameNorm);
+    return [same.replace(/\/+$/, ""), ...rest];
+  } catch {
+    return arr;
+  }
+}
+
 export function reorderBasesForPanelPost(bases) {
   const arr = Array.isArray(bases) ? bases.filter(Boolean) : [];
   if (!arr.length) return arr;
@@ -230,7 +259,7 @@ export function apiUrlBasesCandidates() {
   } catch {
     // ignore
   }
-  return bases;
+  return prependSameOriginInViteDev(bases);
 }
 
 export function apiUrlBases() {
@@ -244,6 +273,24 @@ export function apiUrlBases() {
       preferred.toLowerCase().startsWith("http:")
     ) {
       preferred = "";
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    if (
+      import.meta.env?.DEV === true &&
+      httpNeedsDevProxyFallback() &&
+      preferred &&
+      typeof location !== "undefined"
+    ) {
+      const same = sameOriginApiV1Base();
+      if (same) {
+        const po = location.origin;
+        const prefO = new URL(String(preferred).trim().replace(/\/+$/, "")).origin;
+        const sameO = new URL(String(same).trim().replace(/\/+$/, "")).origin;
+        if (prefO !== po && sameO === po) preferred = "";
+      }
     }
   } catch {
     // ignore
