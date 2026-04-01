@@ -21,6 +21,8 @@ import { i18n } from "./i18n/index.js";
 import {
   buildSparkPolylinePath,
   extractBalanceTotal,
+  extractBalanceFreeSum,
+  seriesBalanceFreeSpark,
   pickStakeCurrency,
   seriesNetWorth,
   seriesDailyAbsProfit,
@@ -174,6 +176,7 @@ async function panelTick() {
 
     const stake = pickStakeCurrency(balancePayload, dailyPayload);
     const balTotal = extractBalanceTotal(balancePayload);
+    const balFree = extractBalanceFreeSum(balancePayload);
 
     const kpiNet = $("kpiNetWorth");
     if (kpiNet) {
@@ -216,6 +219,19 @@ async function panelTick() {
     const sp3 = $("kpiSpark3");
     if (sp3) sp3.setAttribute("d", buildSparkPolylinePath(seriesDrawdownPercent(eqSer)));
 
+    const kpiBal = $("kpiBalance");
+    if (kpiBal) {
+      if (balFree != null && Number.isFinite(balFree)) {
+        kpiBal.textContent = `${balFree.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
+        kpiBal.classList.remove("positive", "negative");
+      } else {
+        kpiBal.textContent = "—";
+        kpiBal.classList.remove("positive", "negative");
+      }
+    }
+    const sp4 = $("kpiSpark4");
+    if (sp4) sp4.setAttribute("d", buildSparkPolylinePath(seriesBalanceFreeSpark(balFree)));
+
     uiState.lastPing = pingOk ? { status: "pong" } : { status: "down" };
 
     const kpiBot = $("kpiBotStatus");
@@ -245,6 +261,25 @@ async function panelTick() {
       kpi3Em.textContent = t("overview.kpi.riskUnconfigured");
       kpi3Em.classList.remove("muted", "negative");
       kpi3Em.classList.add("positive");
+    }
+
+    const kpi4Em = $("kpiCard4Em");
+    if (kpi4Em) {
+      kpi4Em.classList.remove("positive", "negative");
+      kpi4Em.classList.add("muted");
+      if (
+        balTotal != null &&
+        balFree != null &&
+        Number.isFinite(balTotal) &&
+        Number.isFinite(balFree) &&
+        balTotal > 0
+      ) {
+        kpi4Em.textContent = tReplace("overview.kpi.balanceRatioLine", {
+          pct: ((balFree / balTotal) * 100).toFixed(1)
+        });
+      } else {
+        kpi4Em.textContent = t("overview.kpi.balanceHint");
+      }
     }
 
     renderOverviewSysinfoInto($("sysinfo"), uiState.lastSysinfo, t, tReplace, uiState.lastHealth);

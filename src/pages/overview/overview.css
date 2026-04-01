@@ -50,8 +50,13 @@
   margin-bottom: 0;
 }
 
-.ds-top-cards {
-  display: contents;
+/* 仅首行四张 KPI 等分；整页仍为 3 列，下方风险/本机 2:1 不变 */
+.ds-kpi-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
 }
 
 .ds-risk {
@@ -75,7 +80,7 @@
   min-height: 180px;
 }
 
-.ds-dashboard-grid > .ds-card,
+.ds-kpi-row > .ds-card,
 .ds-dashboard-grid > .ds-risk,
 .ds-dashboard-grid > .ds-telemetry {
   min-width: 0;
@@ -347,6 +352,10 @@
   }
 
   .ds-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ds-kpi-row {
     grid-template-columns: 1fr;
   }
 

@@ -1,5 +1,5 @@
 /**
- * 概览三张 KPI 卡：解析 GET /balance、/daily、/profit、/count 的常用字段并生成 SVG 折线路径。
+ * 概览 KPI 卡：解析 GET /balance、/daily、/profit、/count 的常用字段并生成 SVG 折线路径。
  * 与 Freqtrade / Bovin 转发形态兼容多种键名。
  */
 
@@ -53,6 +53,33 @@ export function extractBalanceTotal(balance) {
     }
   }
   return any ? sum : null;
+}
+
+/** 可用余额：顶层 free 或各币种 free 字段之和（未冻结部分） */
+export function extractBalanceFreeSum(balance) {
+  if (!balance || typeof balance !== "object") return null;
+  const b = /** @type {Record<string, unknown>} */ (balance);
+  const topFree = Number(b.free);
+  if (Number.isFinite(topFree) && topFree >= 0) return topFree;
+  const cur = Array.isArray(b.currencies) ? b.currencies : [];
+  let sum = 0;
+  let any = false;
+  for (const c of cur) {
+    if (!c || typeof c !== "object") continue;
+    const row = /** @type {Record<string, unknown>} */ (c);
+    const f = Number(row.free);
+    if (Number.isFinite(f) && f >= 0) {
+      sum += f;
+      any = true;
+    }
+  }
+  return any ? sum : null;
+}
+
+/** 无历史序列时用当前可用余额两点，供迷你走势图 */
+export function seriesBalanceFreeSpark(freeTotal) {
+  if (freeTotal == null || !Number.isFinite(freeTotal)) return [];
+  return [freeTotal * 0.997, freeTotal];
 }
 
 /** @param {unknown} balance @param {unknown} daily */

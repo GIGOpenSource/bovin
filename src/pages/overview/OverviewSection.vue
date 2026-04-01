@@ -16,7 +16,7 @@
             </header>
 
             <div class="ds-dashboard-grid">
-              <div class="ds-top-cards">
+              <div class="ds-kpi-row">
                 <article class="ds-card">
                   <div class="ds-card-top"><span id="kpiCard1Title" data-i18n="overview.kpi.netValue">净资产</span><em id="kpiBotStatus" class="muted">—</em></div>
                   <div class="ds-card-value" id="kpiNetWorth">—</div>
@@ -31,6 +31,11 @@
                   <div class="ds-card-top"><span id="kpiCard3Title" data-i18n="overview.kpi.drawdown">最大回撤</span><em id="kpiCard3Em" class="muted" data-i18n="overview.kpi.riskUnconfigured">在策略配置中设置上限/阈值</em></div>
                   <div class="ds-card-value negative" id="kpiMaxDrawdown">—</div>
                   <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark3" d="M0 10 L100 10"></path></svg>
+                </article>
+                <article class="ds-card">
+                  <div class="ds-card-top"><span id="kpiCard4Title" data-i18n="overview.kpi.balance">余额</span><em id="kpiCard4Em" class="muted" data-i18n="overview.kpi.balanceHint">各币种可用（free）合计</em></div>
+                  <div class="ds-card-value" id="kpiBalance">—</div>
+                  <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark4" d="M0 10 L100 10"></path></svg>
                 </article>
               </div>
               <article class="ds-risk">
