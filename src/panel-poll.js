@@ -2,7 +2,6 @@
  * 与历史根目录 main.js 中概览轮询（xr）及控制台卡片刷新同向的轻量实现：
  * 拉取核心 REST，写入 uiState，更新 KPI / sysinfo，并调用 control-console 渲染策略卡。
  */
-import { http } from "./utils/http.js";
 import { state, uiState } from "./store/state-core.js";
 import {
   getPing,
@@ -13,10 +12,26 @@ import {
   getSysinfo,
   getStatus,
   getPanelStrategies,
-  getPanelAiOverview
+  getPanelAiOverview,
+  getDaily
 } from "./api/overview.js";
+import { getBalance } from "./api/positions.js";
 import { renderControlHeroAndCards } from "./components/control-console.js";
 import { i18n } from "./i18n/index.js";
+import {
+  buildSparkPolylinePath,
+  extractBalanceTotal,
+  pickStakeCurrency,
+  seriesNetWorth,
+  seriesDailyAbsProfit,
+  seriesDrawdownPercent,
+  extractMaxDrawdownPercent,
+  formatOpenPositionsSubtitle,
+  computeWinRatePercent,
+  lastDayAbsProfit
+} from "./utils/overview-kpi.js";
+import { applyOverviewStrategiesTable } from "./utils/overview-strategies-table.js";
+import { renderOverviewSysinfoInto } from "./utils/overview-sysinfo-html.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -110,15 +125,28 @@ async function panelTick() {
     uiState.lastPingLatencyMs = performance.now() - pingStarted;
     uiState.lastPingOk = pingOk;
 
-    const [sc, health, count, profit, sysinfo, strategies, aiOverview] = await Promise.allSettled([
+    const settled = await Promise.allSettled([
       getShowConfig(),
       getHealth(),
       getCount(),
       getProfit(),
       getSysinfo(),
       getPanelStrategies(),
-      getPanelAiOverview()
+      getPanelAiOverview(),
+      /** 净资产 / 日收益卡：与 profit 同周期轮询，mock 模式下也请求真实接口（与其它 KPI 一致可刷新） */
+      getBalance(),
+      getDaily(14)
     ]);
+
+    const sc = settled[0];
+    const health = settled[1];
+    const count = settled[2];
+    const profit = settled[3];
+    const sysinfo = settled[4];
+    const strategies = settled[5];
+    const aiOverview = settled[6];
+    const balanceR = settled[7];
+    const dailyR = settled[8];
 
     if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
@@ -134,61 +162,97 @@ async function panelTick() {
       uiState.panelStrategyList = strategies.value.strategies;
     }
     if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
+    if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
+    if (dailyR.status === "fulfilled" && dailyR.value != null) uiState.lastDaily = dailyR.value;
 
     const y = uiState.lastCount && typeof uiState.lastCount === "object" ? uiState.lastCount : {};
     const b = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
+    const dailyPayload =
+      uiState.lastDaily && typeof uiState.lastDaily === "object" ? uiState.lastDaily : {};
+    const balancePayload =
+      uiState.lastBalance && typeof uiState.lastBalance === "object" ? uiState.lastBalance : {};
 
-    const kpiOpen = $("kpiOpenTrades");
-    if (kpiOpen) kpiOpen.textContent = y.current ?? y.open_trades ?? "-";
+    const stake = pickStakeCurrency(balancePayload, dailyPayload);
+    const balTotal = extractBalanceTotal(balancePayload);
+
+    const kpiNet = $("kpiNetWorth");
+    if (kpiNet) {
+      if (balTotal != null && Number.isFinite(balTotal)) {
+        kpiNet.textContent = `${balTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
+        kpiNet.classList.remove("positive", "negative");
+      } else {
+        kpiNet.textContent = "—";
+        kpiNet.classList.remove("positive", "negative");
+      }
+    }
 
     const kpiProfit = $("kpiProfit");
     if (kpiProfit) {
-      const O = Number(
-        b.profit_all_coin ??
-          b.profit_all_fiat ??
-          b.profit_closed_coin ??
-          b.profit_closed_fiat ??
-          b.profit_total_abs ??
-          b.closed_profit ??
-          0
-      );
-      kpiProfit.textContent = `${O.toFixed(2)}`;
+      const dayP = lastDayAbsProfit(dailyPayload);
+      const O = dayP != null ? dayP : 0;
+      kpiProfit.textContent = `${O >= 0 ? "+" : ""}${O.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
       kpiProfit.classList.remove("positive", "negative");
       kpiProfit.classList.add(O >= 0 ? "positive" : "negative");
     }
+
+    const kpiDd = $("kpiMaxDrawdown");
+    if (kpiDd) {
+      const ddp = extractMaxDrawdownPercent(b);
+      if (ddp != null && Number.isFinite(ddp)) {
+        kpiDd.textContent = `${Math.abs(ddp).toFixed(2)}%`;
+        kpiDd.classList.remove("positive");
+        kpiDd.classList.add("negative");
+      } else {
+        kpiDd.textContent = "—";
+        kpiDd.classList.remove("positive", "negative");
+      }
+    }
+
+    const sp1 = $("kpiSpark1");
+    if (sp1) sp1.setAttribute("d", buildSparkPolylinePath(seriesNetWorth(dailyPayload, balTotal)));
+    const sp2 = $("kpiSpark2");
+    if (sp2) sp2.setAttribute("d", buildSparkPolylinePath(seriesDailyAbsProfit(dailyPayload)));
+    const eqSer = seriesNetWorth(dailyPayload, balTotal);
+    const sp3 = $("kpiSpark3");
+    if (sp3) sp3.setAttribute("d", buildSparkPolylinePath(seriesDrawdownPercent(eqSer)));
 
     uiState.lastPing = pingOk ? { status: "pong" } : { status: "down" };
 
     const kpiBot = $("kpiBotStatus");
     if (kpiBot) {
-      kpiBot.textContent = state.mockMode
-        ? uiState.lastPing.status || "unknown"
-        : pingOk
-          ? "pong"
-          : "down";
+      kpiBot.classList.remove("muted", "positive", "negative");
+      kpiBot.classList.add("muted");
+      kpiBot.textContent = tReplace("overview.kpi.openPositionsLine", {
+        slot: formatOpenPositionsSubtitle(y)
+      });
     }
 
-    const sysEl = $("sysinfo");
-    if (sysEl && uiState.lastSysinfo != null) {
-      const raw = uiState.lastSysinfo;
-      sysEl.textContent =
-        typeof raw === "object" ? JSON.stringify(raw, null, 2) : String(raw);
+    const kpi2Em = $("kpiCard2Em");
+    if (kpi2Em) {
+      const wr = computeWinRatePercent(dailyPayload);
+      kpi2Em.classList.remove("muted", "positive", "negative");
+      if (wr == null || !Number.isFinite(wr)) {
+        kpi2Em.classList.add("muted");
+        kpi2Em.textContent = "—";
+      } else {
+        kpi2Em.textContent = tReplace("overview.kpi.winRateLine", { pct: wr.toFixed(1) });
+        kpi2Em.classList.add(wr >= 50 ? "positive" : "negative");
+      }
     }
+
+    const kpi3Em = $("kpiCard3Em");
+    if (kpi3Em) {
+      kpi3Em.textContent = t("overview.kpi.riskUnconfigured");
+      kpi3Em.classList.remove("muted", "negative");
+      kpi3Em.classList.add("positive");
+    }
+
+    renderOverviewSysinfoInto($("sysinfo"), uiState.lastSysinfo, t, tReplace, uiState.lastHealth);
 
     const heroLatency = $("heroLatency");
     if (heroLatency) heroLatency.textContent = `${Math.round(uiState.lastPingLatencyMs)}ms`;
 
     applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
-
-    let daily = uiState.lastDaily;
-    if (!state.mockMode) {
-      try {
-        daily = await http.get("/daily?timescale=14");
-        uiState.lastDaily = daily;
-      } catch {
-        /* 保留上次 */
-      }
-    }
 
     try {
       const st = await getStatus();
@@ -197,13 +261,27 @@ async function panelTick() {
       /* ignore */
     }
 
+    const showCfg =
+      uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
+    const profitObj =
+      uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
+
     renderControlHeroAndCards(
-      daily && typeof daily === "object" ? daily : {},
-      uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {},
-      uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {},
+      dailyPayload,
+      showCfg,
+      profitObj,
       uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {},
       uiState.lastProxyHealth,
       uiState.strategyBotSnapshots || {}
+    );
+
+    applyOverviewStrategiesTable(
+      showCfg,
+      profitObj,
+      y,
+      uiState.lastStForRisk || [],
+      t,
+      tReplace
     );
   } catch {
     /* 单次失败不打断轮询 */

@@ -8,6 +8,9 @@ export const getHealth = () => http.get("/health");
 export const getSysinfo = () => http.get("/sysinfo");
 export const getProfit = () => http.get("/profit");
 export const getCount = () => http.get("/count");
+/** 日统计序列，供概览日收益卡与走势（默认近 14 根） */
+export const getDaily = (timescale = 14) =>
+  http.get(`/daily?timescale=${encodeURIComponent(String(timescale))}`);
 export const getStatus = () => http.get("/status");
 export const getShowConfig = () => http.get("/show_config");
 export const getPanelStrategies = () => http.get("/panel/strategies");

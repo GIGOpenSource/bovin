@@ -96,6 +96,11 @@
   font-size: 12px;
 }
 
+.ds-card-top em.muted {
+  font-weight: 600;
+  color: #7a87ad;
+}
+
 .ds-card-value {
   margin-top: 8px;
   min-height: 42px;
@@ -216,6 +221,80 @@
   color: #a8b7df;
 }
 
+.ds-sysinfo {
+  margin: 0;
+  font-size: 13px;
+  color: #dbe7ff;
+  line-height: 1.45;
+}
+
+.ds-sysinfo--empty {
+  min-height: 44px;
+}
+
+.ds-sysinfo-unavailable {
+  margin: 0;
+  font-size: 13px;
+  color: #7a87ad;
+}
+
+.ds-sysinfo-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 34%) 1fr;
+  gap: 8px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(62, 85, 135, 0.28);
+  align-items: start;
+}
+
+.ds-sysinfo-row:first-of-type {
+  padding-top: 2px;
+}
+
+.ds-sysinfo-row--last {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.ds-sysinfo-k {
+  font-size: 13px;
+  font-weight: 600;
+  color: #96a8d8;
+  line-height: 1.4;
+}
+
+.ds-sysinfo-v {
+  min-width: 0;
+}
+
+.ds-sysinfo-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8eeff;
+  word-break: break-word;
+}
+
+/* 机器人便签：时间单独加大，便于扫读 */
+.ds-sysinfo-main.ds-sysinfo-robot-time {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ds-sysinfo-desc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #7a87ad;
+}
+
+.ds-sysinfo-percore {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #c4d0f0;
+}
+
 .ds-strategy-table {
   margin-top: 12px;
   background: var(--ft-panel-surface);
@@ -243,6 +322,13 @@
 .ds-strategy-table .head .right {
   font-size: 11px;
   color: #91a4d5;
+}
+
+.ds-strategy-table tbody tr.ds-strategy-table-empty td {
+  text-align: center;
+  padding: 18px 14px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 @media (max-width: 1100px) {

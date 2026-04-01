@@ -18,19 +18,19 @@
             <div class="ds-dashboard-grid">
               <div class="ds-top-cards">
                 <article class="ds-card">
-                  <div class="ds-card-top"><span id="kpiCard1Title" data-i18n="overview.kpi.netValue">净资产</span><em id="kpiBotStatus">+2.4%</em></div>
-                  <div class="ds-card-value" id="kpiOpenTrades">-</div>
-                  <svg viewBox="0 0 100 20"><path id="kpiSpark1" d="M0 15 Q 10 18, 20 12 T 40 14 T 60 8 T 80 10 T 100 2"></path></svg>
+                  <div class="ds-card-top"><span id="kpiCard1Title" data-i18n="overview.kpi.netValue">净资产</span><em id="kpiBotStatus" class="muted">—</em></div>
+                  <div class="ds-card-value" id="kpiNetWorth">—</div>
+                  <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark1" d="M0 10 L100 10"></path></svg>
                 </article>
                 <article class="ds-card">
-                  <div class="ds-card-top"><span id="kpiCard2Title" data-i18n="overview.kpi.dailyProfit">日收益</span><em id="kpiCard2Em" class="positive" data-i18n="overview.kpi.targetMet">已达目标</em></div>
-                  <div class="ds-card-value positive" id="kpiProfit">-</div>
-                  <svg viewBox="0 0 100 20"><path id="kpiSpark2" d="M0 18 L 15 15 L 30 17 L 45 10 L 60 12 L 75 5 L 100 2"></path></svg>
+                  <div class="ds-card-top"><span id="kpiCard2Title" data-i18n="overview.kpi.dailyProfit">日收益</span><em id="kpiCard2Em" class="muted">—</em></div>
+                  <div class="ds-card-value positive" id="kpiProfit">—</div>
+                  <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark2" d="M0 10 L100 10"></path></svg>
                 </article>
                 <article class="ds-card">
-                  <div class="ds-card-top"><span id="kpiCard3Title" data-i18n="overview.kpi.drawdown">最大回撤</span><em id="kpiCard3Em" class="negative" data-i18n="overview.kpi.riskThreshold">风险阈值</em></div>
-                  <div class="ds-card-value negative" id="kpiMaxDrawdown">-</div>
-                  <svg viewBox="0 0 100 20"><path id="kpiSpark3" d="M0 2 L 20 5 L 40 4 L 60 12 L 80 15 L 100 18"></path></svg>
+                  <div class="ds-card-top"><span id="kpiCard3Title" data-i18n="overview.kpi.drawdown">最大回撤</span><em id="kpiCard3Em" class="muted" data-i18n="overview.kpi.riskUnconfigured">在策略配置中设置上限/阈值</em></div>
+                  <div class="ds-card-value negative" id="kpiMaxDrawdown">—</div>
+                  <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark3" d="M0 10 L100 10"></path></svg>
                 </article>
               </div>
               <article class="ds-risk">
@@ -41,7 +41,9 @@
               <!-- 对接 -->
               <article class="ds-telemetry">
                 <h3 data-i18n="overview.telemetry">本机状态</h3>
-                <div id="sysinfo" class="mono">本机指标暂不可用</div>
+                <div id="sysinfo" class="ds-sysinfo ds-sysinfo--empty muted" data-i18n-aria="overview.telemetry" aria-label="本机状态">
+                  <p class="ds-sysinfo-unavailable" data-i18n="overview.sysinfo.unavailable">本机指标暂不可用</p>
+                </div>
               </article>
             </div>
 
@@ -51,7 +53,13 @@
                 <thead>
                   <tr><th data-i18n="th.strategyName">策略名称</th><th data-i18n="th.coreAsset">核心资产</th><th data-i18n="th.pnl24h">24h 盈亏</th><th data-i18n="th.pnlPercent">盈亏百分比</th><th data-i18n="th.drawdown">回撤</th><th data-i18n="th.status">状态</th></tr>
                 </thead>
-                <tbody id="overviewStrategiesBody"></tbody>
+                <tbody id="overviewStrategiesBody">
+                  <tr class="ds-strategy-table-empty">
+                    <td class="muted" colspan="6" data-i18n="overview.strategies.empty">
+                      暂无运行中的策略（机器人未处于运行状态或尚未加载交易进程）
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
 
@@ -67,33 +75,4 @@
 
 <script>
 export * from "../../api/overview.js";
-</script>
-
-<script setup>
-import { onMounted, onUnmounted } from "vue";
-import { i18n } from "../../i18n/index.js";
-import { state, uiState } from "../../store/state-core.js";
-
-const t = (key) => i18n[state.lang || "zh-CN"]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
-
-let timer = null;
-onMounted(() => {
-  const syncEmptyRow = () => {
-    const body = document.getElementById("overviewStrategiesBody");
-    if (!body) return;
-    const list = Array.isArray(uiState.panelStrategyList) ? uiState.panelStrategyList : [];
-    if (list.length === 0) {
-      body.innerHTML = `<tr><td class="muted" colspan="6" style="text-align:center;">${t("overview.strategies.empty")}</td></tr>`;
-      return;
-    }
-    const single = body.querySelector("tr td.muted");
-    if (single && body.querySelectorAll("tr").length === 1) body.innerHTML = "";
-  };
-  syncEmptyRow();
-  timer = window.setInterval(syncEmptyRow, 1000);
-});
-
-onUnmounted(() => {
-  if (timer != null) window.clearInterval(timer);
-});
 </script>

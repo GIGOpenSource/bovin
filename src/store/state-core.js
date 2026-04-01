@@ -803,6 +803,8 @@ export const uiState = {
   lastProfit: null,
   lastCount: null,
   lastDaily: null,
+  /** GET /balance 最近一次成功结果 */
+  lastBalance: null,
   lastHealth: null,
   lastSysinfo: null,
   lastStForRisk: [],

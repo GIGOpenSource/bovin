@@ -543,7 +543,7 @@ function formatStrategySlotRowHtml(name) {
   return `<div class="sc-strategy-slot-row">${bd}${btn}</div>`;
 }
 
-function aggregateForStrategy(statusRows, name, activeName) {
+export function aggregateForStrategy(statusRows, name, activeName) {
   const rows = Array.isArray(statusRows) ? statusRows : [];
   let stake = 0;
   let openCount = 0;
