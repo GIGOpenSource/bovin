@@ -75,6 +75,11 @@ function applyThemeToDom(themeSetting) {
   if (mode === "light") document.documentElement.setAttribute("data-theme", "light");
   else document.documentElement.removeAttribute("data-theme");
   syncThemeButtonUi();
+  try {
+    window.dispatchEvent(new CustomEvent("bovin-theme-changed", { detail: { mode } }));
+  } catch {
+    /* ignore */
+  }
 }
 
 function bindThemeToggleOnce() {

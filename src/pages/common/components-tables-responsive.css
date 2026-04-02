@@ -421,6 +421,9 @@ body::-webkit-scrollbar-thumb:hover,
   .binding-grid--modal {
     grid-template-columns: 1fr;
   }
+  .modal-card--panel-user .pu-perm-grid {
+    grid-template-columns: 1fr;
+  }
   .modal-card--binding {
     max-height: calc(100vh - 16px);
     width: calc(100vw - 16px);

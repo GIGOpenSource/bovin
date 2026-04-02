@@ -1,0 +1,112 @@
+/* 面板内 Ant Select：下拉层级、圆角与阴影，与 shell 弹窗协调 */
+.bovin-select-full {
+  width: 100%;
+}
+
+/* API 对接双列：与原生 input 同宽（避免 Select 因 flex 默认收缩变窄） */
+.modal-card--api-binding .binding-column .bovin-select-full.ant-select {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
+}
+
+/* 与交易所列输入框同高（API 对接略增高） */
+.modal-card--api-binding .bovin-select-full.ant-select-single .ant-select-selector {
+  height: 44px !important;
+  min-height: 44px !important;
+}
+
+.bovin-select-full.ant-select-single .ant-select-selector {
+  border-radius: 10px !important;
+  min-height: 40px !important;
+  padding-inline: 12px !important;
+  align-items: center;
+}
+
+.bovin-select-full.ant-select-single .ant-select-selection-item,
+.bovin-select-full.ant-select-single .ant-select-selection-placeholder {
+  line-height: 38px !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.modal-card--api-binding .bovin-select-full.ant-select-single .ant-select-selection-item,
+.modal-card--api-binding .bovin-select-full.ant-select-single .ant-select-selection-placeholder {
+  line-height: 42px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  text-align: start !important;
+}
+
+.modal-card .bovin-select-full .ant-select-selector,
+.modal-card--binding .bovin-select-full .ant-select-selector {
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%) !important;
+  border-color: rgba(var(--ft-line-rgb, 120, 140, 200), 0.38) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* 聚焦环与 shell 内原生 input:focus 一致（蓝色，非主题青绿） */
+.bovin-select-full.ant-select-focused .ant-select-selector,
+.bovin-select-force.ant-select-focused .ant-select-selector {
+  border-color: rgba(var(--ft-accent-rgb), 0.76) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16) !important;
+}
+
+.ant-select-dropdown.bovin-select-dropdown {
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.35);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+}
+
+.ant-select-dropdown.bovin-select-dropdown .ant-select-item {
+  border-radius: 8px;
+  margin: 2px 0;
+  padding: 10px 12px;
+  font-weight: 500;
+}
+
+.ant-select-dropdown.bovin-select-dropdown .ant-select-item-option-active {
+  background: rgba(138, 180, 255, 0.1) !important;
+}
+
+.ant-select-dropdown.bovin-select-dropdown .ant-select-item-option-selected {
+  font-weight: 700;
+}
+
+html[data-theme="light"] .modal-card .bovin-select-full .ant-select-selector,
+html[data-theme="light"] .modal-card--binding .bovin-select-full .ant-select-selector {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.hidden-control .bovin-select-force.ant-select-single .ant-select-selector {
+  min-height: 36px !important;
+}
+
+.hidden-control .bovin-select-force {
+  min-width: 120px;
+}
+
+.strategy-slot-select-wrap .bovin-select-full {
+  margin-top: 4px;
+}
+
+.pu-perm-item .bovin-select-full {
+  margin-top: 2px;
+}
+
+.modal-card--panel-user .pu-perm-item .bovin-select-full.ant-select {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
+}

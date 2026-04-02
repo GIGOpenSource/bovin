@@ -394,6 +394,21 @@
     opacity var(--ft-transition-fast);
 }
 
+/* 策略卡暂停/停止/启动：内联 SVG 图标尺寸（由 control-console.js 注入） */
+.sc-actions .sc-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.sc-actions .sc-action-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
 .sc-actions button:focus {
   outline: none;
 }

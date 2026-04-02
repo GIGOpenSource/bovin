@@ -1598,6 +1598,14 @@ body {
   align-items: stretch;
 }
 
+/* API 对接弹窗：两列严格等宽，避免左右输入区宽度不一致 */
+.modal-card--binding.modal-card--api-binding .binding-grid--modal {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
 .modal-card--binding.modal-card--api-binding .modal-body > .binding-grid--modal {
   margin-top: 14px;
 }
@@ -1611,6 +1619,26 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+.modal-card--binding.modal-card--api-binding .binding-column {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  /* 恢复边框与底色；内边距略小于默认，让边框更贴近内容 */
+  border: 1px solid rgba(var(--ft-line-rgb), 0.26);
+  border-radius: 12px;
+  background: var(--ft-binding-column-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 10px 12px 12px;
+  gap: 12px;
+  /* 两列被父网格拉高时，勿把多余高度均分到各行（否则行数少的一列会与另一列视觉错位） */
+  align-content: start;
+}
+
+/* 表单项内部也顶对齐，避免单行被意外拉高后标签与输入框上下分离 */
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field {
+  align-content: start;
+}
+
 .modal-card--binding .binding-column h5 {
   margin: 0;
   padding-bottom: 12px;
@@ -1620,6 +1648,20 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgba(167, 193, 255, 0.95);
+}
+
+/* 仅 API 对接：分区标题居中；去掉底部分隔线，避免标题下出现「空条/细线」 */
+.modal-card--binding.modal-card--api-binding .binding-column h5 {
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 15px;
+  font-weight: 900;
+  font-family: var(--ft-font-sans, inherit);
+  color: var(--text-dim);
+  border-bottom: none;
+  padding-bottom: 6px;
+  margin-bottom: 0;
 }
 
 .modal-card--binding .binding-field {
@@ -1646,6 +1688,34 @@ body {
 .modal-card--binding .binding-field input:not([type="checkbox"]),
 .modal-card--binding .binding-field select {
   width: 100%;
+  box-sizing: border-box;
+}
+
+/* API 对接：交易所列原生 input 与大模型列 a-select 同高、同圆角；文字样式与 Select 一致 */
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field-label {
+  text-align: start;
+}
+
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]) {
+  max-width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  text-align: start;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 42px;
+}
+
+.modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]) {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
   box-sizing: border-box;
 }
 

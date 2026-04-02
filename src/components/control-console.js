@@ -9,6 +9,22 @@ function t(key) {
 
 const $ = (id) => document.getElementById(id);
 
+/** 策略卡操作按钮图标（不依赖 Material Symbols 字体，避免回退成英文 ligature 文本） */
+function actionIconSvg(kind) {
+  const wrap = (inner) =>
+    `<span class="sc-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" focusable="false">${inner}</svg></span>`;
+  if (kind === "pause") {
+    return wrap('<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>');
+  }
+  if (kind === "stop") {
+    return wrap('<path d="M6 6h12v12H6V6z"/>');
+  }
+  if (kind === "play") {
+    return wrap('<path d="M8 5v14l11-7L8 5z"/>');
+  }
+  return "";
+}
+
 function alertIconSvg(kind) {
   if (kind === "warning") {
     return `<span class="anticon sc-alert-anticon" aria-hidden="true"><svg viewBox="64 64 896 896" focusable="false"><path fill="currentColor" d="M511.5 175.6a35.31 35.31 0 0 1 61 0l353.4 611.9c13.7 23.8-3.4 53.5-30.5 53.5H158.6c-27.1 0-44.2-29.7-30.5-53.5l353.4-611.9zM512 406c-22.1 0-40 17.9-40 40v176c0 22.1 17.9 40 40 40s40-17.9 40-40V446c0-22.1-17.9-40-40-40zm0 364a48 48 0 1 0 0-96 48 48 0 0 0 0 96z"></path></svg></span>`;
@@ -434,9 +450,9 @@ function entryWantsStrategyGrid(className) {
 function buildStrategyCardActionsHtml({ operable, botRunning, disabledHint }) {
   const hint = String(disabledHint || "").trim();
   const lockAttr = operable ? "" : ` disabled title="${escapeHtml(hint)}"`;
-  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/pause"${operable ? "" : lockAttr}><span class="material-symbols-outlined">pause</span><span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
-  const stopBtn = `<button type="button" class="danger action-btn" data-method="POST" data-endpoint="/stop"${operable ? "" : lockAttr}><span class="material-symbols-outlined">dangerous</span><span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
-  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-endpoint="/start"${operable ? "" : lockAttr}><span class="material-symbols-outlined">play_arrow</span><span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
+  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/pause"${operable ? "" : lockAttr}>${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
+  const stopBtn = `<button type="button" class="danger action-btn" data-method="POST" data-endpoint="/stop"${operable ? "" : lockAttr}>${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
+  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-endpoint="/start"${operable ? "" : lockAttr}>${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
   const pauseStop = botRunning ? `${pauseBtn}${stopBtn}` : startBtn;
   const reloadBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/reload_config"${operable ? "" : lockAttr}><span data-i18n="sc.editConfig">${escapeHtml(t("sc.editConfig"))}</span></button>`;
   const backtestBtn = `<button type="button" class="ghost" disabled title="${escapeHtml(t("sc.backtest"))}" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;

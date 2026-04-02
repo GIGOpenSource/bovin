@@ -93,46 +93,19 @@
                 <p class="modal-hint" data-i18n="modal.api.bindingDisplayNameHint">用于列表标题区分多组对接；与下方交易所 id 无关。</p>
               </label>
               <div class="binding-grid binding-grid--modal">
-                <section class="binding-column" aria-labelledby="binding-col-exchange">
-                  <h5 id="binding-col-exchange" data-i18n="modal.api.colExchange">交易所 API</h5>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeRestBaseUrl">Base URL（可选）</span>
-                    <input
-                      id="mExchangeRestBaseUrl"
-                      name="mExchangeRestBaseUrl"
-                      type="text"
-                      inputmode="url"
-                      autocomplete="off"
-                      spellcheck="false"
-                      data-i18n-placeholder="modal.api.exchangeRestBaseUrlPh"
-                      placeholder="https://api.binance.com"
-                    />
-                  </label>
-                  <input type="hidden" id="mExchangeName" name="mExchangeName" value="" />
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiKey">API Key</span>
-                    <input id="mExchangeApiKey" name="mExchangeApiKey" type="text" autocomplete="off" spellcheck="false" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiSecret">API Secret</span>
-                    <input id="mExchangeApiSecret" name="mExchangeApiSecret" type="password" autocomplete="off" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangePassphrase">Passphrase（可选）</span>
-                    <input id="mExchangePassphrase" name="mExchangePassphrase" type="password" autocomplete="off" />
-                    <p id="mExchangePassphraseNote" class="modal-hint"></p>
-                  </label>
-                </section>
                 <section class="binding-column" aria-labelledby="binding-col-llm">
                   <h5 id="binding-col-llm" data-i18n="modal.api.colLlm">大模型 API</h5>
                   <label class="binding-field">
                     <span class="binding-field-label" data-i18n="modal.api.llmProvider">服务商</span>
-                    <select id="mLlmProvider" name="mLlmProvider" autocomplete="off">
-                      <option value="deepseek" selected>DeepSeek</option>
-                      <option value="openai">OpenAI</option>
-                      <option value="anthropic">Anthropic</option>
-                      <option value="google">Google</option>
-                    </select>
+                    <input type="hidden" id="mLlmProvider" name="mLlmProvider" value="deepseek" autocomplete="off" />
+                    <a-select
+                      v-model:value="llmProviderVal"
+                      :options="llmProviderOptions"
+                      size="large"
+                      class="bovin-select-full"
+                      popup-class-name="bovin-select-dropdown"
+                      :get-popup-container="selectPopupContainer"
+                    />
                   </label>
                   <label class="binding-field">
                     <span class="binding-field-label" data-i18n="modal.api.llmBaseUrl">Base URL</span>
@@ -171,6 +144,36 @@
                       <p class="modal-hint binding-checkbox-hint" id="mBindToBotHint" data-i18n="modal.api.bindToBotHint">仅一行可勾选；会写入磁盘上的主配置文件中的 exchange；须重启 trade/webserver 后进程内配置才刷新。</p>
                     </div>
                   </div>
+                </section>
+                <section class="binding-column" aria-labelledby="binding-col-exchange">
+                  <h5 id="binding-col-exchange" data-i18n="modal.api.colExchange">交易所 API</h5>
+                  <label class="binding-field">
+                    <span class="binding-field-label" data-i18n="modal.api.exchangeRestBaseUrl">Base URL（可选）</span>
+                    <input
+                      id="mExchangeRestBaseUrl"
+                      name="mExchangeRestBaseUrl"
+                      type="text"
+                      inputmode="url"
+                      autocomplete="off"
+                      spellcheck="false"
+                      data-i18n-placeholder="modal.api.exchangeRestBaseUrlPh"
+                      placeholder="https://api.binance.com"
+                    />
+                  </label>
+                  <label class="binding-field">
+                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiKey">API Key</span>
+                    <input id="mExchangeApiKey" name="mExchangeApiKey" type="text" autocomplete="off" spellcheck="false" />
+                  </label>
+                  <label class="binding-field">
+                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiSecret">API Secret</span>
+                    <input id="mExchangeApiSecret" name="mExchangeApiSecret" type="password" autocomplete="off" />
+                  </label>
+                  <label class="binding-field">
+                    <span class="binding-field-label" data-i18n="modal.api.exchangePassphrase">Passphrase（可选）</span>
+                    <input id="mExchangePassphrase" name="mExchangePassphrase" type="password" autocomplete="off" />
+                    <p id="mExchangePassphraseNote" class="modal-hint"></p>
+                  </label>
+                  <input type="hidden" id="mExchangeName" name="mExchangeName" value="" />
                 </section>
               </div>
             </div>
@@ -218,55 +221,83 @@
                 </label>
               </div>
               <div class="pu-perm-grid" aria-label="menu permissions">
-                <label class="pu-perm-item"><span data-i18n="nav.overview">系统概览</span>
-                  <select id="puPerm-overview">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.positions">持仓与订单</span>
-                  <select id="puPerm-positions">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.control">策略AI控制台</span>
-                  <select id="puPerm-control">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.data">数据面板</span>
-                  <select id="puPerm-data">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.settings">设置中心</span>
-                  <select id="puPerm-settings">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.monitor">系统监控</span>
-                  <select id="puPerm-monitor">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
-                <label class="pu-perm-item"><span data-i18n="nav.api">接口能力面板</span>
-                  <select id="puPerm-api">
-                    <option value="read" data-i18n="users.perm.read">只读</option>
-                    <option value="edit" data-i18n="users.perm.edit">编辑</option>
-                    <option value="hidden" data-i18n="users.perm.hidden">不可见</option>
-                  </select>
-                </label>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.overview">系统概览</span>
+                  <input type="hidden" id="puPerm-overview" value="read" />
+                  <a-select
+                    v-model:value="puPermOverview"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.positions">持仓与订单</span>
+                  <input type="hidden" id="puPerm-positions" value="read" />
+                  <a-select
+                    v-model:value="puPermPositions"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.control">策略AI控制台</span>
+                  <input type="hidden" id="puPerm-control" value="read" />
+                  <a-select
+                    v-model:value="puPermControl"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.data">数据面板</span>
+                  <input type="hidden" id="puPerm-data" value="read" />
+                  <a-select
+                    v-model:value="puPermData"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.settings">设置中心</span>
+                  <input type="hidden" id="puPerm-settings" value="read" />
+                  <a-select
+                    v-model:value="puPermSettings"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.monitor">系统监控</span>
+                  <input type="hidden" id="puPerm-monitor" value="read" />
+                  <a-select
+                    v-model:value="puPermMonitor"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
+                <div class="pu-perm-item">
+                  <span data-i18n="nav.api">接口能力面板</span>
+                  <input type="hidden" id="puPerm-api" value="read" />
+                  <a-select
+                    v-model:value="puPermApi"
+                    :options="permSelectOptions"
+                    class="bovin-select-full"
+                    popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer"
+                  />
+                </div>
               </div>
             </div>
             <footer class="modal-actions">
@@ -441,13 +472,19 @@
                 <section class="strategy-slot-modal-top" aria-labelledby="strategySlotSelectLabel">
                   <label id="strategySlotSelectLabel" class="strategy-slot-select-wrap">
                     <span class="binding-field-label" data-i18n="label.strategySlotName">策略类名</span>
-                    <select
-                      id="mStrategySlotNameSelect"
-                      class="strategy-slot-name-select"
-                      name="mStrategySlotNameSelect"
-                      autocomplete="off"
-                      data-i18n-aria="aria.strategySlotNameSelect"
-                    ></select>
+                    <input type="hidden" id="mStrategySlotNameSelect" name="mStrategySlotNameSelect" value="" autocomplete="off" />
+                    <a-select
+                      v-model:value="strategySlotClassName"
+                      :options="strategySlotOptions"
+                      allow-clear
+                      show-search
+                      :filter-option="filterStrategySlotOption"
+                      class="bovin-select-full strategy-slot-ant-select"
+                      popup-class-name="bovin-select-dropdown"
+                      :get-popup-container="selectPopupContainer"
+                      :placeholder="strategySlotPlaceholder"
+                      :aria-label="strategySlotAria"
+                    />
                   </label>
                 </section>
                 <div class="strategy-slot-modal-columns">
@@ -474,7 +511,7 @@
 </template>
 
 <script setup>
-import { onMounted, nextTick } from "vue";
+import { onMounted, onUnmounted, nextTick, ref, watch } from "vue";
 import { BellOutlined, BulbOutlined, BulbFilled, UserOutlined } from "@ant-design/icons-vue";
 import { startPanelApp, registerSectionRouteNavigator } from "../app.js";
 import { panelRouter } from "../router/index.js";
@@ -483,12 +520,123 @@ import PanelSections from "./components/PanelSections.vue";
 
 registerSectionRouteNavigator(createSectionRouteNavigator(panelRouter));
 
+const selectPopupContainer = () => document.body;
+
+const llmProviderVal = ref("deepseek");
+const llmProviderOptions = [
+  { value: "deepseek", label: "DeepSeek" },
+  { value: "openai", label: "OpenAI" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "google", label: "Google" }
+];
+
+const permSelectOptions = [
+  { value: "read", label: "只读" },
+  { value: "edit", label: "编辑" },
+  { value: "hidden", label: "不可见" }
+];
+
+const puPermOverview = ref("read");
+const puPermPositions = ref("read");
+const puPermControl = ref("read");
+const puPermData = ref("read");
+const puPermSettings = ref("read");
+const puPermMonitor = ref("read");
+const puPermApi = ref("read");
+
+const strategySlotClassName = ref(undefined);
+const strategySlotOptions = ref([]);
+const strategySlotPlaceholder = "选择或搜索策略类名";
+const strategySlotAria = "选择要编辑槽位的策略类名";
+
+function filterStrategySlotOption(input, option) {
+  const q = String(input || "").trim().toLowerCase();
+  const label = String(option?.label ?? option?.value ?? "").toLowerCase();
+  return !q || label.includes(q);
+}
+
+function syncHiddenSelect(id, value) {
+  const el = document.getElementById(id);
+  if (el instanceof HTMLInputElement && el.type === "hidden") {
+    el.value = value == null || value === "" ? "" : String(value);
+  }
+}
+
+watch(llmProviderVal, (v) => syncHiddenSelect("mLlmProvider", v));
+watch(puPermOverview, (v) => syncHiddenSelect("puPerm-overview", v));
+watch(puPermPositions, (v) => syncHiddenSelect("puPerm-positions", v));
+watch(puPermControl, (v) => syncHiddenSelect("puPerm-control", v));
+watch(puPermData, (v) => syncHiddenSelect("puPerm-data", v));
+watch(puPermSettings, (v) => syncHiddenSelect("puPerm-settings", v));
+watch(puPermMonitor, (v) => syncHiddenSelect("puPerm-monitor", v));
+watch(puPermApi, (v) => syncHiddenSelect("puPerm-api", v));
+watch(strategySlotClassName, (v) => syncHiddenSelect("mStrategySlotNameSelect", v));
+
+function onFormFieldPatch(ev) {
+  const d = ev?.detail;
+  if (!d || d.id !== "mLlmProvider") return;
+  llmProviderVal.value = String(d.value || "deepseek");
+}
+
+function onStrategySlotNames(ev) {
+  const names = ev?.detail?.names;
+  if (!Array.isArray(names)) return;
+  const opts = names.map((x) => {
+    const s = String(x ?? "").trim();
+    return s ? { value: s, label: s } : null;
+  }).filter(Boolean);
+  strategySlotOptions.value = opts;
+}
+
 onMounted(async () => {
+  window.addEventListener("bovin-form-patch", onFormFieldPatch);
+  window.addEventListener("bovin-strategy-slot-names", onStrategySlotNames);
   await nextTick();
   await startPanelApp();
+
+  const readHidden = (id, assign) => {
+    const el = document.getElementById(id);
+    if (el instanceof HTMLInputElement && el.type === "hidden" && el.value) assign(el.value);
+  };
+  readHidden("mLlmProvider", (v) => {
+    llmProviderVal.value = v;
+  });
+  readHidden("puPerm-overview", (v) => {
+    puPermOverview.value = v;
+  });
+  readHidden("puPerm-positions", (v) => {
+    puPermPositions.value = v;
+  });
+  readHidden("puPerm-control", (v) => {
+    puPermControl.value = v;
+  });
+  readHidden("puPerm-data", (v) => {
+    puPermData.value = v;
+  });
+  readHidden("puPerm-settings", (v) => {
+    puPermSettings.value = v;
+  });
+  readHidden("puPerm-monitor", (v) => {
+    puPermMonitor.value = v;
+  });
+  readHidden("puPerm-api", (v) => {
+    puPermApi.value = v;
+  });
+  readHidden("mStrategySlotNameSelect", (v) => {
+    strategySlotClassName.value = v;
+    if (v && !strategySlotOptions.value.some((o) => o.value === v)) {
+      strategySlotOptions.value = [...strategySlotOptions.value, { value: v, label: v }];
+    }
+  });
+
   const current = String(panelRouter.currentRoute.value.name || "").trim();
   if (!current || !panelRouter.hasRoute(current)) {
     void panelRouter.replace({ name: "overview" });
   }
+});
+
+onUnmounted(() => {
+  window.removeEventListener("bovin-form-patch", onFormFieldPatch);
+  window.removeEventListener("bovin-strategy-slot-names", onStrategySlotNames);
 });
 </script>

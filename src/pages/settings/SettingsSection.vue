@@ -299,7 +299,8 @@ onMounted(() => {
         document.getElementById("mExchangeRestBaseUrl")?.value?.trim() ||
         "binance";
       const exKey = document.getElementById("mExchangeApiKey")?.value?.trim() || "";
-      const llmProvider = document.getElementById("mLlmProvider")?.value?.trim() || "deepseek";
+      const llmProvEl = document.getElementById("mLlmProvider");
+      const llmProvider = (llmProvEl && "value" in llmProvEl ? String(llmProvEl.value) : "").trim() || "deepseek";
       const llmModel = document.getElementById("mLlmModel")?.value?.trim() || "";
       const enabled = document.getElementById("mBindingEnabled")?.checked !== false;
 
@@ -368,6 +369,13 @@ onMounted(() => {
         const el = document.getElementById(id);
         if (!el) return;
         if ("value" in el) el.value = String(v ?? "");
+        try {
+          window.dispatchEvent(
+            new CustomEvent("bovin-form-patch", { detail: { id, value: String(v ?? "") } })
+          );
+        } catch {
+          /* ignore */
+        }
       };
       setVal("mBindingLabel", row.dataset.bindingLabel || "");
       setVal("mExchangeName", row.dataset.exchangeName || "");

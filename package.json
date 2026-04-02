@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.2.6",
     "lightweight-charts": "^4.2.0",
     "pinia": "^3.0.1",
     "vue": "^3.5.31",

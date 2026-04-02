@@ -97,7 +97,14 @@
               <input id="blacklistPair" name="blacklistPair" placeholder="如 PEPE/USDT" value="PEPE/USDT" autocomplete="off" />
               <button id="addBlacklist" class="ghost">加入黑名单</button>
               <input id="forcePair" name="forcePair" value="BTC/USDT" autocomplete="off" />
-              <select id="forceSide"><option value="long">long</option><option value="short">short</option></select>
+              <input type="hidden" id="forceSide" value="long" />
+              <a-select
+                v-model:value="forceSideVal"
+                :options="forceSideOptions"
+                class="bovin-select-force"
+                popup-class-name="bovin-select-dropdown"
+                :get-popup-container="forceSidePopupContainer"
+              />
               <button type="button" id="forceEnter" class="primary" data-i18n="btn.forceEnter">强制开仓</button>
               <input id="forceExitTradeId" name="forceExitTradeId" value="all" autocomplete="off" />
               <div id="whitelist" class="mono"></div>
@@ -504,6 +511,20 @@
     opacity var(--ft-transition-fast);
 }
 
+:deep(.sc-actions .sc-action-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+:deep(.sc-actions .sc-action-icon svg) {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
 .sc-actions button:focus {
   outline: none;
 }
@@ -834,12 +855,32 @@
 </style>
 
 <script setup>
+import { onMounted, ref, watch } from "vue";
 import {
   BarChartOutlined,
   CheckCircleOutlined,
   LineChartOutlined,
   RiseOutlined
 } from "@ant-design/icons-vue";
+
+const forceSidePopupContainer = () => document.body;
+const forceSideVal = ref("long");
+const forceSideOptions = [
+  { value: "long", label: "long" },
+  { value: "short", label: "short" }
+];
+
+watch(forceSideVal, (v) => {
+  const el = document.getElementById("forceSide");
+  if (el instanceof HTMLInputElement && el.type === "hidden") el.value = v;
+});
+
+onMounted(() => {
+  const el = document.getElementById("forceSide");
+  if (el instanceof HTMLInputElement && el.type === "hidden" && el.value) {
+    forceSideVal.value = el.value;
+  }
+});
 </script>
 
 <script>
