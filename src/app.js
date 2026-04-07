@@ -3,15 +3,17 @@
  * 数据轮询见 panel-poll.js。
  */
 import { i18n } from "./i18n/index.js";
-import { postPanelAuthLogin } from "./api/settings.js";
+import { postPanelAuthLogin, getPanelPreferences } from "./api/settings.js";
 import {
   state,
   uiState,
   persistProfileToLocalStorage,
-  clearFreqtradePasswordSession
+  clearFreqtradePasswordSession,
+  applyPanelProfileFromPrefs
 } from "./store/state-core.js";
 import { normalizeSectionIdCandidate } from "./router/bridge.js";
 import { startPanelPolling, stopPanelPolling, applyTopbarDecor } from "./panel-poll.js";
+import { renderControlHeroAndCards } from "./components/control-console.js";
 
 /** 为 true：不拦截，直接进入面板（不弹登录）；为 false 时须先登录（/panel/auth/login）再进入。 */
 export const SKIP_PANEL_LOGIN = false;
@@ -188,6 +190,65 @@ function reconcileStaleAuth() {
   }
 }
 
+/** 解包 GET /panel/preferences 响应（部分网关使用 `{ data: profile }`）。 */
+function unwrapPanelPreferencesBody(body) {
+  if (!body || typeof body !== "object") return body;
+  const d = body.data;
+  if (d != null && typeof d === "object" && !Array.isArray(d)) return d;
+  return body;
+}
+
+function refreshStrategyConsoleAfterPrefs() {
+  const dailyPayload = uiState.lastDaily && typeof uiState.lastDaily === "object" ? uiState.lastDaily : {};
+  const showCfg = uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
+  const profitObj = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
+  const health = uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {};
+  renderControlHeroAndCards(
+    dailyPayload,
+    showCfg,
+    profitObj,
+    health,
+    uiState.lastProxyHealth,
+    uiState.strategyBotSnapshots || {}
+  );
+}
+
+/**
+ * 登录并已具备 Basic 凭据后拉取 SQLite panel_profile / api_bindings，合并进 state（策略 AI 控制台与本地条目一致）。
+ */
+async function syncPanelPreferencesFromServer() {
+  if (!uiState.authed || !String(state.password || "").trim()) {
+    uiState.panelPrefsSyncedFromDb = false;
+    uiState.panelPrefsBindingsLoadedFromDb = false;
+    return;
+  }
+  try {
+    const body = await getPanelPreferences();
+    const profile = unwrapPanelPreferencesBody(body);
+    const { bindingsLoadedFromDb } = applyPanelProfileFromPrefs(profile);
+    uiState.panelPrefsSyncedFromDb = true;
+    uiState.panelPrefsBindingsLoadedFromDb = bindingsLoadedFromDb;
+    uiState.panelPrefsLoadErrorDetail = "";
+    refreshStrategyConsoleAfterPrefs();
+    try {
+      window.dispatchEvent(new CustomEvent("bovin-panel-prefs-applied", { detail: { ok: true } }));
+    } catch {
+      /* ignore */
+    }
+  } catch (ex) {
+    uiState.panelPrefsSyncedFromDb = false;
+    uiState.panelPrefsBindingsLoadedFromDb = false;
+    uiState.panelPrefsLoadErrorDetail = ex?.message || String(ex || "");
+    try {
+      window.dispatchEvent(
+        new CustomEvent("bovin-panel-prefs-applied", { detail: { ok: false, error: uiState.panelPrefsLoadErrorDetail } })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function bindPanelChromeOnce() {
   if (uiState.topbarChromeBound) return;
   uiState.topbarChromeBound = true;
@@ -274,6 +335,7 @@ function enterShellAfterAuth() {
   const shell = $("appRoot");
   if (shell) applyDomI18n(shell);
   startPanelPolling();
+  void syncPanelPreferencesFromServer();
   try {
     window.dispatchEvent(new CustomEvent("bovin-panel-auth"));
   } catch {
@@ -327,6 +389,9 @@ function bindLogoutOnce() {
       /* ignore */
     }
     uiState.authed = false;
+    uiState.panelPrefsSyncedFromDb = false;
+    uiState.panelPrefsBindingsLoadedFromDb = false;
+    uiState.panelPrefsLoadErrorDetail = "";
     clearFreqtradePasswordSession();
     persistProfileToLocalStorage();
     syncLoginShell();

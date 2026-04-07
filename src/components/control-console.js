@@ -2,6 +2,7 @@ import { i18n } from "../i18n/index.js";
 import { state, uiState, normalizeStrategyEntries } from "../store/state-core.js";
 import { normalizeUserRestApiV1Base } from "../api/config.js";
 import { escapeHtml } from "../utils/html-utils.js";
+import { pairsFromBlacklistPayload, pairsFromWhitelistPayload } from "../utils/pairlist-parse.js";
 
 function t(key) {
   return i18n[state.lang]?.[key] || i18n["zh-CN"]?.[key] || key;
@@ -450,9 +451,9 @@ function entryWantsStrategyGrid(className) {
 function buildStrategyCardActionsHtml({ operable, botRunning, disabledHint }) {
   const hint = String(disabledHint || "").trim();
   const lockAttr = operable ? "" : ` disabled title="${escapeHtml(hint)}"`;
-  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/pause"${operable ? "" : lockAttr}>${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
+  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="http://127.0.0.1:18080/api/v1/pause"${operable ? "" : lockAttr}>${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
   const stopBtn = `<button type="button" class="danger action-btn" data-method="POST" data-endpoint="/stop"${operable ? "" : lockAttr}>${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
-  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-endpoint="/start"${operable ? "" : lockAttr}>${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
+  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-endpoint="http://127.0.0.1:18080/api/v1/start"${operable ? "" : lockAttr}>${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
   const pauseStop = botRunning ? `${pauseBtn}${stopBtn}` : startBtn;
   const reloadBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/reload_config"${operable ? "" : lockAttr}><span data-i18n="sc.editConfig">${escapeHtml(t("sc.editConfig"))}</span></button>`;
   const backtestBtn = `<button type="button" class="ghost" disabled title="${escapeHtml(t("sc.backtest"))}" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;
@@ -783,6 +784,97 @@ export function renderControlStrategyCards(
     .join("")}`;
 }
 
+const SC_GOV_LOCK_SVG = `<span class="sc-gov-pair-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" focusable="false"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></span>`;
+
+function govPairCountBadge(n) {
+  const en = String(state.lang || "").toLowerCase().startsWith("en");
+  if (en) return n === 1 ? `1 ${t("sc.gov.pairSingular")}` : `${n} ${t("sc.gov.pairs")}`;
+  return `${n} ${t("sc.gov.pairs")}`;
+}
+
+function governanceMetaFromShowConfig(showConfig) {
+  const sc = showConfig && typeof showConfig === "object" ? showConfig : {};
+  const rawEx =
+    sc.exchange?.name ?? sc.exchange ?? sc.exchange_name ?? sc.exchangeName ?? "";
+  const exStr =
+    typeof rawEx === "string" ? rawEx.trim().toUpperCase() : String(rawEx || "").trim().toUpperCase();
+  const strat = String(sc.strategy ?? sc.strategy_name ?? sc.active_strategy ?? "").trim() || "—";
+  const rm = String(sc.runmode || "").toLowerCase();
+  const paper = Boolean(sc.dry_run) || rm === "dry_run" || rm.includes("dry");
+  const mode = paper ? t("sc.gov.metaPaper") : t("sc.gov.metaLive");
+  let s = t("sc.gov.metaLine");
+  s = s.split("{ex}").join(exStr || "—");
+  s = s.split("{strat}").join(strat);
+  s = s.split("{mode}").join(mode);
+  return s;
+}
+
+function govPairCardWl(pair) {
+  return `<article class="sc-gov-pair-card sc-gov-pair-card--wl">
+    <div class="sc-gov-pair-card-main">
+      <strong class="sc-gov-pair-name">${escapeHtml(pair)}</strong>
+      ${SC_GOV_LOCK_SVG}
+    </div>
+    <span class="sc-gov-pair-tag sc-gov-pair-tag--wl">${escapeHtml(t("pairlist.whitelistTag"))}</span>
+  </article>`;
+}
+
+function govPairCardBl(pair) {
+  return `<article class="sc-gov-pair-card sc-gov-pair-card--bl">
+    <div class="sc-gov-pair-card-main">
+      <strong class="sc-gov-pair-name">${escapeHtml(pair)}</strong>
+      ${SC_GOV_LOCK_SVG}
+    </div>
+    <span class="sc-gov-pair-tag sc-gov-pair-tag--bl">${escapeHtml(t("pairlist.blacklistTag"))}</span>
+  </article>`;
+}
+
+function govBlacklistEmptyHintCard() {
+  return `<article class="sc-gov-pair-card sc-gov-pair-card--bl sc-gov-pair-card--hint" role="status">
+    <div class="sc-gov-pair-card-main sc-gov-pair-card-main--stack">
+      <strong class="sc-gov-hint-title">${escapeHtml(t("sc.gov.blRpcTitle"))}</strong>
+      <small class="sc-gov-hint-body">${escapeHtml(t("sc.gov.blRpcHint"))}</small>
+    </div>
+  </article>`;
+}
+
+/**
+ * 控制台「资产访问治理」白/黑名单（GET /whitelist、GET /blacklist + show_config 元信息）。
+ * @param {unknown} wlPayload
+ * @param {unknown} blPayload
+ * @param {Record<string, unknown>} [showConfig]
+ */
+export function renderControlGovernanceLists(wlPayload, blPayload, showConfig) {
+  const wl = pairsFromWhitelistPayload(wlPayload);
+  const bl = pairsFromBlacklistPayload(blPayload);
+
+  const metaEl = $("scGovMeta");
+  if (metaEl) {
+    metaEl.textContent = governanceMetaFromShowConfig(
+      showConfig && typeof showConfig === "object" ? showConfig : uiState.lastShowConfig
+    );
+  }
+
+  const wlCount = $("scWlCount");
+  const blCount = $("scBlCount");
+  if (wlCount) wlCount.textContent = govPairCountBadge(wl.length);
+  if (blCount) blCount.textContent = govPairCountBadge(bl.length);
+
+  const wlItems = $("scGovernanceWlItems");
+  const blItems = $("scGovernanceBlItems");
+  if (wlItems) {
+    wlItems.innerHTML = wl.length ? wl.map((p) => govPairCardWl(p)).join("") : "";
+  }
+  if (blItems) {
+    blItems.innerHTML = bl.length ? bl.map((p) => govPairCardBl(p)).join("") : govBlacklistEmptyHintCard();
+  }
+
+  const wlMono = $("whitelist");
+  const blMono = $("blacklist");
+  if (wlMono) wlMono.textContent = wl.length ? wl.join("\n") : "";
+  if (blMono) blMono.textContent = bl.length ? bl.join("\n") : "";
+}
+
 export function renderControlHeroAndCards(
   dailyPayload,
   showConfig,
@@ -824,4 +916,5 @@ export function renderControlHeroAndCards(
     health,
     strategyBotSnapshots
   );
+  renderControlGovernanceLists(uiState.lastWl, uiState.lastBl, cfg);
 }

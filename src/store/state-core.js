@@ -9,7 +9,7 @@
  *   驱动，见 control-console.js。app.js 会将 /show_config 当前策略与 GET /panel/strategies 扫描结果合并进 strategyEntries，并防抖 POST 回 SQLite，与设置中心列表对齐。
  * - state（baseUrl/username/password）：与面板登录同一组凭据；username/baseUrl 存 localStorage；**密码仅存 sessionStorage**（新标签页需重新登录）。
  * - api_bindings：非模拟下 localStorage 为**脱敏副本**；另在 sessionStorage 存本标签页「上次成功 GET/POST 含密钥的快照」，供 GET 偏好失败时恢复列表，**避免假清空**（与 ft_pwd_session 同级风险，登出时清除）。
- * - **GET /panel/preferences 尚未成功**时，不向 SQLite 做隐式 POST（策略防抖等）；避免内存未与库对齐时覆盖 panel_profile / 对接表。换主题、模拟开关、保存连接、同步按钮等显式操作带 forceFullProfileSync。
+ * - **GET /panel/preferences 未成功**时，不向 SQLite 做隐式 POST（策略防抖等）；避免内存未与库对齐时覆盖 panel_profile / 对接表。换主题、模拟开关、保存连接、同步按钮等显式操作带 forceFullProfileSync。（登录后见 app.js `syncPanelPreferencesFromServer`。）
  * - uiState.菜单权限：本地可篡改，仅 UI 约束；写操作仍由 Bovin api_server 鉴权。
  */
 
@@ -17,6 +17,8 @@ import { DEFAULT_REST_API_V1_BASE } from "../api/default-api-base.js";
 
 const LEGACY_PWD_LS = "ft_pwd";
 const API_PWD_SS = "ft_pwd_session";
+/** 本标签页内最近一次 GET/POST 含密钥的 api_bindings 快照（与 ft_pwd_session 同类；登出时清除） */
+const API_BINDINGS_SS = "ft_api_bindings_snapshot";
 
 /** 首次打开面板且未存过 ft_base_url 时，与 api/config.js 的 httpDevProxyBase 一致，避免 POST 误达静态页 501。 */
 function defaultBovinRestApiV1BaseFirstVisit() {
@@ -506,6 +508,11 @@ export function clearFreqtradePasswordSession() {
     // ignore
   }
   try {
+    sessionStorage.removeItem(API_BINDINGS_SS);
+  } catch {
+    // ignore
+  }
+  try {
     localStorage.removeItem(LEGACY_PWD_LS);
   } catch {
     // ignore
@@ -594,13 +601,18 @@ export function persistProfileToLocalStorage() {
   }
 }
 
-/** Merge server / POST body profile fields into state (only keys present on `prefs`). */
+/**
+ * Merge server / POST body profile fields into state (only keys present on `prefs`).
+ * @returns {{ bindingsLoadedFromDb: boolean }}
+ */
 export function applyPanelProfileFromPrefs(prefs) {
-  if (!prefs || typeof prefs !== "object") return;
+  const none = { bindingsLoadedFromDb: false };
+  if (!prefs || typeof prefs !== "object") return none;
+  let bindingsLoadedFromDb = false;
   const rawEntries = prefs.strategyEntries ?? prefs.strategy_entries;
   const hadEntries = Array.isArray(rawEntries);
-  if ("baseUrl" in prefs) {
-    const fromServer = String(prefs.baseUrl ?? "").trim().replace(/\/+$/, "");
+  if ("baseUrl" in prefs || "base_url" in prefs) {
+    const fromServer = String(prefs.baseUrl ?? prefs.base_url ?? "").trim().replace(/\/+$/, "");
     // 服务端未存或为空时不要用 "" 覆盖本地 ft_base_url（否则会冲掉默认/手填基址，POST 又落到静态页 501）
     if (fromServer !== "") {
       const next = rewriteLegacyLan8000BaseUrl(fromServer);
@@ -620,11 +632,13 @@ export function applyPanelProfileFromPrefs(prefs) {
    * 且 profile 里可能残留旧值（如曾保存 admin），会覆盖本次登录凭据并导致后续 /show_config 等 401。
    * 凭据仅来自登录框与 sessionStorage。
    */
-  if ("controlShowStrategyCards" in prefs) {
-    state.controlShowStrategyCards = Boolean(prefs.controlShowStrategyCards);
+  if ("controlShowStrategyCards" in prefs || "control_show_strategy_cards" in prefs) {
+    const v = prefs.controlShowStrategyCards ?? prefs.control_show_strategy_cards;
+    state.controlShowStrategyCards = Boolean(v);
   }
-  if ("strategySlots" in prefs) {
-    state.strategySlots = normalizeStrategySlots(prefs.strategySlots);
+  if ("strategySlots" in prefs || "strategy_slots" in prefs) {
+    const slots = prefs.strategySlots ?? prefs.strategy_slots;
+    state.strategySlots = normalizeStrategySlots(slots);
   }
   if (hadEntries) {
     state.strategyEntries = normalizeStrategyEntries(rawEntries);
@@ -699,8 +713,23 @@ export function applyPanelProfileFromPrefs(prefs) {
     }
     state.strategyEntries = built;
   }
+  const rawBindings = prefs.api_bindings ?? prefs.apiBindings;
+  if (Array.isArray(rawBindings)) {
+    bindingsLoadedFromDb = true;
+    state.apiBindings = rawBindings
+      .filter((b) => b != null && typeof b === "object")
+      .map((b) => ({ ...b }));
+    persistApiBindingsLocalSnapshot(state.apiBindings);
+    try {
+      sessionStorage.setItem(API_BINDINGS_SS, JSON.stringify(state.apiBindings));
+    } catch {
+      // private mode / quota
+    }
+  }
+
   syncStrategyEntriesDerivedState();
   persistProfileToLocalStorage();
+  return { bindingsLoadedFromDb };
 }
 
 export const uiState = {

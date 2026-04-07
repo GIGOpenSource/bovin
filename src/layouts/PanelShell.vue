@@ -506,6 +506,37 @@
           </div>
         </div>
 
+        <div id="whitelistAddModal" class="modal hidden" role="presentation">
+          <div class="modal-mask" aria-hidden="true"></div>
+          <div
+            class="modal-card modal-card--binding modal-card--whitelist-add"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="whitelistAddModalTitle"
+          >
+            <header class="modal-head modal-head--binding">
+              <div class="modal-head-text">
+                <h4 id="whitelistAddModalTitle" class="modal-title" data-i18n="modal.whitelistAddTitle">添加白名单</h4>
+                <p class="modal-sub" data-i18n="modal.whitelistAddSub">每行一个交易对，可添加多条后一次性提交。</p>
+              </div>
+              <button type="button" id="closeWhitelistAddModal" class="ghost modal-close-btn" data-i18n="btn.close">
+                关闭
+              </button>
+            </header>
+            <div class="modal-body">
+              <div id="whitelistAddRows" class="whitelist-add-rows"></div>
+              <button type="button" id="whitelistAddRowBtn" class="ghost whitelist-add-row-btn" data-i18n="modal.whitelistAddRow">
+                添加一条
+              </button>
+            </div>
+            <footer class="modal-actions">
+              <button type="button" id="saveWhitelistAddModal" class="primary" data-i18n="btn.submitWhitelistAdd">
+                提交添加
+              </button>
+            </footer>
+          </div>
+        </div>
+
       </main>
     </div>
 </template>

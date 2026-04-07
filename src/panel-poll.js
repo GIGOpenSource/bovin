@@ -16,8 +16,8 @@ import {
   getPanelAiOverview,
   getDaily
 } from "./api/overview.js";
-import { getBalance } from "./api/positions.js";
-import { renderControlHeroAndCards } from "./components/control-console.js";
+import { getBalance, getWhitelist, getBlacklist } from "./api/positions.js";
+import { renderControlHeroAndCards, renderControlGovernanceLists } from "./components/control-console.js";
 import { i18n } from "./i18n/index.js";
 import {
   buildSparkPolylinePath,
@@ -158,7 +158,9 @@ async function panelTick() {
       getPanelAiOverview(),
       /** 净资产 / 日收益卡：与 profit 同周期轮询，mock 模式下也请求真实接口（与其它 KPI 一致可刷新） */
       getBalance(),
-      getDaily(14)
+      getDaily(14),
+      getWhitelist(),
+      getBlacklist()
     ]);
 
     const sc = settled[0];
@@ -170,6 +172,8 @@ async function panelTick() {
     const aiOverview = settled[6];
     const balanceR = settled[7];
     const dailyR = settled[8];
+    const wlR = settled[9];
+    const blR = settled[10];
 
     if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
@@ -189,6 +193,8 @@ async function panelTick() {
     if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
     if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
     if (dailyR.status === "fulfilled" && dailyR.value != null) uiState.lastDaily = dailyR.value;
+    if (wlR.status === "fulfilled") uiState.lastWl = wlR.value;
+    if (blR.status === "fulfilled") uiState.lastBl = blR.value;
 
     const y = uiState.lastCount && typeof uiState.lastCount === "object" ? uiState.lastCount : {};
     const b = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
@@ -351,5 +357,20 @@ async function panelTick() {
     );
   } catch {
     /* 单次失败不打断轮询 */
+  }
+}
+
+/** 仅刷新白/名单并更新治理区 DOM（供隐藏「刷新名单」等手动触发）。 */
+export async function refreshGovernanceListsOnly() {
+  if (!uiState.authed) return;
+  try {
+    const [wl, bl] = await Promise.allSettled([getWhitelist(), getBlacklist()]);
+    if (wl.status === "fulfilled") uiState.lastWl = wl.value;
+    if (bl.status === "fulfilled") uiState.lastBl = bl.value;
+    const scGov =
+      uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
+    renderControlGovernanceLists(uiState.lastWl, uiState.lastBl, scGov);
+  } catch {
+    /* ignore */
   }
 }

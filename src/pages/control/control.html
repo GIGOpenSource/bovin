@@ -51,20 +51,27 @@
             <section class="sc-bottom">
               <div class="sc-governance">
                 <div class="sc-governance-head">
-                  <div>
+                  <div class="sc-governance-head-main">
                     <h2 data-i18n="sc.gov.title">资产访问治理</h2>
-                    <p id="scGovPolicy" class="sc-gov-policy" data-i18n="sc.gov.policy">交易对白名单策略 v4.0</p>
+                    <p id="scGovMeta" class="sc-gov-meta" aria-live="polite"></p>
                   </div>
-                  <button type="button" class="ghost" data-i18n="sc.gov.export">导出配置</button>
+                  <button type="button" class="ghost sc-gov-export-btn" data-i18n="sc.gov.export">导出配置</button>
                 </div>
                 <div class="sc-governance-grid">
-                  <div class="sc-list white">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.activeWl">当前白名单</h4><span id="scWlCount">—</span></div>
-                    <div class="sc-list-items" id="scGovernanceWlItems"></div>
+                  <div class="sc-list sc-list--wl">
+                    <div class="sc-list-head">
+                      <h4 data-i18n="sc.gov.activeWl">当前白名单</h4>
+                      <span id="scWlCount" class="sc-gov-count-pill sc-gov-count-pill--wl">0 个交易对</span>
+                    </div>
+                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceWlItems"></div>
+                    <button type="button" class="sc-gov-add-wl-btn" id="scGovAddWhitelist" data-i18n="sc.gov.addWhitelistBtn">添加白名单</button>
                   </div>
-                  <div class="sc-list black">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.globalBl">全局黑名单</h4><span id="scBlCount">—</span></div>
-                    <div class="sc-list-items" id="scGovernanceBlItems"></div>
+                  <div class="sc-list sc-list--bl">
+                    <div class="sc-list-head">
+                      <h4 data-i18n="sc.gov.globalBl">全局黑名单</h4>
+                      <span id="scBlCount" class="sc-gov-count-pill sc-gov-count-pill--bl">0 个交易对</span>
+                    </div>
+                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceBlItems"></div>
                   </div>
                 </div>
               </div>

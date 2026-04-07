@@ -52,27 +52,29 @@
             <section class="sc-bottom">
               <div class="sc-governance">
                 <div class="sc-governance-head">
-                  <div>
+                  <div class="sc-governance-head-main">
                     <h2 data-i18n="sc.gov.title">资产访问治理</h2>
-                    <p id="scGovPolicy" class="sc-gov-policy" data-i18n="sc.gov.policy">交易对白名单策略 v4.0</p>
+                    <p id="scGovMeta" class="sc-gov-meta" aria-live="polite"></p>
                   </div>
-                  <button type="button" class="ghost" data-i18n="sc.gov.export">导出配置</button>
+                  <button type="button" class="ghost sc-gov-export-btn" data-i18n="sc.gov.export">导出配置</button>
                 </div>
                 <div class="sc-governance-grid">
-                  <div class="sc-list white">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.activeWl">当前白名单</h4><span id="scWlCount">0 个交易对</span></div>
-                    <div class="sc-list-items" id="scGovernanceWlItems">
-                      <div class="item dashed item-placeholder" data-i18n="pairlist.addRpc">添加（请使用 API）</div>
+                  <div class="sc-list sc-list--wl">
+                    <div class="sc-list-head">
+                      <h4 data-i18n="sc.gov.activeWl">当前白名单</h4>
+                      <span id="scWlCount" class="sc-gov-count-pill sc-gov-count-pill--wl">0 个交易对</span>
                     </div>
+                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceWlItems"></div>
+                    <button type="button" class="sc-gov-add-wl-btn" id="scGovAddWhitelist" data-i18n="sc.gov.addWhitelistBtn">
+                      添加白名单
+                    </button>
                   </div>
-                  <div class="sc-list black">
-                    <div class="sc-list-head"><h4 data-i18n="sc.gov.globalBl">全局黑名单</h4><span id="scBlCount">0 个交易对</span></div>
-                    <div class="sc-list-items" id="scGovernanceBlItems">
-                      <div class="item">
-                        <strong>Bovin</strong>
-                        <small>名单数据来自 RPC。</small>
-                      </div>
+                  <div class="sc-list sc-list--bl">
+                    <div class="sc-list-head">
+                      <h4 data-i18n="sc.gov.globalBl">全局黑名单</h4>
+                      <span id="scBlCount" class="sc-gov-count-pill sc-gov-count-pill--bl">0 个交易对</span>
                     </div>
+                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceBlItems"></div>
                   </div>
                 </div>
               </div>
@@ -617,25 +619,35 @@
 
 .sc-governance {
   grid-column: span 2;
-  background: var(--ft-panel-surface);
-  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
-  border-radius: var(--ft-panel-radius);
+  background: rgba(8, 14, 28, 0.92);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.28);
+  border-radius: 12px;
   overflow: hidden;
   align-self: start;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 
 .sc-governance-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
+}
+
+.sc-governance-head-main {
+  min-width: 0;
+  flex: 1;
 }
 
 .sc-governance-head h2 {
   margin: 0;
   font-family: var(--ft-font-display);
   font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main, #e8ecf8);
 }
 
 .sc-kpi .anticon {
@@ -656,33 +668,48 @@
   font-size: 16px;
 }
 
-.sc-governance-head p {
-  margin: 3px 0 0;
-  font-size: 10px;
-  text-transform: uppercase;
-  color: #8c90a2;
-  letter-spacing: 0.08em;
+.sc-gov-meta {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #8ea0cf;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.sc-gov-export-btn {
+  flex-shrink: 0;
+  margin-top: 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .sc-governance-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: stretch;
 }
 
-.sc-list {
-  padding: 14px;
+.sc-list--wl {
+  padding: 16px 18px 18px;
+  background: rgba(12, 20, 42, 0.35);
 }
 
-.sc-list.black {
-  background: rgba(6, 14, 32, 0.45);
-  border-left: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+.sc-list--bl {
+  padding: 16px 18px 18px;
+  background: rgba(6, 12, 26, 0.55);
+  border-left: 1px solid rgba(var(--ft-panel-edge-rgb), 0.18);
 }
 
 .sc-list-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .sc-list-head h4 {
@@ -690,60 +717,133 @@
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aeb9db;
 }
 
-.sc-list-head span {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-
-.sc-list.white .sc-list-head span {
-  color: #4edea3;
-  background: rgba(78, 222, 163, 0.12);
-}
-
-.sc-list.black .sc-list-head span {
-  color: #ffb4ab;
-  background: rgba(255, 180, 171, 0.12);
-}
-
-.sc-list-items {
-  display: grid;
-  gap: 8px;
-  min-height: 64px;
-}
-
-.sc-list .item {
-  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  background: rgba(35, 46, 74, 0.72);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  /* min-height: 40px; */
-}
-
-.sc-list .item strong {
-  font-size: 12px;
+.sc-gov-count-pill {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
   line-height: 1.2;
 }
 
-.sc-list .item small {
-  font-size: 10px;
-  color: #8c90a2;
-  line-height: 1.35;
+.sc-gov-count-pill--wl {
+  color: #5ee9b5;
+  background: rgba(78, 222, 163, 0.14);
+  border: 1px solid rgba(78, 222, 163, 0.28);
 }
 
-.sc-list.black .item {
-  background: #222a3d;
+.sc-gov-count-pill--bl {
+  color: #ffb4a8;
+  background: rgba(255, 140, 120, 0.12);
+  border: 1px solid rgba(255, 180, 171, 0.22);
 }
 
-.sc-list.black .item strong {
-  /* text-decoration: line-through; */
+.sc-gov-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.sc-gov-add-wl-btn {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px dashed rgba(var(--ft-panel-edge-rgb), 0.45);
+  background: rgba(18, 28, 52, 0.55);
+  color: #9aacd9;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.sc-gov-add-wl-btn:hover {
+  border-color: rgba(78, 222, 163, 0.45);
+  color: #c8d9f0;
+  background: rgba(24, 36, 64, 0.65);
+}
+
+/* 由 control-console 注入的卡片（:deep 命中子节点） */
+.sc-governance :deep(.sc-gov-pair-card) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
+  background: rgba(26, 36, 58, 0.85);
+}
+
+.sc-governance :deep(.sc-gov-pair-card--bl:not(.sc-gov-pair-card--hint)) {
+  background: rgba(22, 28, 44, 0.95);
+}
+
+.sc-governance :deep(.sc-gov-pair-card-main) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sc-governance :deep(.sc-gov-pair-card-main--stack) {
+  width: 100%;
+}
+
+.sc-governance :deep(.sc-gov-pair-name) {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f0f4ff;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.sc-governance :deep(.sc-gov-pair-lock) {
+  display: inline-flex;
+  color: #6b7a9e;
+  line-height: 0;
+}
+
+.sc-governance :deep(.sc-gov-pair-lock svg) {
+  display: block;
+}
+
+.sc-governance :deep(.sc-gov-pair-tag) {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c9bb8;
+  letter-spacing: 0.04em;
+}
+
+.sc-governance :deep(.sc-gov-pair-tag--wl) {
+  color: #7ebda5;
+}
+
+.sc-governance :deep(.sc-gov-pair-tag--bl) {
+  color: #c49a94;
+}
+
+.sc-governance :deep(.sc-gov-pair-card--hint .sc-gov-hint-title) {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
   color: #aeb9db;
+}
+
+.sc-governance :deep(.sc-gov-pair-card--hint .sc-gov-hint-body) {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #7a869f;
 }
 
 .sc-auto-blacklist {
@@ -760,22 +860,6 @@
   display: block;
   color: #b4c5ff;
   margin-bottom: 3px;
-}
-
-.sc-list .dashed {
-  border-style: dashed;
-}
-
-.sc-list .item.item-placeholder {
-  align-items: center;
-  text-align: center;
-  color: #7f8aa8;
-  font-size: 13px;
-  font-weight: 700;
-  height: 50px !important;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.42);
-    border-radius: var(--ft-radius-control);
-    background: rgba(23, 34, 65, 0.75);
 }
 
 .sc-feed {
@@ -855,13 +939,17 @@
 </style>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import {
   BarChartOutlined,
   CheckCircleOutlined,
   LineChartOutlined,
   RiseOutlined
 } from "@ant-design/icons-vue";
+import { postBlacklist, postWhitelistAdd } from "../../api/positions.js";
+import { refreshGovernanceListsOnly } from "../../panel-poll.js";
+import { i18n } from "../../i18n/index.js";
+import { state } from "../../store/state-core.js";
 
 const forceSidePopupContainer = () => document.body;
 const forceSideVal = ref("long");
@@ -875,11 +963,122 @@ watch(forceSideVal, (v) => {
   if (el instanceof HTMLInputElement && el.type === "hidden") el.value = v;
 });
 
+function wlModalT(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
+
+let unbindWhitelistModalKeydown = null;
+
+function bindWhitelistAddModal() {
+  const modal = document.getElementById("whitelistAddModal");
+  const rowsHost = document.getElementById("whitelistAddRows");
+  const openBtn = document.getElementById("scGovAddWhitelist");
+  const closeBtn = document.getElementById("closeWhitelistAddModal");
+  const mask = modal?.querySelector(".modal-mask");
+  const addRowBtn = document.getElementById("whitelistAddRowBtn");
+  const saveBtn = document.getElementById("saveWhitelistAddModal");
+  if (!modal || !rowsHost || !openBtn) return;
+  unbindWhitelistModalKeydown?.();
+
+  function addRow(initial = "") {
+    const row = document.createElement("div");
+    row.className = "whitelist-add-row";
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.className = "whitelist-add-pair";
+    inp.autocomplete = "off";
+    inp.placeholder = wlModalT("sc.gov.whitelistPairPh");
+    inp.value = initial;
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.className = "ghost tiny whitelist-add-remove";
+    rm.setAttribute("aria-label", wlModalT("modal.whitelistRemoveRow"));
+    rm.textContent = "×";
+    rm.addEventListener("click", () => {
+      if (rowsHost.querySelectorAll(".whitelist-add-row").length > 1) row.remove();
+    });
+    row.append(inp, rm);
+    rowsHost.appendChild(row);
+  }
+
+  function openModal() {
+    rowsHost.innerHTML = "";
+    addRow("");
+    addRow("");
+    modal.classList.remove("hidden");
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+  }
+
+  openBtn.addEventListener("click", openModal);
+  closeBtn?.addEventListener("click", closeModal);
+  mask?.addEventListener("click", closeModal);
+  addRowBtn?.addEventListener("click", () => addRow(""));
+
+  const onKey = (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
+  };
+  window.addEventListener("keydown", onKey);
+  unbindWhitelistModalKeydown = () => window.removeEventListener("keydown", onKey);
+
+  saveBtn?.addEventListener("click", () => {
+    const inputs = rowsHost.querySelectorAll(".whitelist-add-pair");
+    const whitelist = [];
+    for (const input of inputs) {
+      if (!(input instanceof HTMLInputElement)) continue;
+      const v = input.value.trim();
+      if (v) whitelist.push(v);
+    }
+    if (!whitelist.length) {
+      window.alert(wlModalT("modal.whitelistAddEmpty"));
+      return;
+    }
+    void (async () => {
+      try {
+        await postWhitelistAdd({ whitelist });
+        closeModal();
+        await refreshGovernanceListsOnly();
+      } catch (e) {
+        const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+        window.alert(msg);
+      }
+    })();
+  });
+}
+
+onUnmounted(() => {
+  unbindWhitelistModalKeydown?.();
+  unbindWhitelistModalKeydown = null;
+});
+
 onMounted(() => {
   const el = document.getElementById("forceSide");
   if (el instanceof HTMLInputElement && el.type === "hidden" && el.value) {
     forceSideVal.value = el.value;
   }
+
+  bindWhitelistAddModal();
+
+  document.getElementById("loadLists")?.addEventListener("click", () => {
+    void refreshGovernanceListsOnly();
+  });
+  document.getElementById("addBlacklist")?.addEventListener("click", () => {
+    const inp = document.getElementById("blacklistPair");
+    const pair = inp && "value" in inp ? String(inp.value || "").trim() : "";
+    if (!pair) return;
+    void (async () => {
+      try {
+        await postBlacklist([pair]);
+        await refreshGovernanceListsOnly();
+      } catch (e) {
+        const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+        window.alert(msg);
+      }
+    })();
+  });
 });
 </script>
 
@@ -891,6 +1090,7 @@ export {
   panelBotTradingApisAvailable,
   orderedStrategyNames,
   resolvePanelConfigSummary,
+  renderControlGovernanceLists,
   renderControlStrategyCards,
   renderControlHeroAndCards
 } from "../../components/control-console.js";

@@ -1524,6 +1524,48 @@ body {
     0 0 0 1px rgba(var(--ft-accent-rgb), 0.08);
 }
 
+.modal-card--whitelist-add {
+  width: min(440px, calc(100vw - 32px));
+  max-height: min(85vh, 560px);
+}
+
+.whitelist-add-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.whitelist-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.whitelist-add-row .whitelist-add-pair {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--ft-line-rgb), 0.35);
+  background: rgba(6, 12, 28, 0.55);
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.whitelist-add-row .whitelist-add-remove {
+  flex-shrink: 0;
+  min-width: 32px;
+  padding: 4px 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.whitelist-add-row-btn {
+  margin-top: 4px;
+  align-self: flex-start;
+}
+
 .modal-head--binding {
   flex-shrink: 0;
   align-items: flex-start;
