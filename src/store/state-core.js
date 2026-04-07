@@ -821,7 +821,10 @@ export const uiState = {
   tuneStep: 0,
   tradeActionDelegation: false,
   controlConsoleDelegation: false,
+  /** 去重后的类名列表，供策略 AI 控制台等多卡逻辑 */
   panelStrategyList: null,
+  /** 与 GET /panel/strategies 的 strategies 数组一致（保留重复项与顺序），供数据面板列表 */
+  panelStrategyListAll: null,
   panelUserId: null,
   panelUsername: "",
   menuPermissions: null,

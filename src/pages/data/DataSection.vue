@@ -24,20 +24,16 @@
               <aside class="da-left">
                 <div class="da-left-head">
                   <h3 data-i18n="data.strategies">策略</h3>
-                  <span class="da-left-meta" data-i18n="data.strategiesRunningDemo">4 个运行中（演示）</span>
+                  <span id="dataStrategiesMeta" class="da-left-meta" data-i18n="data.strategiesMetaEmpty">—</span>
                 </div>
-                <div class="da-strategy-list">
-                  <div class="da-strategy-card"><strong>SampleStrategy</strong><em>+12.4%</em><small>胜率: 64%</small></div>
-                  <div class="da-strategy-card"><strong>RSITrendStrategy</strong><em>+8.1%</em><small>胜率: 58%</small></div>
-                  <div class="da-strategy-card"><strong>MomentumBreakout</strong><em class="negative">-2.4%</em><small>胜率: 42%</small></div>
-                  <div class="da-strategy-card"><strong>MeanReversionV2</strong><em>+24.9%</em><small>胜率: 71%</small></div>
+                <div id="dataStrategiesList" class="da-strategy-list" aria-label="策略列表">
+                  <div class="da-strategy-card da-strategy-card--placeholder">
+                    <small class="muted" data-i18n="data.noStrategy">暂无策略数据</small>
+                  </div>
                 </div>
                 <div class="da-volume">
                   <h4 data-i18n="data.networkVol">全网约成交量</h4>
-                  <div class="bars da-vol-bars" id="daVolBars">
-                    <i style="--da-vol-h: 40%"></i><i style="--da-vol-h: 60%"></i><i style="--da-vol-h: 85%"></i><i style="--da-vol-h: 55%"></i>
-                    <i style="--da-vol-h: 95%"></i><i style="--da-vol-h: 45%"></i><i style="--da-vol-h: 70%"></i><i style="--da-vol-h: 30%"></i>
-                  </div>
+                  <div class="bars da-vol-bars" id="daVolBars" aria-hidden="true"></div>
                 </div>
               </aside>
 
@@ -298,45 +294,7 @@
   border: 1px solid rgba(var(--ft-line-rgb), 0.2);
 }
 
-.da-strategy-list {
-  display: grid;
-  gap: 8px;
-  width: 100%;
-}
-
-.da-strategy-card {
-  background: var(--ft-panel-surface);
-  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  border-radius: 10px;
-  padding: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 8px;
-  align-items: center;
-  min-height: 64px;
-}
-
-.da-strategy-card strong {
-  font-size: 14px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.da-strategy-card em {
-  font-style: normal;
-  color: #4edea3;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.da-strategy-card small {
-  grid-column: 1 / -1;
-  font-size: 10px;
-  color: #8c90a2;
-  line-height: 1.35;
-}
+/* 策略列表样式见全局 data.css（列表由 panel 轮询 innerHTML 注入） */
 
 .da-volume {
   background: var(--ft-panel-surface);
@@ -1271,7 +1229,8 @@ import {
   buildKlineShellHtml,
   maLegendValues,
   renderSvgFallbackKline,
-  sortKlineRowsByTime
+  sortKlineRowsByTime,
+  renderDaVolumeBars
 } from "./data-panel-kline.js";
 import {
   drawPanelKlineCanvas,
@@ -1297,6 +1256,7 @@ onMounted(() => {
   const historyEmpty = dataRoot.querySelector("#daHistoryEmpty");
   const pairData = dataRoot.querySelector("#pairData");
   const daDataSource = dataRoot.querySelector("#daDataSource");
+  const daVolBars = dataRoot.querySelector("#daVolBars");
   const marketBoard = dataRoot.querySelector("#daMarketBoard");
   if (!tfWrap || !modeWrap || !pairData) return;
 
@@ -1469,6 +1429,7 @@ onMounted(() => {
   const applyRowsToRenderer = (rows) => {
     const sorted = sortKlineRowsByTime(rows);
     lastRows = sorted;
+    renderDaVolumeBars(daVolBars, sorted);
     const mount = pairData.querySelector("#daKlineMount");
     if (!mount) return;
     const { ma7Text, ma25Text } = maLegendValues(sorted);
@@ -1574,6 +1535,7 @@ onMounted(() => {
         mount.innerHTML = "";
       }
       lastRows = [];
+      renderDaVolumeBars(daVolBars, []);
       showKlineError(e);
     }
   };

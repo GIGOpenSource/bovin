@@ -1,6 +1,7 @@
 /**
  * 与历史根目录 main.js 中概览轮询（xr）及控制台卡片刷新同向的轻量实现：
- * 拉取核心 REST，写入 uiState，更新 KPI / sysinfo，并调用 control-console 渲染策略卡。
+ * 拉取核心 REST，写入 uiState，更新 KPI / sysinfo、数据页策略列表与页眉状态，并调用 control-console 渲染策略卡。
+ * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategies、/show_config、/profit 等）。
  */
 import { state, uiState } from "./store/state-core.js";
 import {
@@ -33,7 +34,9 @@ import {
   lastDayAbsProfit
 } from "./utils/overview-kpi.js";
 import { applyOverviewStrategiesTable } from "./utils/overview-strategies-table.js";
+import { applyDataStrategiesList, normalizePanelStrategyNames } from "./utils/data-strategies-list.js";
 import { renderOverviewSysinfoInto } from "./utils/overview-sysinfo-html.js";
+import { escapeHtml } from "./utils/html-utils.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -91,6 +94,24 @@ export function applyTopbarDecor(pingOk, latencyMs) {
   if (rpc) {
     rpc.classList.remove("hidden");
     rpc.textContent = t("live.httpPolling");
+  }
+
+  /* 数据面板页眉：与 /ping 轮询同源（见 panelTick → applyTopbarDecor） */
+  const daNode = $("daNodeLine");
+  if (daNode) {
+    const label = ok ? t("data.nodeOnline") : t("data.nodeOffline");
+    daNode.innerHTML = `<i class="${ok ? "dot ok" : "dot"}"></i>${escapeHtml(label)}`;
+  }
+  const daLat = $("daLatencyLine");
+  if (daLat) {
+    daLat.innerHTML = `<i class="${ok ? "dot ok" : "dot"}"></i>${escapeHtml(tReplace("data.latencyLine", { ms }))}`;
+  }
+  const daNet = $("daNetStatus");
+  if (daNet) {
+    daNet.textContent = ok ? t("data.netOk") : t("data.netFail");
+    daNet.classList.toggle("live", ok);
+    daNet.classList.toggle("fallback", !ok);
+    daNet.classList.remove("retry");
   }
 }
 
@@ -161,7 +182,9 @@ async function panelTick() {
       typeof strategies.value === "object" &&
       Array.isArray(strategies.value.strategies)
     ) {
-      uiState.panelStrategyList = strategies.value.strategies;
+      const raw = strategies.value.strategies;
+      uiState.panelStrategyListAll = normalizePanelStrategyNames(raw, false);
+      uiState.panelStrategyList = normalizePanelStrategyNames(raw, true);
     }
     if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
     if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
@@ -315,6 +338,14 @@ async function panelTick() {
       profitObj,
       y,
       uiState.lastStForRisk || [],
+      t,
+      tReplace
+    );
+
+    applyDataStrategiesList(
+      uiState.panelStrategyListAll ?? uiState.panelStrategyList,
+      showCfg,
+      profitObj,
       t,
       tReplace
     );

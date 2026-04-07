@@ -142,11 +142,24 @@
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   border-radius: 10px;
   padding: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 8px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   min-height: 64px;
+}
+
+.da-strategy-card--placeholder {
+  justify-content: center;
+  min-height: 52px;
+}
+
+.da-strategy-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
 }
 
 .da-strategy-card strong {
@@ -157,18 +170,84 @@
   white-space: nowrap;
 }
 
+.da-strategy-status {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--ft-line-rgb), 0.28);
+  color: var(--text-dim);
+  background: rgba(var(--ft-deep-rgb), 0.35);
+}
+
+.da-strategy-status--running {
+  color: #4edea3;
+  border-color: rgba(78, 222, 163, 0.4);
+  background: rgba(78, 222, 163, 0.12);
+}
+
+.da-strategy-status--paused {
+  color: var(--warning, #f8cf65);
+  border-color: rgba(248, 207, 101, 0.35);
+  background: rgba(248, 207, 101, 0.1);
+}
+
+.da-strategy-status--stopped {
+  color: #ffb4ab;
+  border-color: rgba(255, 180, 171, 0.35);
+  background: rgba(255, 180, 171, 0.08);
+}
+
+.da-strategy-status--inactive {
+  color: #8c90a2;
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.28);
+}
+
+.da-strategy-card__profit {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.da-strategy-card__profit .da-strategy-metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .da-strategy-card em {
   font-style: normal;
   color: #4edea3;
   font-weight: 700;
   font-size: 13px;
+  line-height: 1.2;
+}
+
+.da-strategy-card em.positive {
+  color: #4edea3;
+}
+
+.da-strategy-card em.negative {
+  color: #ffb4ab;
+}
+
+.da-strategy-card em.da-strategy-metric--na {
+  color: #8c90a2;
+  font-weight: 600;
 }
 
 .da-strategy-card small {
-  grid-column: 1 / -1;
   font-size: 10px;
   color: #8c90a2;
   line-height: 1.35;
+}
+
+.da-strategy-metric-label {
+  color: #8c90a2;
 }
 
 .da-volume {

@@ -54,6 +54,43 @@ function toLwTimeSec(dateLike, fallbackIdx = 0) {
   return Math.floor(Date.now() / 1000) - fallbackIdx * 60;
 }
 
+/**
+ * 数据页侧栏柱形：仅取时间轴上 **最近 8 根** K 线；每根取数组 **第 5 个数字**（下标 4，常见为 close）。
+ * @param {HTMLElement | null | undefined} container `#daVolBars`
+ * @param {unknown[]} rows `parseBinanceKlinesRows` 等同源行（每行至少 5 列）
+ * @param {number} [maxBars=8] 只展示最近 N 根（默认 8）
+ */
+export function renderDaVolumeBars(container, rows, maxBars = 8) {
+  if (!container) return;
+  if (!Array.isArray(rows) || !rows.length) {
+    container.innerHTML = "";
+    return;
+  }
+  const sorted = sortKlineRowsByTime(rows);
+  const cap = Math.max(1, Math.min(maxBars, sorted.length));
+  const slice = sorted.slice(-cap);
+  const vals = [];
+  for (const r of slice) {
+    if (!Array.isArray(r) || r.length < 5) continue;
+    const v = Number(r[4]);
+    if (Number.isFinite(v)) vals.push(v);
+  }
+  if (!vals.length) {
+    container.innerHTML = "";
+    return;
+  }
+  const mx = Math.max(...vals);
+  const mn = Math.min(...vals);
+  const span = mx - mn || Math.abs(mx) || 1;
+  container.innerHTML = vals
+    .map((v) => {
+      const t = mx !== mn && span > 0 ? (v - mn) / span : 0.55;
+      const pct = Math.min(100, Math.max(6, Math.round(6 + t * 94)));
+      return `<i style="--da-vol-h: ${pct}%"></i>`;
+    })
+    .join("");
+}
+
 /** 按开盘时间升序，供画布与 LWC 共用 */
 export function sortKlineRowsByTime(rows) {
   const mini = rows.filter((r) => Array.isArray(r) && r.length >= 5);
