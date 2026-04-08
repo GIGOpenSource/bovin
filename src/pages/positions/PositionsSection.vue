@@ -204,6 +204,24 @@
 .empty-row-cell {
   text-align: center;
 }
+
+:deep(.pos-close-btn) {
+  min-width: 52px;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(86, 140, 255, 0.65);
+  background: linear-gradient(180deg, rgba(50, 96, 214, 0.95) 0%, rgba(35, 72, 168, 0.95) 100%);
+  color: #e8f0ff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 0 1px rgba(22, 46, 109, 0.35);
+}
+
+:deep(.pos-close-btn:hover) {
+  filter: brightness(1.06);
+}
 </style>
 
 <script>

@@ -110,3 +110,30 @@ html[data-theme="light"] .modal-card--binding .bovin-select-full .ant-select-sel
   min-width: 0;
   display: block;
 }
+
+/* 用户弹窗：用户名/密码 input 与权限 a-select 保持同色系 */
+.modal-card--panel-user .binding-field input:not([type="checkbox"]) {
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%) !important;
+  border-color: rgba(var(--ft-line-rgb, 120, 140, 200), 0.38) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.modal-card--panel-user .binding-field input:not([type="checkbox"]):focus {
+  border-color: rgba(var(--ft-accent-rgb), 0.76) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16) !important;
+}
+
+/* 确认弹窗：取消按钮 hover 使用页面蓝色，不用绿色主色 */
+.ant-modal-confirm .ant-btn-default:hover,
+.ant-modal-confirm .ant-btn-default:focus,
+.ant-modal-confirm .ant-btn-default:focus-visible {
+  color: #fff !important;
+  font-weight: 400 !important;
+  border-color: transparent !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+}

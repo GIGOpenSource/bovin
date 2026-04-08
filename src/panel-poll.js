@@ -4,6 +4,7 @@
  * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategy-slots、/show_config、/profit 等）。
  */
 import { state, uiState, getNormalizedControlTradesFeedLimit } from "./store/state-core.js";
+import { requestAtBase } from "./utils/http.js";
 import {
   getPing,
   getShowConfig,
@@ -48,6 +49,8 @@ function $(id) {
   return document.getElementById(id);
 }
 
+const POSITIONS_STATUS_LOCAL_BASE = "http://127.0.0.1:18080/api/v1";
+
 function t(key) {
   const lang = state.lang || "zh-CN";
   return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
@@ -61,6 +64,138 @@ function tReplace(key, vars) {
     }
   }
   return s;
+}
+
+function toNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function pickFirstNumber(obj, keys) {
+  if (!obj || typeof obj !== "object") return null;
+  for (const k of keys) {
+    const n = toNum(obj[k]);
+    if (n != null) return n;
+  }
+  return null;
+}
+
+function pickFirstString(obj, keys) {
+  if (!obj || typeof obj !== "object") return "";
+  for (const k of keys) {
+    const s = String(obj[k] ?? "").trim();
+    if (s) return s;
+  }
+  return "";
+}
+
+function unwrapStatusPayload(raw) {
+  if (!raw) return raw;
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== "object") return raw;
+  const body = raw;
+  if (Array.isArray(body.data)) return body.data;
+  if (body.data && typeof body.data === "object") return body.data;
+  return body;
+}
+
+function normalizePositionsAndOrders(statusRaw) {
+  const src = unwrapStatusPayload(statusRaw);
+  if (Array.isArray(src)) return { positions: src, orders: [] };
+  if (!src || typeof src !== "object") return { positions: [], orders: [] };
+  const positions =
+    (Array.isArray(src.positions) && src.positions) ||
+    (Array.isArray(src.trades) && src.trades) ||
+    (Array.isArray(src.open_trades) && src.open_trades) ||
+    [];
+  const orders =
+    (Array.isArray(src.orders) && src.orders) ||
+    (Array.isArray(src.open_orders) && src.open_orders) ||
+    (Array.isArray(src.pending_orders) && src.pending_orders) ||
+    [];
+  return { positions, orders };
+}
+
+function renderPositionsSectionFromStatus(statusRaw) {
+  const statusTable = $("statusTable");
+  const pendingTable = $("pendingTable");
+  if (!statusTable && !pendingTable) return;
+
+  const { positions, orders } = normalizePositionsAndOrders(statusRaw);
+  const statusRows = positions
+    .map((row) => {
+      const pair = escapeHtml(pickFirstString(row, ["pair", "symbol", "market"]) || "—");
+      const openRate = pickFirstNumber(row, ["open_rate", "openRate", "entry_price", "entryPrice"]);
+      const currentRate = pickFirstNumber(row, ["current_rate", "currentRate", "close_rate", "closeRate", "price"]);
+      const pnl = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl", "pnl"]) ?? 0;
+      const size = pickFirstNumber(row, ["stake_amount", "stakeAmount", "amount", "size"]);
+      return `
+        <tr>
+          <td>${pair}</td>
+          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
+          <td class="t-right">${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
+          <td class="t-right ${pnl >= 0 ? "positive" : "negative"}">${pnl >= 0 ? "+" : ""}${pnl.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td class="t-right">${size == null ? "—" : size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td class="t-center"><button type="button" class="pos-close-btn">平仓</button></td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const pendingRows = orders
+    .map((row) => {
+      const orderType = escapeHtml(pickFirstString(row, ["order_type", "type", "side"]) || "—");
+      const price = pickFirstNumber(row, ["price", "rate", "limit_price", "limitPrice"]);
+      const qty = pickFirstNumber(row, ["amount", "quantity", "qty", "stake_amount", "stakeAmount"]);
+      const status = escapeHtml(pickFirstString(row, ["status", "state"]) || "open");
+      return `
+        <tr>
+          <td>${orderType}</td>
+          <td class="t-right">${price == null ? "—" : price.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
+          <td class="t-right">${qty == null ? "—" : qty.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td class="t-center"><span class="status-chip">${status}</span></td>
+          <td class="t-center"><button type="button" class="pos-close-btn">平仓</button></td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  if (statusTable) {
+    statusTable.innerHTML =
+      statusRows ||
+      '<tr><td colspan="6" class="empty-row-cell">—</td></tr>';
+  }
+  if (pendingTable) {
+    pendingTable.innerHTML =
+      pendingRows ||
+      '<tr data-empty-row="pending"><td colspan="5" class="empty-row-cell">无挂单</td></tr>';
+  }
+
+  const totalPnl = positions.reduce((sum, row) => {
+    const pnl = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl", "pnl"]) ?? 0;
+    return sum + pnl;
+  }, 0);
+  const exposure = positions.reduce((sum, row) => {
+    const s = pickFirstNumber(row, ["stake_amount", "stakeAmount", "amount", "size"]) ?? 0;
+    return sum + Math.abs(s);
+  }, 0);
+  const totalPnlEl = $("posTotalPnl");
+  if (totalPnlEl) totalPnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
+  const exposureEl = $("posExposure");
+  if (exposureEl) exposureEl.textContent = exposure.toLocaleString(undefined, { maximumFractionDigits: 4 });
+
+  const statusInfo = $("statusPageInfo");
+  if (statusInfo) statusInfo.textContent = "1 / 1";
+  const pendingInfo = $("pendingPageInfo");
+  if (pendingInfo) pendingInfo.textContent = "1 / 1";
+  const statusPrev = $("statusPrev");
+  if (statusPrev) statusPrev.disabled = true;
+  const statusNext = $("statusNext");
+  if (statusNext) statusNext.disabled = true;
+  const pendingPrev = $("pendingPrev");
+  if (pendingPrev) pendingPrev.disabled = true;
+  const pendingNext = $("pendingNext");
+  if (pendingNext) pendingNext.disabled = true;
 }
 
 /** @param {unknown} raw */
@@ -394,8 +529,14 @@ async function panelTick() {
     applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
     try {
-      const st = await getStatus();
+      let st = null;
+      try {
+        st = await requestAtBase(POSITIONS_STATUS_LOCAL_BASE, "/status", { method: "GET" });
+      } catch {
+        st = await getStatus();
+      }
       uiState.lastStForRisk = Array.isArray(st) ? st : [];
+      renderPositionsSectionFromStatus(st);
     } catch {
       /* ignore */
     }

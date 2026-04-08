@@ -121,6 +121,7 @@ export function panelStrategySlotRowName(row) {
   const n =
     o.name ??
     o.strategy ??
+    o.strategyName ??
     o.class_name ??
     o.strategy_name ??
     o.className ??
@@ -158,6 +159,7 @@ export function panelStrategySlotRowAliases(row) {
   const top =
     o.name ??
     o.strategy ??
+    o.strategyName ??
     o.class_name ??
     o.strategy_name ??
     o.className ??

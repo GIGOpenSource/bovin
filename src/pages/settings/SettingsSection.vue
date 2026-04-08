@@ -111,8 +111,14 @@
         </section>
 </template>
 
-<style scoped>
+<style>
 /* settings */
+
+.settings-page .bindings-list .binding-row {
+  margin-block: 4px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
 
 .strategy-config-list-panel {
   border: 1px solid rgba(var(--ft-line-rgb), 0.22);
@@ -138,19 +144,23 @@
   display: grid;
   grid-template-columns: 130px repeat(10, minmax(64px, 1fr));
   gap: 8px 10px;
-  align-items: start;
+  align-items: center;
   font-size: 10px;
   color: #aeb9db;
 }
 
-.strategy-config-cells strong {
+.strategy-config-cells .strategy-config-name {
   color: #f0f4ff;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   align-self: center;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   min-height: 32px;
 }
 
@@ -164,6 +174,7 @@
   min-width: 0;
   display: grid;
   gap: 2px;
+  align-content: center;
 }
 
 .strategy-config-k {
@@ -183,10 +194,17 @@
 }
 
 .strategy-config-list .strategy-config-row .actions .ghost.tiny {
-  min-height: 26px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 11px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.panel-user-actions .ghost.tiny {
+  min-height: 36px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
 }
 </style>
 
@@ -195,8 +213,33 @@ export * from "../../api/settings.js";
 </script>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { createVNode, onMounted, onUnmounted } from "vue";
+import { Modal, message } from "ant-design-vue";
+import { ExclamationCircleFilled } from "@ant-design/icons-vue";
+import { i18n } from "../../i18n/index.js";
 import { refreshStrategyConsoleAfterPrefs } from "../../app.js";
+import {
+  deletePanelUser,
+  deletePanelApiBinding,
+  getPanelPreferences,
+  getPanelUsers,
+  patchPanelUser,
+  postPanelPreferences,
+  postPanelUser
+} from "../../api/settings.js";
+import {
+  deletePanelStrategySlot,
+  getPanelStrategySlots,
+  patchPanelStrategySlot,
+  postPanelStrategySlot
+} from "../../api/overview.js";
+import {
+  extractPanelStrategyListPayload,
+  panelStrategySlotRowName,
+  rowServerSlotId,
+  slotRowDetailJsonText,
+  slotRowMmlText
+} from "../../utils/data-strategies-list.js";
 import {
   state,
   defaultStrategyEntry,
@@ -211,6 +254,7 @@ let disposeApiBindingModal = null;
 let editingBindingRow = null;
 let disposeStrategyModal = null;
 let disposeUserModal = null;
+let editingPanelUser = null;
 
 const esc = (v) =>
   String(v ?? "")
@@ -237,6 +281,82 @@ function readFieldNumOrNull(id) {
 function readCheckbox(id) {
   const el = document.getElementById(id);
   return Boolean(el && "checked" in el && el.checked);
+}
+
+function tS(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
+
+function showWarn(content) {
+  message.open({
+    type: "warning",
+    content: String(content || ""),
+    icon: createVNode(ExclamationCircleFilled, {
+      style: { color: "rgb(248, 113, 113)" }
+    })
+  });
+}
+
+function showError(content) {
+  message.error(String(content || ""));
+}
+
+function pickFirst(o, keys) {
+  if (!o || typeof o !== "object") return undefined;
+  for (const k of keys) {
+    if (Object.prototype.hasOwnProperty.call(o, k) && o[k] != null) return o[k];
+  }
+  return undefined;
+}
+
+function normalizePermValue(v) {
+  const s = String(v ?? "").trim().toLowerCase();
+  if (s === "edit" || s === "write" || s === "rw") return "edit";
+  if (s === "hidden" || s === "none" || s === "deny") return "hidden";
+  return "read";
+}
+
+function normalizeUserMenuPermissions(raw) {
+  const src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  return {
+    overview: normalizePermValue(src.overview ?? src.Overview),
+    positions: normalizePermValue(src.positions ?? src.Positions),
+    control: normalizePermValue(src.control ?? src.Control),
+    data: normalizePermValue(src.data ?? src.Data),
+    settings: normalizePermValue(src.settings ?? src.Settings),
+    monitor: normalizePermValue(src.monitor ?? src.Monitor),
+    api: normalizePermValue(src.api ?? src.Api)
+  };
+}
+
+function extractPanelUsersList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  const o = payload;
+  for (const k of ["users", "items", "data", "rows", "results", "list"]) {
+    const v = o[k];
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      const nested = extractPanelUsersList(v);
+      if (nested.length) return nested;
+    }
+  }
+  return [];
+}
+
+function mapPanelUserRow(raw) {
+  const o = raw && typeof raw === "object" ? raw : {};
+  const id = pickFirst(o, ["id", "user_id", "userId", "uid", "username"]);
+  const username = String(pickFirst(o, ["username", "user_name", "name", "login", "account"]) ?? "").trim();
+  const permsRaw =
+    pickFirst(o, ["menu_permissions", "menuPermissions", "permissions", "menus", "menu_perm"]) ?? {};
+  return {
+    id: String(id ?? username).trim(),
+    username,
+    perms: normalizeUserMenuPermissions(permsRaw),
+    raw: o
+  };
 }
 
 onMounted(() => {
@@ -314,14 +434,126 @@ onMounted(() => {
   };
 
   if (addApiBindingBtn && apiBindingModal) {
+    let editingBindingId = "";
     const openModal = () => apiBindingModal.classList.remove("hidden");
     const closeModal = () => apiBindingModal.classList.add("hidden");
     const saveBtn = document.getElementById("saveApiBindingModal");
     const onEsc = (e) => {
       if (e.key === "Escape") closeModal();
     };
-    const onSave = () => {
+    const normalizeApiBindingsFromPrefs = (prefsBody) => {
+      if (!prefsBody || typeof prefsBody !== "object") return [];
+      const o = prefsBody;
+      const arr = o.api_bindings ?? o.apiBindings;
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .filter((x) => x && typeof x === "object")
+        .map((x, idx) => {
+          const b = x;
+          const id = String(
+            b.id ??
+              b.binding_id ??
+              b.bindingId ??
+              b.uuid ??
+              b.label ??
+              b.exchangeName ??
+              `row-${idx}`
+          ).trim();
+          return {
+            ...b,
+            _rowId: id || `row-${idx}`
+          };
+        });
+    };
+
+    const renderApiBindings = (bindings) => {
       if (!bindingsList) return;
+      const list = Array.isArray(bindings) ? bindings : [];
+      bindingsList.innerHTML = list
+        .map((b, idx) => {
+          const label = String(b.label ?? b.bindingLabel ?? "").trim() || `映射 #${idx + 1}`;
+          const exName = String(b.exchangeName ?? "").trim() || "binance";
+          const exKey = String(b.exchangeApiKey ?? "").trim();
+          const llmProvider = String(b.llmProvider ?? "").trim() || "deepseek";
+          const llmModel = String(b.llmModel ?? "").trim();
+          const enabled = b.enabled !== false;
+          const enabledText = enabled ? "生效" : "停用";
+          const exKeyText = exKey || "未填写";
+          const llmText = llmModel ? `${llmProvider} / ${llmModel}` : llmProvider;
+          const rowId = String(b._rowId ?? b.id ?? `row-${idx}`).trim() || `row-${idx}`;
+          return `
+        <article class="binding-row"
+          data-binding-id="${esc(rowId)}"
+          data-binding-label="${esc(label)}"
+          data-exchange-name="${esc(exName)}"
+          data-exchange-api-key="${esc(exKey)}"
+          data-llm-provider="${esc(llmProvider)}"
+          data-llm-model="${esc(llmModel)}"
+          data-binding-enabled="${enabled ? "1" : "0"}">
+          <div class="binding-row-head">
+            <div class="binding-row-head-main">
+              <strong class="binding-row-title">${esc(label)}</strong>
+            </div>
+            <div class="binding-row-head-tools">
+              <label class="binding-row-effective">
+                <input type="checkbox" data-binding-enabled-toggle="1" ${enabled ? "checked" : ""} />
+                <span data-binding-enabled-text="1">${esc(enabledText)}</span>
+              </label>
+              <div class="actions">
+                <button type="button" class="ghost tiny" data-binding-edit="1">编辑</button>
+                <button type="button" class="ghost tiny" data-binding-delete="1">删除</button>
+              </div>
+            </div>
+          </div>
+          <div class="binding-summary">
+            <div class="binding-kv"><span class="binding-kv-k">交易所</span><span class="binding-kv-v">${esc(exName)}</span></div>
+            <div class="binding-kv"><span class="binding-kv-k">API KEY</span><span class="binding-kv-v">${esc(exKeyText)}</span></div>
+            <div class="binding-kv"><span class="binding-kv-k">语言模型</span><span class="binding-kv-v">${esc(llmText)}</span></div>
+          </div>
+        </article>`;
+        })
+        .join("");
+      syncBindingsHint();
+    };
+
+    const syncApiBindingsToServer = async (nextBindings) => {
+      const payload = {
+        api_bindings: nextBindings.map(({ _rowId, ...b }) => ({ ...b, enabled: b.enabled !== false }))
+      };
+      await postPanelPreferences(payload);
+      state.apiBindings = payload.api_bindings.map((b, idx) => ({
+        ...b,
+        _rowId:
+          String(
+            b.id ?? b.binding_id ?? b.bindingId ?? b.uuid ?? b.label ?? b.exchangeName ?? `row-${idx}`
+          ).trim() || `row-${idx}`
+      }));
+      renderApiBindings(state.apiBindings);
+    };
+
+    const loadApiBindings = async () => {
+      try {
+        const prefs = await getPanelPreferences();
+        const list = normalizeApiBindingsFromPrefs(prefs?.data && typeof prefs.data === "object" ? prefs.data : prefs);
+        state.apiBindings = list;
+        renderApiBindings(list);
+      } catch {
+        /* 回退：使用已同步到 state 的快照（通常来自 app.js 登录后同步） */
+        renderApiBindings(
+          Array.isArray(state.apiBindings)
+            ? state.apiBindings.map((b, idx) => ({
+                ...b,
+                _rowId:
+                  String(
+                    b.id ?? b.binding_id ?? b.bindingId ?? b.uuid ?? b.label ?? b.exchangeName ?? `row-${idx}`
+                  ).trim() || `row-${idx}`
+              }))
+            : []
+        );
+      }
+    };
+
+    const onSave = async () => {
       const label = document.getElementById("mBindingLabel")?.value?.trim() || "";
       const exName =
         document.getElementById("mExchangeName")?.value?.trim() ||
@@ -332,48 +564,31 @@ onMounted(() => {
       const llmProvider = (llmProvEl && "value" in llmProvEl ? String(llmProvEl.value) : "").trim() || "deepseek";
       const llmModel = document.getElementById("mLlmModel")?.value?.trim() || "";
       const enabled = document.getElementById("mBindingEnabled")?.checked !== false;
-
-      const idx = bindingsList.querySelectorAll(".binding-row").length + 1;
-      const title = label || `映射 #${idx}`;
-      const enabledText = enabled ? "生效" : "停用";
-      const exKeyText = exKey ? exKey : "未填写";
-      const llmText = llmModel ? `${llmProvider} / ${llmModel}` : llmProvider;
-
-      const row = editingBindingRow || document.createElement("article");
-      row.className = "binding-row";
-      row.dataset.bindingLabel = title;
-      row.dataset.exchangeName = exName;
-      row.dataset.exchangeApiKey = exKey;
-      row.dataset.llmProvider = llmProvider;
-      row.dataset.llmModel = llmModel;
-      row.dataset.bindingEnabled = enabled ? "1" : "0";
-      row.innerHTML = `
-        <div class="binding-row-head">
-          <div class="binding-row-head-main">
-            <strong class="binding-row-title">${esc(title)}</strong>
-          </div>
-          <div class="binding-row-head-tools">
-            <label class="binding-row-effective">
-              <input type="checkbox" data-binding-enabled-toggle="1" ${enabled ? "checked" : ""} />
-              <span data-binding-enabled-text="1">${esc(enabledText)}</span>
-            </label>
-            <div class="actions">
-              <button type="button" class="ghost tiny" data-binding-edit="1">编辑</button>
-              <button type="button" class="ghost tiny" data-binding-delete="1">删除</button>
-            </div>
-          </div>
-        </div>
-        <div class="binding-summary">
-          <div class="binding-kv"><span class="binding-kv-k">交易所</span><span class="binding-kv-v">${esc(exName)}</span></div>
-          <div class="binding-kv"><span class="binding-kv-k">API KEY</span><span class="binding-kv-v">${esc(exKeyText)}</span></div>
-          <div class="binding-kv"><span class="binding-kv-k">语言模型</span><span class="binding-kv-v">${esc(llmText)}</span></div>
-        </div>
-      `;
-      if (!editingBindingRow) bindingsList.prepend(row);
-      editingBindingRow = null;
-      closeModal();
+      const current = Array.isArray(state.apiBindings) ? [...state.apiBindings] : [];
+      const nextOne = {
+        label,
+        exchangeName: exName,
+        exchangeApiKey: exKey,
+        llmProvider,
+        llmModel,
+        enabled
+      };
+      let next = current;
+      if (editingBindingId) {
+        next = current.map((b) => (String(b._rowId || "") === editingBindingId ? { ...b, ...nextOne } : b));
+      } else {
+        next = [{ ...nextOne, _rowId: `tmp-${Date.now()}` }, ...current];
+      }
+      try {
+        await syncApiBindingsToServer(next);
+        editingBindingRow = null;
+        editingBindingId = "";
+        closeModal();
+      } catch (e) {
+        showError(e && typeof e === "object" && "message" in e ? String(e.message) : String(e));
+      }
     };
-    const onListAction = (e) => {
+    const onListAction = async (e) => {
       const target = e.target instanceof Element ? e.target : null;
       if (!target || !bindingsList) return;
       const row = target.closest(".binding-row");
@@ -381,19 +596,35 @@ onMounted(() => {
       const toggle = target.closest("[data-binding-enabled-toggle='1']");
       if (toggle) {
         const checked = Boolean(toggle.checked);
-        row.dataset.bindingEnabled = checked ? "1" : "0";
-        const txt = row.querySelector("[data-binding-enabled-text='1']");
-        if (txt) txt.textContent = checked ? "生效" : "停用";
+        const rowId = String(row.getAttribute("data-binding-id") || "").trim();
+        const current = Array.isArray(state.apiBindings) ? [...state.apiBindings] : [];
+        const next = current.map((b) =>
+          String(b._rowId || "") === rowId ? { ...b, enabled: checked } : b
+        );
+        try {
+          await syncApiBindingsToServer(next);
+        } catch (e) {
+          showError(e && typeof e === "object" && "message" in e ? String(e.message) : String(e));
+        }
         return;
       }
       const delBtn = target.closest("[data-binding-delete='1']");
       if (delBtn) {
-        row.remove();
+        const rowId = String(row.getAttribute("data-binding-id") || "").trim();
+        try {
+          await deletePanelApiBinding(rowId);
+          const current = Array.isArray(state.apiBindings) ? [...state.apiBindings] : [];
+          state.apiBindings = current.filter((b) => String(b._rowId || "") !== rowId);
+          renderApiBindings(state.apiBindings);
+        } catch (e) {
+          showError(e && typeof e === "object" && "message" in e ? String(e.message) : String(e));
+        }
         return;
       }
       const editBtn = target.closest("[data-binding-edit='1']");
       if (!editBtn) return;
       editingBindingRow = row;
+      editingBindingId = String(row.getAttribute("data-binding-id") || "").trim();
       const setVal = (id, v) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -421,6 +652,7 @@ onMounted(() => {
     saveBtn?.addEventListener("click", onSave);
     bindingsList?.addEventListener("click", onListAction);
     window.addEventListener("keydown", onEsc);
+      void loadApiBindings();
 
     disposeApiBindingModal = () => {
       addApiBindingBtn.removeEventListener("click", openModal);
@@ -434,28 +666,148 @@ onMounted(() => {
 
   if (strategyModal) {
     const saveStrategyMemoBtn = document.getElementById("saveStrategyMemoModal");
-    const openStrategyModal = (mode) => {
+    const strategyListEl = document.getElementById("manualStrategiesList");
+    let editingStrategySlotId = "";
+
+    const normalizeSlotRows = (payload) => {
+      const raw = extractPanelStrategyListPayload(payload);
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .map((x) => ({
+          id: String(rowServerSlotId(x) || "").trim(),
+          strategyName: String(panelStrategySlotRowName(x) || "").trim(),
+          detailJson: String(slotRowDetailJsonText(x) || ""),
+          mml: String(slotRowMmlText(x) || "")
+        }))
+        .filter((x) => x.strategyName);
+    };
+
+    const renderStrategyRows = (rows) => {
+      if (!strategyListEl) return;
+      if (!Array.isArray(rows) || rows.length === 0) {
+        strategyListEl.innerHTML = "";
+        return;
+      }
+      const entries = normalizeStrategyEntries(state.strategyEntries);
+      const byName = new Map(
+        entries.map((e) => [String(e.strategyName || "").trim(), e]).filter(([k]) => Boolean(k))
+      );
+      const yn = (v) => (v ? tS("label.on") : tS("label.off"));
+      const fmtNum = (v) => (v == null || v === "" || Number.isNaN(Number(v)) ? "—" : String(v));
+      strategyListEl.innerHTML = rows
+        .map((r) => {
+          const ent = byName.get(String(r.strategyName || "").trim()) || {};
+          return `<article class="binding-row strategy-config-row" data-strategy-slot-id="${esc(r.id)}">
+            <div class="strategy-config-cells">
+              <span class="strategy-config-name" title="${esc(
+                r.strategyName || tS("settings.strategyEntryUntitled")
+              )}">${esc(r.strategyName || tS("settings.strategyEntryUntitled"))}</span>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("settings.entryLineAi"))}</span><span class="strategy-config-v">${esc(yn(Boolean(ent.aiTakeoverTrading)))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("settings.entryLineDedicatedRpc"))}</span><span class="strategy-config-v">${esc(String(ent.strategyRpcBase || "").trim() ? tS("label.on") : tS("label.off"))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("settings.entryLineFreqai"))}</span><span class="strategy-config-v">${esc(yn(Boolean(ent.riskUseFreqaiLimits)))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("settings.entryLineStrategyCardGrid"))}</span><span class="strategy-config-v">${esc(yn(ent.controlShowStrategyCards !== false))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.strategyAuthorizedAmount"))}</span><span class="strategy-config-v">${esc(fmtNum(ent.strategyAuthorizedAmount))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.strategyTargetAnnualReturnPct"))}</span><span class="strategy-config-v">${esc(fmtNum(ent.strategyTargetAnnualReturnPct))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.riskMaxDrawdownLimitPct"))}</span><span class="strategy-config-v">${esc(fmtNum(ent.riskMaxDrawdownLimitPct))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.riskThresholdPct"))}</span><span class="strategy-config-v">${esc(fmtNum(ent.riskThresholdPct))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.strategySlotDetailJson"))}</span><span class="strategy-config-v">${esc(yn(Boolean(r.detailJson)))}</span></div>
+              <div class="strategy-config-kv"><span class="strategy-config-k">${esc(tS("label.strategySlotMml"))}</span><span class="strategy-config-v">${esc(yn(Boolean(r.mml)))}</span></div>
+            </div>
+            <div class="actions">
+              <button type="button" class="ghost tiny" data-strategy-edit="1">${esc(tS("users.edit"))}</button>
+              <button type="button" class="ghost tiny" data-strategy-delete="1">${esc(tS("users.delete"))}</button>
+            </div>
+          </article>`;
+        })
+        .join("");
+    };
+
+    const loadStrategySlots = async () => {
+      try {
+        const payload = await getPanelStrategySlots({ includeBodies: true });
+        const rows = normalizeSlotRows(payload);
+        renderStrategyRows(rows);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const openStrategyModal = (mode, row = null) => {
       strategyModal.classList.remove("hidden");
+      editingStrategySlotId = mode === "edit" ? String(row?.id || "").trim() : "";
+      const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el && "value" in el) el.value = String(v ?? "");
+      };
+      if (mode === "edit" && row) {
+        setVal("mStrategyName", row.strategyName || "");
+        setVal("mEntrySlotDetailJson", row.detailJson || "");
+        setVal("mEntrySlotMml", row.mml || "");
+      } else {
+        setVal("mStrategyName", "");
+        setVal("mEntrySlotDetailJson", "");
+        setVal("mEntrySlotMml", "");
+      }
       if (strategyModalTitle) {
         strategyModalTitle.textContent = mode === "new" ? "新增策略（完整条目）" : "编辑策略（完整条目）";
       }
     };
     const closeStrategyModal = () => strategyModal.classList.add("hidden");
-    const onNewStrategy = () => openStrategyModal("new");
-    const onStrategyListClick = (e) => {
+    const onNewStrategy = () => openStrategyModal("new", null);
+    const onStrategyListClick = async (e) => {
       const target = e.target instanceof Element ? e.target : null;
       if (!target) return;
+      const rowEl = target.closest(".strategy-config-row");
+      if (!rowEl) return;
+      const sid = String(rowEl.getAttribute("data-strategy-slot-id") || "").trim();
+      const name = String(rowEl.querySelector("strong")?.textContent || "").trim();
+      const row = {
+        id: sid,
+        strategyName: name,
+        detailJson: readFieldStr("mEntrySlotDetailJson"),
+        mml: readFieldStr("mEntrySlotMml")
+      };
       const editBtn = target.closest("[data-strategy-edit='1']");
-      if (editBtn) openStrategyModal("edit");
+      if (editBtn) {
+        try {
+          const payload = await getPanelStrategySlots({ includeBodies: true });
+          const rows = normalizeSlotRows(payload);
+          const full = rows.find((x) => x.id === sid || x.strategyName === name) || row;
+          openStrategyModal("edit", full);
+        } catch {
+          openStrategyModal("edit", row);
+        }
+        return;
+      }
+      const delBtn = target.closest("[data-strategy-delete='1']");
+      if (delBtn) {
+        Modal.confirm({
+          title: tS("modal.confirmTitle"),
+          content: tS("settings.confirmRemoveManualStrategy"),
+          icon: createVNode(ExclamationCircleFilled, {
+            style: { color: "rgb(248, 113, 113)" }
+          }),
+          okText: tS("btn.confirm"),
+          cancelText: tS("btn.cancel"),
+          okButtonProps: { danger: true },
+          centered: true,
+          maskClosable: true,
+          async onOk() {
+            if (!sid) return;
+            await deletePanelStrategySlot(sid);
+            await loadStrategySlots();
+          }
+        });
+      }
     };
     const onEscStrategy = (e) => {
       if (e.key === "Escape") closeStrategyModal();
     };
 
-    const onSaveStrategyMemo = () => {
+    const onSaveStrategyMemo = async () => {
       const name = readFieldStr("mStrategyName").trim();
       if (!name) {
-        window.alert("请填写策略名称 / 偏好");
+        showWarn(tS("settings.strategyNameRequired"));
         return;
       }
       const entries = normalizeStrategyEntries(state.strategyEntries);
@@ -496,11 +848,29 @@ onMounted(() => {
       state.strategySlots = normalizeStrategySlots(slotMap);
 
       try {
+        const body = {
+          strategyName: name,
+          strategy: name,
+          name,
+          detailJson: dj,
+          mml: mm
+        };
+        if (editingStrategySlotId) {
+          /** @type {Record<string, string>} */
+          const patchBody = {};
+          if (dj !== "") patchBody.detailJson = dj;
+          if (mm !== "") patchBody.mml = mm;
+          patchBody.strategyName = name;
+          await patchPanelStrategySlot(editingStrategySlotId, patchBody);
+        } else {
+          await postPanelStrategySlot(body);
+        }
+        await loadStrategySlots();
         persistProfileToLocalStorage();
         refreshStrategyConsoleAfterPrefs();
       } catch (err) {
         console.error(err);
-        window.alert(err && typeof err === "object" && "message" in err ? String(err.message) : String(err));
+        showError(err && typeof err === "object" && "message" in err ? String(err.message) : String(err));
         return;
       }
       closeStrategyModal();
@@ -510,34 +880,220 @@ onMounted(() => {
     closeStrategyModalBtn?.addEventListener("click", closeStrategyModal);
     strategyModalMask?.addEventListener("click", closeStrategyModal);
     saveStrategyMemoBtn?.addEventListener("click", onSaveStrategyMemo);
-    document.getElementById("manualStrategiesList")?.addEventListener("click", onStrategyListClick);
+    strategyListEl?.addEventListener("click", onStrategyListClick);
     window.addEventListener("keydown", onEscStrategy);
+    void loadStrategySlots();
 
     disposeStrategyModal = () => {
       newStrategyBtn?.removeEventListener("click", onNewStrategy);
       closeStrategyModalBtn?.removeEventListener("click", closeStrategyModal);
       strategyModalMask?.removeEventListener("click", closeStrategyModal);
       saveStrategyMemoBtn?.removeEventListener("click", onSaveStrategyMemo);
-      document.getElementById("manualStrategiesList")?.removeEventListener("click", onStrategyListClick);
+      strategyListEl?.removeEventListener("click", onStrategyListClick);
       window.removeEventListener("keydown", onEscStrategy);
     };
   }
 
   if (addPanelUserBtn && panelUserModal) {
-    const openUserModal = () => panelUserModal.classList.remove("hidden");
+    const savePanelUserBtn = document.getElementById("savePanelUserModal");
+    const panelUserModalTitle = document.getElementById("panelUserModalTitle");
+    const readonlyHint = document.getElementById("panelUsersReadonlyHint");
+    const isReadonly = document.body.classList.contains("perm-no-edit-settings");
+
+    const setPermInputsFromObject = (perms) => {
+      const p = normalizeUserMenuPermissions(perms);
+      const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el && "value" in el) el.value = v;
+        try {
+          window.dispatchEvent(new CustomEvent("bovin-form-patch", { detail: { id, value: v } }));
+        } catch {
+          /* ignore */
+        }
+      };
+      setVal("puPerm-overview", p.overview);
+      setVal("puPerm-positions", p.positions);
+      setVal("puPerm-control", p.control);
+      setVal("puPerm-data", p.data);
+      setVal("puPerm-settings", p.settings);
+      setVal("puPerm-monitor", p.monitor);
+      setVal("puPerm-api", p.api);
+    };
+
+    const readPermInputs = () => ({
+      overview: normalizePermValue(readFieldStr("puPerm-overview")),
+      positions: normalizePermValue(readFieldStr("puPerm-positions")),
+      control: normalizePermValue(readFieldStr("puPerm-control")),
+      data: normalizePermValue(readFieldStr("puPerm-data")),
+      settings: normalizePermValue(readFieldStr("puPerm-settings")),
+      monitor: normalizePermValue(readFieldStr("puPerm-monitor")),
+      api: normalizePermValue(readFieldStr("puPerm-api"))
+    });
+
+    const permsSummaryText = (perms) => {
+      const p = normalizeUserMenuPermissions(perms);
+      const labels = {
+        overview: tS("nav.overview"),
+        positions: tS("nav.positions"),
+        control: tS("nav.control"),
+        data: tS("nav.data"),
+        settings: tS("nav.settings"),
+        monitor: tS("nav.monitor"),
+        api: tS("nav.api")
+      };
+      return Object.keys(labels)
+        .map((k) => {
+          const permLabel =
+            p[k] === "edit"
+              ? tS("users.perm.edit")
+              : p[k] === "hidden"
+                ? tS("users.perm.hidden")
+                : tS("users.perm.read");
+          return `${labels[k]}:${permLabel}`;
+        })
+        .join(" · ");
+    };
+
+    const renderUsers = (rows) => {
+      if (!panelUsersList) return;
+      panelUsersList.innerHTML = rows
+        .map((u) => {
+          const summary = permsSummaryText(u.perms);
+          return `<article class="binding-row panel-user-row" data-user-id="${esc(u.id)}" data-username="${esc(u.username)}">
+            <strong>${esc(u.username || "—")}</strong>
+            <span class="muted">${esc(summary)}</span>
+            <div class="panel-user-actions">
+              <button type="button" class="ghost tiny panel-user-edit" data-user-edit="1">${esc(tS("users.edit"))}</button>
+              <button type="button" class="ghost tiny panel-user-del" data-user-delete="1">${esc(tS("users.delete"))}</button>
+            </div>
+          </article>`;
+        })
+        .join("");
+      if (panelUsersEmptyHint) panelUsersEmptyHint.classList.toggle("hidden", rows.length > 0);
+      if (readonlyHint) readonlyHint.classList.toggle("hidden", !isReadonly);
+    };
+
+    const loadUsers = async () => {
+      try {
+        const payload = await getPanelUsers();
+        const rows = extractPanelUsersList(payload).map(mapPanelUserRow).filter((x) => x.username);
+        renderUsers(rows);
+      } catch {
+        if (panelUsersList) panelUsersList.innerHTML = "";
+        if (panelUsersEmptyHint) {
+          panelUsersEmptyHint.textContent = tS("settings.panelUsersUpstreamOnly");
+          panelUsersEmptyHint.classList.remove("hidden");
+        }
+      }
+    };
+
+    const openUserModal = (mode = "new", row = null) => {
+      editingPanelUser = mode === "edit" ? row : null;
+      const usernameEl = document.getElementById("puUsername");
+      const passwordEl = document.getElementById("puPassword");
+      if (usernameEl && "value" in usernameEl) usernameEl.value = row?.username ?? "";
+      if (passwordEl && "value" in passwordEl) passwordEl.value = "";
+      setPermInputsFromObject(row?.perms ?? {});
+      if (panelUserModalTitle) {
+        panelUserModalTitle.textContent = mode === "edit" ? tS("users.editUser") : tS("users.addUser");
+      }
+      panelUserModal.classList.remove("hidden");
+    };
     const closeUserModal = () => panelUserModal.classList.add("hidden");
     const onEscUser = (e) => {
       if (e.key === "Escape") closeUserModal();
     };
-    addPanelUserBtn.addEventListener("click", openUserModal);
+
+    const onSaveUser = async () => {
+      if (isReadonly) return;
+      const username = readFieldStr("puUsername").trim();
+      const password = readFieldStr("puPassword");
+      if (!username) {
+        showWarn(tS("users.usernameRequired"));
+        return;
+      }
+      const perms = readPermInputs();
+      const body = {
+        username,
+        menu_permissions: perms,
+        menuPermissions: perms
+      };
+      if (password.trim()) body.password = password;
+      try {
+        const targetId = String(editingPanelUser?.id || username).trim();
+        if (editingPanelUser) await patchPanelUser(targetId, body);
+        else await postPanelUser(body);
+        closeUserModal();
+        await loadUsers();
+      } catch (e) {
+        const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+        showError(msg);
+      }
+    };
+
+    const onUsersListClick = async (e) => {
+      const target = e.target instanceof Element ? e.target : null;
+      if (!target || !panelUsersList) return;
+      const rowEl = target.closest(".panel-user-row");
+      if (!rowEl) return;
+      const row = {
+        id: String(rowEl.getAttribute("data-user-id") || "").trim(),
+        username: String(rowEl.getAttribute("data-username") || "").trim(),
+        perms: {}
+      };
+      if (target.closest("[data-user-edit='1']")) {
+        if (isReadonly) return;
+        try {
+          const payload = await getPanelUsers();
+          const list = extractPanelUsersList(payload).map(mapPanelUserRow);
+          const full = list.find((x) => x.id === row.id || x.username === row.username) || row;
+          openUserModal("edit", full);
+        } catch {
+          openUserModal("edit", row);
+        }
+        return;
+      }
+      if (target.closest("[data-user-delete='1']")) {
+        if (isReadonly) return;
+        Modal.confirm({
+          title: tS("modal.confirmTitle"),
+          content: tS("users.confirmDelete"),
+          icon: createVNode(ExclamationCircleFilled, {
+            style: { color: "rgb(248, 113, 113)" }
+          }),
+          okText: tS("btn.confirm"),
+          cancelText: tS("btn.cancel"),
+          okButtonProps: { danger: true },
+          centered: true,
+          maskClosable: true,
+          async onOk() {
+            try {
+              await deletePanelUser(row.id || row.username);
+              await loadUsers();
+            } catch (e2) {
+              const msg =
+                e2 && typeof e2 === "object" && "message" in e2 ? String(e2.message) : String(e2);
+              showError(msg);
+              throw e2;
+            }
+          }
+        });
+      }
+    };
+
+    addPanelUserBtn.addEventListener("click", () => openUserModal("new", null));
     closePanelUserModalBtn?.addEventListener("click", closeUserModal);
     panelUserMask?.addEventListener("click", closeUserModal);
+    savePanelUserBtn?.addEventListener("click", onSaveUser);
+    panelUsersList?.addEventListener("click", onUsersListClick);
     window.addEventListener("keydown", onEscUser);
+    void loadUsers();
 
     disposeUserModal = () => {
-      addPanelUserBtn.removeEventListener("click", openUserModal);
       closePanelUserModalBtn?.removeEventListener("click", closeUserModal);
       panelUserMask?.removeEventListener("click", closeUserModal);
+      savePanelUserBtn?.removeEventListener("click", onSaveUser);
+      panelUsersList?.removeEventListener("click", onUsersListClick);
       window.removeEventListener("keydown", onEscUser);
     };
   }

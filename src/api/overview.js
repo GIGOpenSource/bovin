@@ -58,6 +58,11 @@ export async function getPanelStrategySlotDetail(slotId, opts = {}) {
  */
 export const patchPanelStrategySlot = (id, body) =>
   http.patch(`/panel/strategy-slots/${encodeURIComponent(String(id))}`, body);
+/** POST …/api/v1/panel/strategy-slots */
+export const postPanelStrategySlot = (body) => http.post("/panel/strategy-slots", body);
+/** DELETE …/api/v1/panel/strategy-slots/{id} */
+export const deletePanelStrategySlot = (id) =>
+  http.delete(`/panel/strategy-slots/${encodeURIComponent(String(id))}`);
 export const getPanelAiOverview = () => http.get("/panel/ai_overview");
 /** @param {{ limit?: number }} [q] */
 export const getLogs = (q) => {

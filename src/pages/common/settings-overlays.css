@@ -55,6 +55,11 @@ body.perm-no-edit-data #data #loadPairHistory {
   border-bottom: 1px solid rgba(var(--ft-line-rgb), 0.22);
 }
 
+.panel-user-row > .muted {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
 .panel-user-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 
 .pu-perm-grid {

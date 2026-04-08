@@ -14,10 +14,8 @@
           <button type="button" class="nav-btn" data-section="control" data-i18n="nav.control">策略AI控制台</button>
           <button type="button" class="nav-btn" data-section="data" data-i18n="nav.data">数据面板</button>
           <button type="button" class="nav-btn" data-section="settings" data-i18n="nav.settings">设置中心</button>
-          <!-- 暂时隐藏：系统监控、接口能力面板
           <button type="button" class="nav-btn" data-section="monitor" data-i18n="nav.monitor">系统监控</button>
-          <button type="button" class="nav-btn" data-section="api" data-i18n="nav.api">接口能力面板</button>
-          -->
+          <!-- 暂时隐藏：接口能力面板 -->
         </nav>
         <div class="sidebar-footer">
           <button
