@@ -435,6 +435,17 @@ export const state = {
     if (v === "0") return false;
     return true;
   })(),
+  /** 控制台「实时成交流」GET /trades 的 limit（1–500，默认 12） */
+  controlTradesFeedLimit: (() => {
+    try {
+      const v = localStorage.getItem("ft_control_trades_feed_limit");
+      if (v == null || v === "") return 12;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 12;
+    } catch {
+      return 12;
+    }
+  })(),
   strategyAuthorizedAmount: (() => {
     const v = localStorage.getItem("ft_strategy_auth_amount");
     if (v == null || v === "") return null;
@@ -476,6 +487,20 @@ export const state = {
     localStorage.getItem("ft_mock_mode") === "1" ||
     new URLSearchParams(window.location.search).get("mock") === "1"
 };
+
+const CONTROL_TRADES_FEED_LIMIT_MIN = 1;
+const CONTROL_TRADES_FEED_LIMIT_MAX = 500;
+const CONTROL_TRADES_FEED_LIMIT_DEFAULT = 12;
+
+/** 供 GET /trades 与成交流渲染共用的条数上限 */
+export function getNormalizedControlTradesFeedLimit() {
+  const n = Number(state.controlTradesFeedLimit);
+  if (!Number.isFinite(n)) return CONTROL_TRADES_FEED_LIMIT_DEFAULT;
+  return Math.min(
+    CONTROL_TRADES_FEED_LIMIT_MAX,
+    Math.max(CONTROL_TRADES_FEED_LIMIT_MIN, Math.round(n))
+  );
+}
 
 syncStrategyEntriesDerivedState();
 
@@ -560,6 +585,10 @@ export function persistProfileToLocalStorage() {
   }
   localStorage.setItem("ft_risk_use_freqai", state.riskUseFreqaiLimits ? "1" : "0");
   localStorage.setItem("ft_control_show_strategy_cards", state.controlShowStrategyCards ? "1" : "0");
+  localStorage.setItem(
+    "ft_control_trades_feed_limit",
+    String(getNormalizedControlTradesFeedLimit())
+  );
   if (state.strategyAuthorizedAmount != null && Number.isFinite(state.strategyAuthorizedAmount)) {
     localStorage.setItem("ft_strategy_auth_amount", String(state.strategyAuthorizedAmount));
   } else {

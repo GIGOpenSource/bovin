@@ -1,6 +1,12 @@
 import { i18n } from "../i18n/index.js";
-import { state, uiState, normalizeStrategyEntries } from "../store/state-core.js";
+import {
+  state,
+  uiState,
+  normalizeStrategyEntries,
+  getNormalizedControlTradesFeedLimit,
+} from "../store/state-core.js";
 import { normalizeUserRestApiV1Base } from "../api/config.js";
+import { getTradesFeed } from "../api/positions.js";
 import { escapeHtml } from "../utils/html-utils.js";
 import { pairsFromBlacklistPayload, pairsFromWhitelistPayload } from "../utils/pairlist-parse.js";
 
@@ -445,31 +451,50 @@ function entryWantsStrategyGrid(className) {
 }
 
 /**
- * 策略卡底部机器人级操作区：始终展示与「主」卡相同的按钮布局；
- * 不可用时 disabled + title，避免非主卡或非交易 runmode 下整块空白。
+ * 策略卡底部操作区：暂停/停止/启动的展示由 state（normalize 后为 running → 暂停+停止，否则 → 启动）。
+ * `tradeTargetActive` 与敞口「非当前 config 策略」同源：仅当本卡对应当前可驱动的机器人/config 目标时，启停可点。
+ * `tradeDisabledHint` 可选，用于专用 RPC 离线等非「非当前 config」场景覆盖按钮 title。
+ * 「编辑配置」POST …/api/v1/panel/preferences（空 JSON）；强制平仓等仍按原逻辑。仅当非当前 config 目标时沿用 operable；当前 config 卡不做 API/模拟盘等权限限制。
+ * 交易键与次要操作分块渲染。
  */
-function buildStrategyCardActionsHtml({ operable, botRunning, disabledHint }) {
+function buildStrategyCardActionsHtml({
+  operable,
+  botRunning,
+  disabledHint,
+  tradeTargetActive = true,
+  tradeDisabledHint,
+}) {
   const hint = String(disabledHint || "").trim();
-  const lockAttr = operable ? "" : ` disabled title="${escapeHtml(hint)}"`;
-  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="http://127.0.0.1:18080/api/v1/pause"${operable ? "" : lockAttr}>${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
-  const stopBtn = `<button type="button" class="danger action-btn" data-method="POST" data-endpoint="/stop"${operable ? "" : lockAttr}>${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
-  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-endpoint="http://127.0.0.1:18080/api/v1/start"${operable ? "" : lockAttr}>${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
+  const secondaryOperable = tradeTargetActive ? true : operable;
+  const secondaryLockAttr = secondaryOperable ? "" : ` disabled title="${escapeHtml(hint)}"`;
+  const tradeHint =
+    tradeTargetActive ? "" : String(tradeDisabledHint || t("sc.strategy.notConfigTradeHint")).trim();
+  const tradeLockAttr = tradeTargetActive ? "" : ` disabled title="${escapeHtml(tradeHint)}"`;
+  const pauseBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-control-op="pause" data-endpoint="/pause"${tradeLockAttr}>${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>`;
+  const stopBtn = `<button type="button" class="danger action-btn" data-method="POST" data-control-op="stop" data-endpoint="/stop"${tradeLockAttr}>${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
+  const startBtn = `<button type="button" class="primary action-btn sc-wide" data-method="POST" data-control-op="start" data-endpoint="/start"${tradeLockAttr}>${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
   const pauseStop = botRunning ? `${pauseBtn}${stopBtn}` : startBtn;
-  const reloadBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/reload_config"${operable ? "" : lockAttr}><span data-i18n="sc.editConfig">${escapeHtml(t("sc.editConfig"))}</span></button>`;
+  const tradeLockedClass = tradeTargetActive ? "" : " sc-actions--locked";
+  const tradeRow = `<div class="sc-actions two sc-actions--trade${tradeLockedClass}">${pauseStop}</div>`;
+  const reloadBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-endpoint="/panel/preferences"${secondaryLockAttr}><span data-i18n="sc.editConfig">${escapeHtml(t("sc.editConfig"))}</span></button>`;
   const backtestBtn = `<button type="button" class="ghost" disabled title="${escapeHtml(t("sc.backtest"))}" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;
-  const forceBtn = `<button type="button" class="danger-soft" data-control-force-exit="1"${operable ? "" : lockAttr} data-i18n="sc.forceCloseAll">${escapeHtml(t("sc.forceCloseAll"))}</button>`;
-  const lockedClass = operable ? "" : " sc-actions--locked";
-  return `<div class="sc-actions two${lockedClass}">${pauseStop}${reloadBtn}${backtestBtn}${forceBtn}</div>`;
+  const forceBtn = `<button type="button" class="danger-soft" data-control-force-exit="1"${secondaryLockAttr} data-i18n="sc.forceCloseAll">${escapeHtml(t("sc.forceCloseAll"))}</button>`;
+  const secondaryLockedClass = secondaryOperable ? "" : " sc-actions--locked";
+  const secondaryRow = `<div class="sc-actions two sc-actions--secondary${secondaryLockedClass}">${reloadBtn}${backtestBtn}${forceBtn}</div>`;
+  return `<div class="sc-actions-stack">${tradeRow}${secondaryRow}</div>`;
 }
 
 function formatStrategyGridOffCard(name, showConfig) {
   const title = escapeHtml(t("sc.strategy.entryGridOff").replace("{name}", name));
   const sub = escapeHtml(t("sc.strategy.entryGridOffHint"));
   const botRunning = normalizeBotState(showConfig?.state) === "running";
+  const activeGlobal = String(showConfig?.strategy || "").trim();
+  const tradeTargetActive = Boolean(activeGlobal && name === activeGlobal);
   const actions = buildStrategyCardActionsHtml({
     operable: false,
     botRunning,
     disabledHint: t("sc.strategy.entryGridOffHint"),
+    tradeTargetActive,
   });
   return `<article class="sc-card sc-card-alert sc-card--strategy-grid-off" data-strategy-card="${escapeHtml(name)}">
     <div class="sc-alert sc-alert--stack">
@@ -701,10 +726,21 @@ export function renderControlStrategyCards(
         profitForCard?.profit_all_ratio != null ? Number(profitForCard.profit_all_ratio) * 100 : null;
       const stakeCurCard = String(showCfgForCard?.stake_currency ?? stakeCurGlobal ?? "").trim();
       const tradingApis = panelBotTradingApisAvailable(showCfgForCard, proxyHealth, healthForCard);
-
       /* 操作按钮：全局单实例沿用原主卡规则；独立 RPC 时每张卡控制自己的 trade 进程。 */
       const { openCount, stake } = aggregateForStrategy(statusForCard, name, activeForAgg);
       const botRunning = normalizeBotState(showCfgForCard?.state) === "running";
+      const paperOnly = Boolean(ent?.paperTrading);
+      const operable = metricsActive && tradingApis && !paperOnly;
+      let disabledHint = "";
+      if (!operable) {
+        if (metricsActive && paperOnly) {
+          disabledHint = t("sc.tradeMode.paperActionsBlocked");
+        } else if (metricsActive && !tradingApis) {
+          disabledHint = t("sc.tradeMode.actionsBlocked");
+        } else {
+          disabledHint = t("sc.strategy.inactiveHelp");
+        }
+      }
       const runningNow = metricsActive && botRunning;
       const chipCls = metricsActive ? (runningNow ? "ok" : "idle") : "idle";
       let badge;
@@ -743,22 +779,18 @@ export function renderControlStrategyCards(
       const panelKpis = formatPanelStrategyKpisHtml(name, stakeCurCard, showCfgForCard);
       const slotRow = formatStrategySlotRowHtml(name);
 
-      const paperOnly = Boolean(ent?.paperTrading);
-      const operable = metricsActive && tradingApis && !paperOnly;
-      let disabledHint = "";
-      if (!operable) {
-        if (metricsActive && paperOnly) {
-          disabledHint = t("sc.tradeMode.paperActionsBlocked");
-        } else if (metricsActive && !tradingApis) {
-          disabledHint = t("sc.tradeMode.actionsBlocked");
-        } else {
-          disabledHint = t("sc.strategy.inactiveHelp");
-        }
+      let tradeDisabledHint = "";
+      if (!metricsActive && hasDedicated && !dedicatedOk) {
+        tradeDisabledHint = snap?.error
+          ? String(snap.error).slice(0, 200)
+          : t("sc.strategy.dedicatedBotOffline");
       }
       const actions = buildStrategyCardActionsHtml({
         operable,
         botRunning,
         disabledHint,
+        tradeTargetActive: metricsActive,
+        tradeDisabledHint,
       });
 
       const apiBaseAttr =
@@ -810,12 +842,15 @@ function governanceMetaFromShowConfig(showConfig) {
 }
 
 function govPairCardWl(pair) {
+  const enc = encodeURIComponent(pair);
   return `<article class="sc-gov-pair-card sc-gov-pair-card--wl">
     <div class="sc-gov-pair-card-main">
       <strong class="sc-gov-pair-name">${escapeHtml(pair)}</strong>
       ${SC_GOV_LOCK_SVG}
     </div>
-    <span class="sc-gov-pair-tag sc-gov-pair-tag--wl">${escapeHtml(t("pairlist.whitelistTag"))}</span>
+    <div class="sc-gov-wl-aside">
+      <button type="button" class="sc-gov-remove-wl" data-gov-remove-wl="${enc}" aria-label="${escapeHtml(t("sc.gov.removeWlAria"))}">${escapeHtml(t("btn.del"))}</button>
+    </div>
   </article>`;
 }
 
@@ -917,4 +952,144 @@ export function renderControlHeroAndCards(
     strategyBotSnapshots
   );
   renderControlGovernanceLists(uiState.lastWl, uiState.lastBl, cfg);
+  renderControlTradeFeed(uiState.lastTradesMini);
+}
+
+/** @param {unknown} payload GET /trades 响应（数组或 { trades } / { data }） */
+function normalizeTradesListPayload(payload) {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload;
+  if (typeof payload === "object") {
+    const o = /** @type {Record<string, unknown>} */ (payload);
+    if (Array.isArray(o.trades)) return o.trades;
+    if (Array.isArray(o.data)) return o.data;
+  }
+  return [];
+}
+
+function formatTradeFeedTimestamp(tr) {
+  const x = tr && typeof tr === "object" ? tr : {};
+  const raw =
+    x.close_date ??
+    x.close_timestamp ??
+    x.open_date ??
+    x.open_timestamp ??
+    x.date ??
+    x.timestamp ??
+    null;
+  if (typeof raw === "number") {
+    const ms = raw > 1e12 ? raw : raw * 1000;
+    const d = new Date(ms);
+    return Number.isFinite(d.getTime()) ? d.toLocaleString() : "—";
+  }
+  if (typeof raw === "string" && raw.trim()) {
+    const d = new Date(raw);
+    return Number.isFinite(d.getTime()) ? d.toLocaleString() : raw.trim();
+  }
+  return "—";
+}
+
+function tradeFeedRowDotClass(tr) {
+  const x = tr && typeof tr === "object" ? tr : {};
+  const pr = Number(x.profit_ratio ?? x.close_profit_pct ?? x.profit_pct ?? NaN);
+  if (Number.isFinite(pr)) {
+    if (pr > 0) return "ok";
+    if (pr < 0) return "err";
+  }
+  const abs = Number(x.close_profit_abs ?? x.profit_abs ?? NaN);
+  if (Number.isFinite(abs)) {
+    if (abs > 0) return "ok";
+    if (abs < 0) return "err";
+  }
+  return "pri";
+}
+
+/** @param {unknown[]} rows @param {number} max */
+function buildTradeFeedRowsHtml(rows, max) {
+  const slice = rows.slice(0, Math.max(0, Math.min(max, rows.length)));
+  return slice
+    .map((tr) => {
+      const x = tr && typeof tr === "object" ? tr : {};
+      const strat = String(x.strategy ?? x.strategy_name ?? "—").trim() || "—";
+      const pair = String(x.pair ?? x.pairname ?? "—").trim() || "—";
+      const amtRaw = x.amount ?? x.amount_requested ?? x.stake_amount ?? null;
+      const amtN = Number(amtRaw);
+      const mid =
+        amtRaw != null && amtRaw !== "" && Number.isFinite(amtN)
+          ? `${pair} · ${amtN.toLocaleString(undefined, { maximumFractionDigits: 6 })}`
+          : pair;
+      const when = formatTradeFeedTimestamp(x);
+      const dot = tradeFeedRowDotClass(x);
+      return `<div class="feed-row">
+      <i class="${escapeHtml(dot)}" aria-hidden="true"></i>
+      <div>
+        <b>${escapeHtml(strat)}</b>
+        <small>${escapeHtml(mid)}</small>
+        <em>${escapeHtml(when)}</em>
+      </div>
+    </div>`;
+    })
+    .join("");
+}
+
+/**
+ * 打开「完整审计/成交」弹窗：GET /trades?limit=… 与侧栏「最近条数」使用同一归一化上限。
+ */
+export async function openTradesAuditModal() {
+  const modal = $("tradesAuditModal");
+  const body = $("tradesAuditModalBody");
+  const subEl = $("tradesAuditModalSub");
+  if (!modal || !body) return;
+  const lim = getNormalizedControlTradesFeedLimit();
+  if (subEl) {
+    subEl.textContent = String(t("sc.feed.auditModalSub")).split("{n}").join(String(lim));
+  }
+  modal.classList.remove("hidden");
+  body.innerHTML = `<p class="muted sc-feed-audit-loading">${escapeHtml(t("sc.feed.auditLoading"))}</p>`;
+  try {
+    const payload = await getTradesFeed(lim);
+    const rows = normalizeTradesListPayload(payload);
+    if (!rows.length) {
+      body.innerHTML = `<div class="feed-row feed-row--empty sc-feed-audit-empty">
+        <i class="pri" aria-hidden="true"></i>
+        <div>
+          <b>${escapeHtml(t("sc.feed.auditEmpty"))}</b>
+          <small>—</small>
+          <em>—</em>
+        </div>
+      </div>`;
+      return;
+    }
+    body.innerHTML = `<div class="sc-feed-audit-rows">${buildTradeFeedRowsHtml(rows, lim)}</div>`;
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+    body.innerHTML = `<p class="sc-feed-audit-error">${escapeHtml(msg)}</p>`;
+  }
+}
+
+export function closeTradesAuditModal() {
+  $("tradesAuditModal")?.classList.add("hidden");
+}
+
+/**
+ * 控制台右侧「实时成交流」DOM（数据来自 GET /trades，limit 见 state.controlTradesFeedLimit）。
+ * @param {unknown} payload
+ */
+export function renderControlTradeFeed(payload) {
+  const root = $("scFeedRows");
+  if (!root) return;
+  const rows = normalizeTradesListPayload(payload);
+  if (!rows.length) {
+    root.innerHTML = `<div class="feed-row feed-row--empty">
+      <i class="pri" aria-hidden="true"></i>
+      <div>
+        <b>${escapeHtml(t("mock.noTrades"))}</b>
+        <small>—</small>
+        <em>—</em>
+      </div>
+    </div>`;
+    return;
+  }
+  const max = getNormalizedControlTradesFeedLimit();
+  root.innerHTML = buildTradeFeedRowsHtml(rows, max);
 }

@@ -537,6 +537,31 @@
           </div>
         </div>
 
+        <div id="tradesAuditModal" class="modal hidden" role="presentation">
+          <div class="modal-mask" aria-hidden="true"></div>
+          <div
+            class="modal-card modal-card--binding modal-card--trades-audit"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tradesAuditModalTitle"
+          >
+            <header class="modal-head modal-head--binding">
+              <div class="modal-head-text">
+                <h4 id="tradesAuditModalTitle" class="modal-title" data-i18n="sc.feed.auditModalTitle">
+                  完整成交记录
+                </h4>
+                <p id="tradesAuditModalSub" class="modal-sub"></p>
+              </div>
+              <button type="button" id="closeTradesAuditModal" class="ghost modal-close-btn" data-i18n="btn.close">
+                关闭
+              </button>
+            </header>
+            <div class="modal-body sc-feed-audit-modal-body">
+              <div id="tradesAuditModalBody"></div>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
 </template>

@@ -360,6 +360,17 @@
   background: rgba(var(--ft-accent-rgb), 0.85);
 }
 
+.sc-actions-stack {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-actions-stack > .sc-actions {
+  margin-top: 0;
+}
+
 .sc-actions {
   margin-top: 14px;
   display: grid;
@@ -459,6 +470,19 @@
   border-color: rgba(255, 180, 171, 0.22);
   color: #ffb4ab;
   background: rgba(147, 0, 10, 0.2);
+}
+
+/* 覆盖上方通用 button:hover，悬停仍保持危险色（与「删除」同系） */
+.sc-actions button.danger:hover:not(:disabled) {
+  border-color: rgba(255, 180, 171, 0.15);
+  background: rgba(147, 0, 10, 0.72);
+  color: #ffd4cf;
+}
+
+.sc-actions button.danger-soft:hover:not(:disabled) {
+  border-color: rgba(255, 180, 171, 0.2);
+  background: rgba(147, 0, 10, 0.34);
+  color: #ffc9c2;
 }
 
 .sc-alert {
@@ -663,12 +687,60 @@
   background: rgba(22, 28, 44, 0.95);
 }
 
+.sc-governance .sc-gov-pair-card--wl {
+  align-items: flex-start;
+}
+
+.sc-governance .sc-gov-wl-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .sc-governance .sc-gov-pair-card-main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
   min-width: 0;
+}
+
+/* 与策略卡「停止」.sc-actions .danger 同色板；悬停略加深，不换色系 */
+.sc-governance .sc-gov-remove-wl {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 5px 12px;
+  min-height: 0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 1px solid rgba(255, 180, 171, 0.22);
+  background: rgba(147, 0, 10, 0.36);
+  color: #ffb4ab;
+  transition:
+    border-color var(--ft-transition-fast),
+    background var(--ft-transition-fast),
+    color var(--ft-transition-fast);
+}
+
+.sc-governance .sc-gov-remove-wl:hover:not(:disabled) {
+  border-color: rgba(255, 180, 171, 0.15);
+  background: rgba(147, 0, 10, 0.6);
+  color: #ffd4cf;
+}
+
+.sc-governance .sc-gov-remove-wl:focus-visible {
+  outline: var(--ft-focus-ring);
+  outline-offset: var(--ft-focus-offset);
+}
+
+.sc-governance .sc-gov-remove-wl:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .sc-governance .sc-gov-pair-card-main--stack {
@@ -748,17 +820,84 @@
   padding: 14px;
   display: grid;
   gap: 10px;
-  align-self: stretch;
+  /* 与 .sc-governance 同为 start，避免条数少时被拉成与左侧同高、中间大块留白 */
+  align-self: start;
 }
 
-.sc-feed h3 {
-  margin: 0 0 4px;
+#scFeedRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(380px, 52vh);
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: none; /* Firefox：不显示滚动条，仍可滚轮/触控滚动 */
+  -ms-overflow-style: none; /* 旧版 Edge */
+}
+
+#scFeedRows::-webkit-scrollbar {
+  display: none; /* Chromium / Safari */
+  width: 0;
+  height: 0;
+}
+
+.sc-feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.sc-feed-head h3 {
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 6px;
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.08em;
+}
+
+.sc-feed-head h3 .anticon {
+  color: #86b2ff;
+  font-size: 14px;
+}
+
+.sc-feed-head h3 .material-symbols-outlined {
+  font-size: 18px;
+  color: #86b2ff;
+  vertical-align: middle;
+}
+
+.sc-feed-limit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.sc-feed-limit input {
+  width: 56px;
+  min-height: 28px;
+  padding: 2px 6px;
+  border-radius: var(--ft-radius-control);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
+  background: rgba(10, 16, 32, 0.65);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-feed-limit input:focus {
+  outline: none;
+  border-color: rgba(var(--ft-accent-rgb), 0.45);
 }
 
 .feed-row {

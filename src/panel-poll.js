@@ -3,7 +3,7 @@
  * 拉取核心 REST，写入 uiState，更新 KPI / sysinfo、数据页策略列表与页眉状态，并调用 control-console 渲染策略卡。
  * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategies、/show_config、/profit 等）。
  */
-import { state, uiState } from "./store/state-core.js";
+import { state, uiState, getNormalizedControlTradesFeedLimit } from "./store/state-core.js";
 import {
   getPing,
   getShowConfig,
@@ -16,7 +16,7 @@ import {
   getPanelAiOverview,
   getDaily
 } from "./api/overview.js";
-import { getBalance, getWhitelist, getBlacklist } from "./api/positions.js";
+import { getBalance, getWhitelist, getBlacklist, getTradesFeed } from "./api/positions.js";
 import { renderControlHeroAndCards, renderControlGovernanceLists } from "./components/control-console.js";
 import { i18n } from "./i18n/index.js";
 import {
@@ -160,7 +160,8 @@ async function panelTick() {
       getBalance(),
       getDaily(14),
       getWhitelist(),
-      getBlacklist()
+      getBlacklist(),
+      getTradesFeed(getNormalizedControlTradesFeedLimit())
     ]);
 
     const sc = settled[0];
@@ -174,6 +175,7 @@ async function panelTick() {
     const dailyR = settled[8];
     const wlR = settled[9];
     const blR = settled[10];
+    const tradesFeedR = settled[11];
 
     if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
@@ -195,6 +197,7 @@ async function panelTick() {
     if (dailyR.status === "fulfilled" && dailyR.value != null) uiState.lastDaily = dailyR.value;
     if (wlR.status === "fulfilled") uiState.lastWl = wlR.value;
     if (blR.status === "fulfilled") uiState.lastBl = blR.value;
+    if (tradesFeedR.status === "fulfilled") uiState.lastTradesMini = tradesFeedR.value;
 
     const y = uiState.lastCount && typeof uiState.lastCount === "object" ? uiState.lastCount : {};
     const b = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
@@ -358,6 +361,12 @@ async function panelTick() {
   } catch {
     /* 单次失败不打断轮询 */
   }
+}
+
+/** 立即执行一轮轮询（供 /start、/pause 等操作成功后刷新 show_config 与策略卡）。 */
+export async function runPanelTickOnce() {
+  if (!uiState.authed) return;
+  return panelTick();
 }
 
 /** 仅刷新白/名单并更新治理区 DOM（供隐藏「刷新名单」等手动触发）。 */

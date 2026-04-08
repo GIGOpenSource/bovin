@@ -76,7 +76,13 @@
                 </div>
               </div>
               <aside class="sc-feed">
-                <h3><span class="material-symbols-outlined">analytics</span><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                <div class="sc-feed-head">
+                  <h3><span class="material-symbols-outlined">analytics</span><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                  <label class="sc-feed-limit">
+                    <span data-i18n="sc.feed.limitLabel">最近条数</span>
+                    <input id="scFeedLimitInput" type="number" name="scFeedLimit" min="1" max="500" step="1" autocomplete="off" aria-label="Trades feed row limit" />
+                  </label>
+                </div>
                 <div id="scFeedRows"></div>
                 <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
               </aside>

@@ -22,6 +22,7 @@ body.perm-no-edit-control #control #btnSyncConfigOnly,
 body.perm-no-edit-control #loadLists,
 body.perm-no-edit-control #addBlacklist,
 body.perm-no-edit-control #scGovAddWhitelist,
+body.perm-no-edit-control #control .sc-gov-remove-wl,
 body.perm-no-edit-control #forceEnter {
   opacity: 0.42;
   pointer-events: none;

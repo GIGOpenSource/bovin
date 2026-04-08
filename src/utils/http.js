@@ -1,7 +1,7 @@
 /**
  * 基于 fetch 的 HTTP 封装：Bovin REST …/api/v1 + Basic 鉴权。
  */
-import { effectiveApiBasePrimary, rememberSuccessfulApiBase } from "../api/config.js";
+import { apiUrlBases, rememberSuccessfulApiBase } from "../api/config.js";
 import { state } from "../store/state-core.js";
 
 export class HttpError extends Error {
@@ -96,15 +96,43 @@ export async function requestAtBase(baseUrl, path, options = {}) {
   });
 }
 
+/** fetch 连不上（拒绝连接、CORS 网络层失败等）或 status 0 时换下一个候选基址重试 */
+function isTransportLayerFailure(e) {
+  if (e instanceof TypeError) return true;
+  if (e instanceof HttpError && e.status === 0) return true;
+  return false;
+}
+
 /**
- * 使用当前 effectiveApiBasePrimary() 发请求。
+ * 按 `apiUrlBases()` 顺序尝试 …/api/v1（含 localStorage 上次成功基址与同源代理等）。
+ * 避免「首选是已失效的 127.0.0.1:18080」时整站请求（如 GET /trades）直接失败。
  * @param {string} path
  * @param {RequestInit & { json?: unknown }} [options]
  */
 export async function request(path, options = {}) {
-  const base = effectiveApiBasePrimary();
-  if (!base) throw new HttpError("未配置 API 基址（请在设置中填写或检查同源 /api/v1）", { status: 0, url: "" });
-  return requestAtBase(base, path, options);
+  const raw = apiUrlBases().filter(Boolean);
+  const seen = new Set();
+  const bases = [];
+  for (const b of raw) {
+    const k = trimBase(b);
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    bases.push(k);
+  }
+  if (!bases.length) {
+    throw new HttpError("未配置 API 基址（请在设置中填写或检查同源 /api/v1）", { status: 0, url: "" });
+  }
+  let lastErr = null;
+  for (let i = 0; i < bases.length; i++) {
+    try {
+      return await requestAtBase(bases[i], path, options);
+    } catch (e) {
+      lastErr = e;
+      const canRetry = i < bases.length - 1 && isTransportLayerFailure(e);
+      if (!canRetry) throw e;
+    }
+  }
+  throw lastErr;
 }
 
 export const http = {

@@ -1529,6 +1529,28 @@ body {
   max-height: min(85vh, 560px);
 }
 
+.modal-card--trades-audit {
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(85vh, 640px);
+}
+
+.sc-feed-audit-modal-body {
+  max-height: min(58vh, 460px);
+  overflow: auto;
+  padding-top: 4px;
+}
+
+.sc-feed-audit-error {
+  color: #ffb4ab;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sc-feed-audit-loading {
+  font-size: 13px;
+  margin: 0;
+}
+
 .whitelist-add-rows {
   display: flex;
   flex-direction: column;

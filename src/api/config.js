@@ -278,12 +278,7 @@ export function apiUrlBases() {
     // ignore
   }
   try {
-    if (
-      import.meta.env?.DEV === true &&
-      httpNeedsDevProxyFallback() &&
-      preferred &&
-      typeof location !== "undefined"
-    ) {
+    if (httpNeedsDevProxyFallback() && preferred && typeof location !== "undefined") {
       const same = sameOriginApiV1Base();
       if (same) {
         const po = location.origin;

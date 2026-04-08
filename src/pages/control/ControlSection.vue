@@ -79,16 +79,23 @@
                 </div>
               </div>
               <aside class="sc-feed">
-                <h3><BarChartOutlined /><span data-i18n="sc.feed.title">实时成交流</span></h3>
-                <div id="scFeedRows"></div>
-                <div class="feed-row feed-row-demo">
-                  <i class="pri"></i>
-                  <div>
-                    <b>暂无成交</b>
-                    <small>—</small>
-                    <em>—</em>
-                  </div>
+                <div class="sc-feed-head">
+                  <h3><BarChartOutlined /><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                  <label class="sc-feed-limit">
+                    <span data-i18n="sc.feed.limitLabel">最近条数</span>
+                    <input
+                      id="scFeedLimitInput"
+                      type="number"
+                      name="scFeedLimit"
+                      min="1"
+                      max="500"
+                      step="1"
+                      autocomplete="off"
+                      aria-label="Trades feed row limit"
+                    />
+                  </label>
                 </div>
+                <div id="scFeedRows"></div>
                 <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
               </aside>
             </section>
@@ -870,22 +877,7 @@
   padding: 14px;
   display: grid;
   gap: 10px;
-  align-self: stretch;
-}
-
-.sc-feed h3 {
-  margin: 0 0 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
-.sc-feed h3 .anticon {
-  color: #86b2ff;
-  font-size: 14px;
+  align-self: start;
 }
 
 .feed-row {
@@ -939,17 +931,25 @@
 </style>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { createVNode, onMounted, onUnmounted, ref, watch } from "vue";
+import { Modal } from "ant-design-vue";
 import {
   BarChartOutlined,
   CheckCircleOutlined,
+  ExclamationCircleFilled,
   LineChartOutlined,
   RiseOutlined
 } from "@ant-design/icons-vue";
-import { postBlacklist, postWhitelistAdd } from "../../api/positions.js";
-import { refreshGovernanceListsOnly } from "../../panel-poll.js";
+import { deleteWhitelistPair, postBlacklist, postWhitelistAdd } from "../../api/positions.js";
+import { refreshGovernanceListsOnly, runPanelTickOnce } from "../../panel-poll.js";
+import { bindControlTradeActionDelegation } from "../../utils/control-trade-delegate.js";
+import { openTradesAuditModal, closeTradesAuditModal } from "../../components/control-console.js";
 import { i18n } from "../../i18n/index.js";
-import { state } from "../../store/state-core.js";
+import {
+  state,
+  persistProfileToLocalStorage,
+  getNormalizedControlTradesFeedLimit
+} from "../../store/state-core.js";
 
 const forceSidePopupContainer = () => document.body;
 const forceSideVal = ref("long");
@@ -969,6 +969,108 @@ function wlModalT(key) {
 }
 
 let unbindWhitelistModalKeydown = null;
+let unbindControlTradeActions = null;
+let unbindGovernanceWlRemove = null;
+let unbindTradesFeedLimitInput = null;
+let unbindTradesAuditModal = null;
+
+function bindTradesFeedLimitInput() {
+  const inp = document.getElementById("scFeedLimitInput");
+  if (!(inp instanceof HTMLInputElement)) return;
+  unbindTradesFeedLimitInput?.();
+  inp.value = String(getNormalizedControlTradesFeedLimit());
+  const apply = () => {
+    const raw = Math.round(Number(inp.value));
+    state.controlTradesFeedLimit = Number.isFinite(raw) ? raw : 12;
+    inp.value = String(getNormalizedControlTradesFeedLimit());
+    persistProfileToLocalStorage();
+    void runPanelTickOnce();
+  };
+  const onBlur = () => apply();
+  const onKeydown = (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      inp.blur();
+    }
+  };
+  /** `change` 在值与 focus 时相同（例如改回 500）时可能不触发；失焦统一提交并拉数 */
+  inp.addEventListener("blur", onBlur);
+  inp.addEventListener("keydown", onKeydown);
+  unbindTradesFeedLimitInput = () => {
+    inp.removeEventListener("blur", onBlur);
+    inp.removeEventListener("keydown", onKeydown);
+  };
+}
+
+function bindTradesAuditModal() {
+  const btn = document.getElementById("scFeedAuditBtn");
+  const modal = document.getElementById("tradesAuditModal");
+  const closeBtn = document.getElementById("closeTradesAuditModal");
+  const mask = modal?.querySelector(".modal-mask");
+  if (!btn || !modal) return;
+  unbindTradesAuditModal?.();
+  const onOpen = () => void openTradesAuditModal();
+  const onClose = () => closeTradesAuditModal();
+  btn.addEventListener("click", onOpen);
+  closeBtn?.addEventListener("click", onClose);
+  mask?.addEventListener("click", onClose);
+  const onKey = (ev) => {
+    if (ev.key === "Escape" && !modal.classList.contains("hidden")) onClose();
+  };
+  window.addEventListener("keydown", onKey);
+  unbindTradesAuditModal = () => {
+    btn.removeEventListener("click", onOpen);
+    closeBtn?.removeEventListener("click", onClose);
+    mask?.removeEventListener("click", onClose);
+    window.removeEventListener("keydown", onKey);
+  };
+}
+
+function bindGovernanceWlRemove(root) {
+  if (!(root instanceof HTMLElement)) return;
+  unbindGovernanceWlRemove?.();
+  const onClick = (ev) => {
+    const t = ev.target;
+    const btn =
+      t instanceof Element ? t.closest("button.sc-gov-remove-wl[data-gov-remove-wl]") : null;
+    if (!(btn instanceof HTMLButtonElement)) return;
+    const enc = btn.getAttribute("data-gov-remove-wl");
+    if (!enc) return;
+    let pair = "";
+    try {
+      pair = decodeURIComponent(enc);
+    } catch {
+      return;
+    }
+    if (!pair.trim()) return;
+    const content = wlModalT("sc.gov.confirmRemoveWl").replace(/\{pair\}/g, pair);
+    Modal.confirm({
+      title: wlModalT("modal.confirmTitle"),
+      content,
+      icon: createVNode(ExclamationCircleFilled, {
+        style: { color: "rgb(248, 113, 113)" }
+      }),
+      okText: wlModalT("btn.confirm"),
+      cancelText: wlModalT("btn.cancel"),
+      okButtonProps: { danger: true },
+      centered: true,
+      maskClosable: true,
+      async onOk() {
+        try {
+          await deleteWhitelistPair(pair);
+          await refreshGovernanceListsOnly();
+        } catch (e) {
+          const errMsg =
+            e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+          window.alert(errMsg);
+          throw e;
+        }
+      }
+    });
+  };
+  root.addEventListener("click", onClick);
+  unbindGovernanceWlRemove = () => root.removeEventListener("click", onClick);
+}
 
 function bindWhitelistAddModal() {
   const modal = document.getElementById("whitelistAddModal");
@@ -1052,6 +1154,14 @@ function bindWhitelistAddModal() {
 onUnmounted(() => {
   unbindWhitelistModalKeydown?.();
   unbindWhitelistModalKeydown = null;
+  unbindControlTradeActions?.();
+  unbindControlTradeActions = null;
+  unbindGovernanceWlRemove?.();
+  unbindGovernanceWlRemove = null;
+  unbindTradesFeedLimitInput?.();
+  unbindTradesFeedLimitInput = null;
+  unbindTradesAuditModal?.();
+  unbindTradesAuditModal = null;
 });
 
 onMounted(() => {
@@ -1061,6 +1171,16 @@ onMounted(() => {
   }
 
   bindWhitelistAddModal();
+
+  const controlSec = document.getElementById("control");
+  if (controlSec instanceof HTMLElement) {
+    unbindControlTradeActions?.();
+    unbindControlTradeActions = bindControlTradeActionDelegation(controlSec);
+    bindGovernanceWlRemove(controlSec);
+  }
+
+  bindTradesFeedLimitInput();
+  bindTradesAuditModal();
 
   document.getElementById("loadLists")?.addEventListener("click", () => {
     void refreshGovernanceListsOnly();
@@ -1091,7 +1211,10 @@ export {
   orderedStrategyNames,
   resolvePanelConfigSummary,
   renderControlGovernanceLists,
+  renderControlTradeFeed,
   renderControlStrategyCards,
-  renderControlHeroAndCards
+  renderControlHeroAndCards,
+  openTradesAuditModal,
+  closeTradesAuditModal
 } from "../../components/control-console.js";
 </script>
