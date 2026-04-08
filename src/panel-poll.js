@@ -1,7 +1,7 @@
 /**
  * 与历史根目录 main.js 中概览轮询（xr）及控制台卡片刷新同向的轻量实现：
  * 拉取核心 REST，写入 uiState，更新 KPI / sysinfo、数据页策略列表与页眉状态，并调用 control-console 渲染策略卡。
- * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategies、/show_config、/profit 等）。
+ * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategy-slots、/show_config、/profit 等）。
  */
 import { state, uiState, getNormalizedControlTradesFeedLimit } from "./store/state-core.js";
 import {
@@ -13,6 +13,7 @@ import {
   getSysinfo,
   getStatus,
   getPanelStrategies,
+  getPanelStrategySlots,
   getPanelAiOverview,
   getDaily
 } from "./api/overview.js";
@@ -34,7 +35,12 @@ import {
   lastDayAbsProfit
 } from "./utils/overview-kpi.js";
 import { applyOverviewStrategiesTable } from "./utils/overview-strategies-table.js";
-import { applyDataStrategiesList, normalizePanelStrategyNames } from "./utils/data-strategies-list.js";
+import {
+  applyDataStrategiesList,
+  buildPanelStrategySlotIdByName,
+  extractPanelStrategyListPayload,
+  normalizePanelStrategyNames
+} from "./utils/data-strategies-list.js";
 import { renderOverviewSysinfoInto } from "./utils/overview-sysinfo-html.js";
 import { escapeHtml } from "./utils/html-utils.js";
 
@@ -55,6 +61,49 @@ function tReplace(key, vars) {
     }
   }
   return s;
+}
+
+/** @param {unknown} raw */
+function parseIsoMs(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s) return NaN;
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) ? ms : NaN;
+}
+
+/**
+ * 概览页「运行时间」：按 /health 的 last_process - bot_start 计算，不使用当前时间。
+ * @param {unknown} healthRaw
+ * @returns {string}
+ */
+function formatOverviewUptimeFromHealth(healthRaw) {
+  if (!healthRaw || typeof healthRaw !== "object") return "—";
+  const h = /** @type {Record<string, unknown>} */ (healthRaw);
+  const lastMs = parseIsoMs(h.last_process ?? h.lastProcess);
+  const startMs = parseIsoMs(h.bot_start ?? h.botStart);
+  if (!Number.isFinite(lastMs) || !Number.isFinite(startMs) || lastMs <= startMs) return "—";
+  const diffMs = lastMs - startMs;
+  const totalHours = Math.floor(diffMs / (3600 * 1000));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  if ((state.lang || "zh-CN") === "en") return `${days}d ${hours}h`;
+  return `${days}天 ${hours}小时`;
+}
+
+/**
+ * 概览风险头「杠杆 / 模式」：取 /show_config 的 trading_mode / margin_mode。
+ * @param {unknown} showCfgRaw
+ * @returns {string}
+ */
+function formatTradingModePair(showCfgRaw) {
+  if (!showCfgRaw || typeof showCfgRaw !== "object") return "—";
+  const sc = /** @type {Record<string, unknown>} */ (showCfgRaw);
+  const tradingMode = String(sc.trading_mode ?? sc.tradingMode ?? "").trim();
+  const marginMode = String(sc.margin_mode ?? sc.marginMode ?? "").trim();
+  if (!tradingMode && !marginMode) return "—";
+  if (!tradingMode) return marginMode;
+  if (!marginMode) return tradingMode;
+  return `${tradingMode} · ${marginMode}`;
 }
 
 /**
@@ -155,6 +204,7 @@ async function panelTick() {
       getProfit(),
       getSysinfo(),
       getPanelStrategies(),
+      getPanelStrategySlots(),
       getPanelAiOverview(),
       /** 净资产 / 日收益卡：与 profit 同周期轮询，mock 模式下也请求真实接口（与其它 KPI 一致可刷新） */
       getBalance(),
@@ -169,28 +219,48 @@ async function panelTick() {
     const count = settled[2];
     const profit = settled[3];
     const sysinfo = settled[4];
-    const strategies = settled[5];
-    const aiOverview = settled[6];
-    const balanceR = settled[7];
-    const dailyR = settled[8];
-    const wlR = settled[9];
-    const blR = settled[10];
-    const tradesFeedR = settled[11];
+    const panelStrategies = settled[5];
+    const strategySlots = settled[6];
+    const aiOverview = settled[7];
+    const balanceR = settled[8];
+    const dailyR = settled[9];
+    const wlR = settled[10];
+    const blR = settled[11];
+    const tradesFeedR = settled[12];
 
     if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
     if (count.status === "fulfilled") uiState.lastCount = count.value;
     if (profit.status === "fulfilled") uiState.lastProfit = profit.value;
     if (sysinfo.status === "fulfilled") uiState.lastSysinfo = sysinfo.value;
-    if (
-      strategies.status === "fulfilled" &&
-      strategies.value &&
-      typeof strategies.value === "object" &&
-      Array.isArray(strategies.value.strategies)
-    ) {
-      const raw = strategies.value.strategies;
-      uiState.panelStrategyListAll = normalizePanelStrategyNames(raw, false);
-      uiState.panelStrategyList = normalizePanelStrategyNames(raw, true);
+    const rawStrategies =
+      panelStrategies.status === "fulfilled" && panelStrategies.value != null
+        ? extractPanelStrategyListPayload(panelStrategies.value)
+        : null;
+    const rawSlots =
+      strategySlots.status === "fulfilled" && strategySlots.value != null
+        ? extractPanelStrategyListPayload(strategySlots.value)
+        : null;
+
+    /* 数据面板左侧策略名：优先 /panel/strategies；空时回退 /panel/strategy-slots。 */
+    const rawForNames = rawStrategies != null ? rawStrategies : rawSlots;
+    if (rawForNames != null) {
+      uiState.panelStrategyListAll = normalizePanelStrategyNames(rawForNames, false);
+      uiState.panelStrategyList = normalizePanelStrategyNames(rawForNames, true);
+      try {
+        window.dispatchEvent(
+          new CustomEvent("bovin-strategy-slot-names", {
+            detail: { names: uiState.panelStrategyList ?? [] }
+          })
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+    /* 槽位 id 与编辑 JSON/MML 详情关联：优先 /panel/strategy-slots。 */
+    if (rawSlots != null) {
+      uiState.panelStrategySlotIdByName = buildPanelStrategySlotIdByName(rawSlots);
+      uiState.panelStrategySlotRowsRaw = Array.isArray(rawSlots) ? rawSlots : [];
     }
     if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
     if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
@@ -318,6 +388,8 @@ async function panelTick() {
 
     const heroLatency = $("heroLatency");
     if (heroLatency) heroLatency.textContent = `${Math.round(uiState.lastPingLatencyMs)}ms`;
+    const heroUptime = $("heroUptime");
+    if (heroUptime) heroUptime.textContent = formatOverviewUptimeFromHealth(uiState.lastHealth);
 
     applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
@@ -332,6 +404,8 @@ async function panelTick() {
       uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
     const profitObj =
       uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
+    const riskLeverageValue = $("riskLeverageValue");
+    if (riskLeverageValue) riskLeverageValue.textContent = formatTradingModePair(showCfg);
 
     renderControlHeroAndCards(
       dailyPayload,

@@ -196,6 +196,15 @@ export * from "../../api/settings.js";
 
 <script setup>
 import { onMounted, onUnmounted } from "vue";
+import { refreshStrategyConsoleAfterPrefs } from "../../app.js";
+import {
+  state,
+  defaultStrategyEntry,
+  normalizeStrategyEntries,
+  normalizeStrategySlots,
+  persistProfileToLocalStorage,
+  syncStrategyEntriesDerivedState
+} from "../../store/state-core.js";
 
 let disposeTabs = null;
 let disposeApiBindingModal = null;
@@ -209,6 +218,26 @@ const esc = (v) =>
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+
+function readFieldStr(id) {
+  const el = document.getElementById(id);
+  if (!el || !("value" in el)) return "";
+  return String(el.value ?? "");
+}
+
+function readFieldNumOrNull(id) {
+  const el = document.getElementById(id);
+  if (!el || !("value" in el)) return null;
+  const s = String(el.value ?? "").trim();
+  if (s === "") return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+function readCheckbox(id) {
+  const el = document.getElementById(id);
+  return Boolean(el && "checked" in el && el.checked);
+}
 
 onMounted(() => {
   const tabs = Array.from(document.querySelectorAll(".settings-dual-tab"));
@@ -404,6 +433,7 @@ onMounted(() => {
   }
 
   if (strategyModal) {
+    const saveStrategyMemoBtn = document.getElementById("saveStrategyMemoModal");
     const openStrategyModal = (mode) => {
       strategyModal.classList.remove("hidden");
       if (strategyModalTitle) {
@@ -422,9 +452,64 @@ onMounted(() => {
       if (e.key === "Escape") closeStrategyModal();
     };
 
+    const onSaveStrategyMemo = () => {
+      const name = readFieldStr("mStrategyName").trim();
+      if (!name) {
+        window.alert("请填写策略名称 / 偏好");
+        return;
+      }
+      const entries = normalizeStrategyEntries(state.strategyEntries);
+      const idx = entries.findIndex((e) => String(e.strategyName || "").trim() === name);
+      const patch = {
+        strategyName: name,
+        strategyRpcBase: readFieldStr("mStrategyRpcBase").trim(),
+        controlShowStrategyCards: readCheckbox("mControlShowStrategyCards"),
+        strategyAuthorizedAmount: readFieldNumOrNull("mStrategyAuthorizedAmount"),
+        strategyTargetAnnualReturnPct: readFieldNumOrNull("mStrategyTargetAnnualReturnPct"),
+        aiTakeoverTrading: readCheckbox("mAiTakeoverTrading"),
+        paperTrading: readCheckbox("mPaperTrading"),
+        riskUseFreqaiLimits: readCheckbox("mRiskUseFreqaiLimits"),
+        riskMaxDrawdownLimitPct: readFieldNumOrNull("mRiskMaxDrawdownLimitPct"),
+        riskThresholdPct: readFieldNumOrNull("mRiskThresholdPct"),
+        strategyNotes: readFieldStr("mStrategyNotes"),
+        strategyExtraJson: readFieldStr("mStrategyExtraJson"),
+        strategyRulesOutput: readFieldStr("mStrategyRulesOutput"),
+        showOnConsole: readCheckbox("mStrategyShowOnConsole")
+      };
+      const nextEnt =
+        idx >= 0 ? defaultStrategyEntry({ ...entries[idx], ...patch }) : defaultStrategyEntry({ ...patch });
+      if (idx >= 0) entries[idx] = nextEnt;
+      else entries.push(nextEnt);
+      state.strategyEntries = normalizeStrategyEntries(entries);
+      syncStrategyEntriesDerivedState();
+
+      const dj = readFieldStr("mEntrySlotDetailJson").trim();
+      const mm = readFieldStr("mEntrySlotMml").trim();
+      const slotMap =
+        state.strategySlots && typeof state.strategySlots === "object" && !Array.isArray(state.strategySlots)
+          ? { ...state.strategySlots }
+          : {};
+      const slot = {};
+      if (dj) slot.detailJson = dj;
+      if (mm) slot.mml = mm;
+      slotMap[name] = slot;
+      state.strategySlots = normalizeStrategySlots(slotMap);
+
+      try {
+        persistProfileToLocalStorage();
+        refreshStrategyConsoleAfterPrefs();
+      } catch (err) {
+        console.error(err);
+        window.alert(err && typeof err === "object" && "message" in err ? String(err.message) : String(err));
+        return;
+      }
+      closeStrategyModal();
+    };
+
     newStrategyBtn?.addEventListener("click", onNewStrategy);
     closeStrategyModalBtn?.addEventListener("click", closeStrategyModal);
     strategyModalMask?.addEventListener("click", closeStrategyModal);
+    saveStrategyMemoBtn?.addEventListener("click", onSaveStrategyMemo);
     document.getElementById("manualStrategiesList")?.addEventListener("click", onStrategyListClick);
     window.addEventListener("keydown", onEscStrategy);
 
@@ -432,6 +517,7 @@ onMounted(() => {
       newStrategyBtn?.removeEventListener("click", onNewStrategy);
       closeStrategyModalBtn?.removeEventListener("click", closeStrategyModal);
       strategyModalMask?.removeEventListener("click", closeStrategyModal);
+      saveStrategyMemoBtn?.removeEventListener("click", onSaveStrategyMemo);
       document.getElementById("manualStrategiesList")?.removeEventListener("click", onStrategyListClick);
       window.removeEventListener("keydown", onEscStrategy);
     };

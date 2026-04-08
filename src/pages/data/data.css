@@ -924,7 +924,8 @@
   .sc-governance-grid {
     grid-template-columns: 1fr;
   }
-  .sc-list.black {
+  .sc-list.black,
+  .sc-list--bl {
     border-left: 0;
     border-top: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   }

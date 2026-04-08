@@ -463,7 +463,7 @@
             <header class="modal-head modal-head--binding">
               <div class="modal-head-text">
                 <h4 id="strategySlotModalTitle" class="modal-title" data-i18n="modal.strategySlotTitle">策略 JSON / MML</h4>
-                <p class="modal-sub" data-i18n="modal.strategySlotSub">按策略类名保存；详细策略 JSON 与 MML 可只填其一，也可同时填写。</p>
+                <p class="modal-sub" data-i18n="modal.strategySlotSub">保存时以 JSON 中的 strategy 字段为策略名；下拉会随编辑自动同步。</p>
               </div>
               <button type="button" id="closeStrategySlotModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
             </header>
@@ -471,7 +471,7 @@
               <div class="strategy-slot-modal-layout">
                 <section class="strategy-slot-modal-top" aria-labelledby="strategySlotSelectLabel">
                   <label id="strategySlotSelectLabel" class="strategy-slot-select-wrap">
-                    <span class="binding-field-label" data-i18n="label.strategySlotName">策略类名</span>
+                    <span class="binding-field-label" data-i18n="label.strategySlotNameSync">策略名（随 JSON 内 strategy 同步）</span>
                     <input type="hidden" id="mStrategySlotNameSelect" name="mStrategySlotNameSelect" value="" autocomplete="off" />
                     <a-select
                       v-model:value="strategySlotClassName"
@@ -500,8 +500,13 @@
                 <p class="modal-hint strategy-slot-hint" data-i18n="hint.strategySlotEither">与全局「策略配置」中的扩展 JSON 不同：此处按每张策略卡片单独存储，供编排或外部工具使用。</p>
               </div>
             </div>
-            <footer class="modal-actions">
-              <button type="button" id="saveStrategySlotModal" class="primary" data-i18n="btn.saveStrategySlot">保存</button>
+            <footer class="modal-actions modal-actions--split">
+              <button type="button" id="formatStrategySlotModal" class="ghost" data-i18n="btn.formatStrategySlotJson">
+                格式化 JSON
+              </button>
+              <div class="modal-actions-end">
+                <button type="button" id="saveStrategySlotModal" class="primary" data-i18n="btn.saveStrategySlot">保存</button>
+              </div>
             </footer>
           </div>
         </div>
@@ -569,7 +574,35 @@
 <script setup>
 import { onMounted, onUnmounted, nextTick, ref, watch } from "vue";
 import { BellOutlined, BulbOutlined, BulbFilled, UserOutlined } from "@ant-design/icons-vue";
-import { startPanelApp, registerSectionRouteNavigator } from "../app.js";
+import {
+  startPanelApp,
+  registerSectionRouteNavigator,
+  refreshStrategyConsoleAfterPrefs,
+  applyDomI18n
+} from "../app.js";
+import { i18n } from "../i18n/index.js";
+import {
+  state,
+  uiState,
+  persistProfileToLocalStorage,
+  normalizeStrategySlots
+} from "../store/state-core.js";
+import {
+  getPanelStrategySlotDetail,
+  getPanelStrategySlots,
+  patchPanelStrategySlot
+} from "../api/overview.js";
+import {
+  buildPanelStrategySlotIdByName,
+  extractPanelStrategyListPayload,
+  extractPanelStrategySlotDetailBodies,
+  findPanelStrategySlotRow,
+  normalizePanelStrategyNames,
+  resolvePanelStrategySlotServerId,
+  rowServerSlotId,
+  slotRowDetailJsonText,
+  slotRowMmlText
+} from "../utils/data-strategies-list.js";
 import { panelRouter } from "../router/index.js";
 import { createSectionRouteNavigator } from "../router/bridge.js";
 import PanelSections from "./components/PanelSections.vue";
@@ -602,8 +635,416 @@ const puPermApi = ref("read");
 
 const strategySlotClassName = ref(undefined);
 const strategySlotOptions = ref([]);
+/** 打开弹窗时的卡片策略类名，保存时若改名则删除旧键 */
+const strategySlotOpenKey = ref("");
+/** 打开弹窗时从按钮 data-strategy-slot-id 或映射得到的 PATCH 用服务端槽位 id */
+const strategySlotOpenServerId = ref("");
+/** 为 true 时不把下拉值写回 JSON（避免打开弹窗覆盖已有 strategy） */
+const strategySlotSuppressJsonRewrite = ref(false);
+/** 打开弹窗时自 state 加载的初始内容，用于 PATCH 时仅提交变更字段 */
+const strategySlotInitialDetailJson = ref("");
+const strategySlotInitialMml = ref("");
 const strategySlotPlaceholder = "选择或搜索策略类名";
 const strategySlotAria = "选择要编辑槽位的策略类名";
+
+function tSlot(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
+
+function tryStrategyNameFromJsonText(text) {
+  const s = String(text || "").trim();
+  if (!s) return null;
+  try {
+    const o = JSON.parse(s);
+    if (o && typeof o === "object" && o.strategy != null) {
+      const n = String(o.strategy).trim();
+      return n || null;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/** 与 PATCH 判断「是否改动」一致：统一换行，避免 \r\n 导致误判未修改 */
+function normSlotEditorText(s) {
+  return String(s ?? "").replace(/\r\n/g, "\n").trim();
+}
+
+function canSendPanelAuthenticatedWrite() {
+  return Boolean(String(state.password || "").trim());
+}
+
+function mergeStrategySlotOptionsFromNames(names) {
+  const base = Array.isArray(names) ? names : [];
+  const fromPoll = base
+    .map((x) => {
+      const s = String(x ?? "").trim();
+      return s ? { value: s, label: s } : null;
+    })
+    .filter(Boolean);
+  const map = new Map(strategySlotOptions.value.map((o) => [o.value, o]));
+  for (const o of fromPoll) map.set(o.value, o);
+  strategySlotOptions.value = [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** 与 panel-poll 一致：拉列表并写入 uiState，便于弹窗打开时仍能解析到列表项 `id` */
+async function syncStrategySlotsIntoUiState() {
+  try {
+    const payload = await getPanelStrategySlots();
+    const raw = extractPanelStrategyListPayload(payload);
+    if (raw == null || !Array.isArray(raw)) return false;
+    uiState.panelStrategySlotRowsRaw = raw;
+    uiState.panelStrategySlotIdByName = buildPanelStrategySlotIdByName(raw);
+    uiState.panelStrategyListAll = normalizePanelStrategyNames(raw, false);
+    uiState.panelStrategyList = normalizePanelStrategyNames(raw, true);
+    try {
+      window.dispatchEvent(
+        new CustomEvent("bovin-strategy-slot-names", {
+          detail: { names: uiState.panelStrategyList ?? [] }
+        })
+      );
+    } catch {
+      /* ignore */
+    }
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+function computeStrategySlotServerId(key, fromHint, mergedDj) {
+  const fromH = String(fromHint || "").trim();
+  const fromMap =
+    uiState.panelStrategySlotIdByName && typeof uiState.panelStrategySlotIdByName === "object"
+      ? String(uiState.panelStrategySlotIdByName[key] || "").trim()
+      : "";
+  const djNameHint = tryStrategyNameFromJsonText(mergedDj);
+  let sid = String(
+    fromH ||
+      fromMap ||
+      resolvePanelStrategySlotServerId(
+        uiState.panelStrategySlotRowsRaw,
+        key,
+        djNameHint || undefined
+      ) ||
+      ""
+  ).trim();
+  if (!sid) {
+    const rowByKey = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
+    if (rowByKey) sid = rowServerSlotId(rowByKey);
+  }
+  const rawRows = uiState.panelStrategySlotRowsRaw;
+  if (!sid && Array.isArray(rawRows) && rawRows.length === 1) {
+    const only = rowServerSlotId(rawRows[0]);
+    if (only) sid = only;
+  }
+  return sid;
+}
+
+async function openStrategySlotModal(strategyName, serverIdHint = "") {
+  const key = String(strategyName || "").trim();
+  if (!key) return;
+  strategySlotSuppressJsonRewrite.value = true;
+  strategySlotOpenKey.value = key;
+  const fromHint = String(serverIdHint || "").trim();
+  const modal = document.getElementById("strategySlotModal");
+  const taJ = document.getElementById("mStrategySlotDetailJson");
+  const taM = document.getElementById("mStrategySlotMml");
+  const slots = state.strategySlots && typeof state.strategySlots === "object" ? state.strategySlots : {};
+  const slot = slots[key] || {};
+  let row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
+  /* 轮询未跑或列表未灌入 uiState 时先拉一次，否则永远没有 sid、不会请求详情 */
+  if (
+    !row &&
+    (!Array.isArray(uiState.panelStrategySlotRowsRaw) || uiState.panelStrategySlotRowsRaw.length === 0)
+  ) {
+    await syncStrategySlotsIntoUiState();
+    row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
+  }
+  const fromApiDj = (slotRowDetailJsonText(row) || "").trim();
+  const fromApiMm = (slotRowMmlText(row) || "").trim();
+  const djLocal = slot.detailJson ? String(slot.detailJson).trim() : "";
+  const mmLocal = slot.mml ? String(slot.mml).trim() : "";
+  let mergedDj = djLocal || fromApiDj;
+  let mergedMm = mmLocal || fromApiMm;
+  let sid = computeStrategySlotServerId(key, fromHint, mergedDj);
+  if (!sid) {
+    await syncStrategySlotsIntoUiState();
+    row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
+    const fromApiDj2 = (slotRowDetailJsonText(row) || "").trim();
+    const fromApiMm2 = (slotRowMmlText(row) || "").trim();
+    mergedDj = djLocal || fromApiDj2;
+    mergedMm = mmLocal || fromApiMm2;
+    sid = computeStrategySlotServerId(key, fromHint, mergedDj);
+  }
+  strategySlotOpenServerId.value = sid;
+  if (taJ instanceof HTMLTextAreaElement) taJ.value = mergedDj;
+  if (taM instanceof HTMLTextAreaElement) taM.value = mergedMm;
+  strategySlotInitialDetailJson.value = normSlotEditorText(mergedDj);
+  strategySlotInitialMml.value = normSlotEditorText(mergedMm);
+  mergeStrategySlotOptionsFromNames(uiState.panelStrategyList || []);
+  if (!strategySlotOptions.value.some((o) => o.value === key)) {
+    strategySlotOptions.value = [...strategySlotOptions.value, { value: key, label: key }].sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+  }
+  strategySlotClassName.value = key;
+  void nextTick(() => {
+    strategySlotSuppressJsonRewrite.value = false;
+  });
+  modal?.classList.remove("hidden");
+  const shell = document.getElementById("appRoot");
+  if (shell) applyDomI18n(shell);
+
+  if (sid) {
+    try {
+      const detail = await getPanelStrategySlotDetail(sid, { includeBodies: true });
+      const modalStill = document.getElementById("strategySlotModal");
+      if (!modalStill || modalStill.classList.contains("hidden")) return;
+      const { detailJson: apiDj, mml: apiMm } = extractPanelStrategySlotDetailBodies(detail);
+      const taJ2 = document.getElementById("mStrategySlotDetailJson");
+      const taM2 = document.getElementById("mStrategySlotMml");
+      if (taJ2 instanceof HTMLTextAreaElement) taJ2.value = apiDj;
+      if (taM2 instanceof HTMLTextAreaElement) taM2.value = apiMm;
+      strategySlotInitialDetailJson.value = normSlotEditorText(apiDj);
+      strategySlotInitialMml.value = normSlotEditorText(apiMm);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
+function closeStrategySlotModal() {
+  document.getElementById("strategySlotModal")?.classList.add("hidden");
+}
+
+async function onSaveStrategySlotModal() {
+  const taJ = document.getElementById("mStrategySlotDetailJson");
+  const taM = document.getElementById("mStrategySlotMml");
+  const saveBtn = document.getElementById("saveStrategySlotModal");
+  const dj = taJ instanceof HTMLTextAreaElement ? normSlotEditorText(taJ.value) : "";
+  const mm = taM instanceof HTMLTextAreaElement ? normSlotEditorText(taM.value) : "";
+  const fromJson = tryStrategyNameFromJsonText(dj);
+  const fromSelect = String(strategySlotClassName.value ?? "").trim();
+  const finalKey = fromJson || fromSelect || String(strategySlotOpenKey.value || "").trim();
+  if (!finalKey) {
+    window.alert(tSlot("modal.strategySlotNeedName"));
+    return;
+  }
+  const openKey = String(strategySlotOpenKey.value || "").trim();
+  const initDj = normSlotEditorText(strategySlotInitialDetailJson.value);
+  const initMm = normSlotEditorText(strategySlotInitialMml.value);
+  /** @type {Record<string, string>} */
+  const patchBody = {};
+  /* PATCH …/api/v1/panel/strategy-slots/{id}，body 只含变更字段：detailJson / mml */
+  if (dj !== initDj) patchBody.detailJson = dj;
+  if (mm !== initMm) patchBody.mml = mm;
+
+  function resolvePatchTargetSlotId() {
+    const fromOpenRef = String(strategySlotOpenServerId.value || "").trim();
+    const fromMap =
+      openKey && uiState.panelStrategySlotIdByName && typeof uiState.panelStrategySlotIdByName === "object"
+        ? String(uiState.panelStrategySlotIdByName[openKey] || "").trim()
+        : "";
+    const fromMapFinal =
+      finalKey && uiState.panelStrategySlotIdByName && typeof uiState.panelStrategySlotIdByName === "object"
+        ? String(uiState.panelStrategySlotIdByName[finalKey] || "").trim()
+        : "";
+    let sid = String(
+      fromOpenRef ||
+        fromMap ||
+        fromMapFinal ||
+        resolvePanelStrategySlotServerId(
+          uiState.panelStrategySlotRowsRaw,
+          openKey,
+          finalKey,
+          fromSelect,
+          fromJson || undefined,
+          tryStrategyNameFromJsonText(dj) || undefined
+        ) ||
+        ""
+    ).trim();
+    if (!sid) {
+      for (const k of [finalKey, openKey, fromSelect].filter(Boolean)) {
+        const r = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, k);
+        if (!r) continue;
+        const id = rowServerSlotId(r);
+        if (id) {
+          sid = id;
+          break;
+        }
+      }
+    }
+    if (!sid) {
+      const rawRows = uiState.panelStrategySlotRowsRaw;
+      if (Array.isArray(rawRows) && rawRows.length === 1) {
+        const only = rowServerSlotId(rawRows[0]);
+        if (only) sid = only;
+      }
+    }
+    return sid;
+  }
+
+  const canSync = canSendPanelAuthenticatedWrite();
+  let serverId = resolvePatchTargetSlotId();
+  if (Object.keys(patchBody).length > 0 && canSync && !serverId) {
+    await syncStrategySlotsIntoUiState();
+    serverId = resolvePatchTargetSlotId();
+  }
+  if (Object.keys(patchBody).length > 0 && canSync && !serverId) {
+    window.alert(tSlot("modal.strategySlotNeedServerId"));
+  }
+  if (serverId && Object.keys(patchBody).length > 0 && canSync) {
+    const prevDisabled = saveBtn instanceof HTMLButtonElement ? saveBtn.disabled : false;
+    if (saveBtn instanceof HTMLButtonElement) saveBtn.disabled = true;
+    try {
+      await patchPanelStrategySlot(serverId, patchBody);
+    } catch (e) {
+      const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+      window.alert(`${tSlot("modal.strategySlotPatchFail")}\n${msg}`);
+      if (saveBtn instanceof HTMLButtonElement) saveBtn.disabled = prevDisabled;
+      return;
+    }
+    if (saveBtn instanceof HTMLButtonElement) saveBtn.disabled = prevDisabled;
+  }
+
+  try {
+    const next = {
+      ...(state.strategySlots && typeof state.strategySlots === "object" && !Array.isArray(state.strategySlots)
+        ? state.strategySlots
+        : {})
+    };
+    if (openKey && openKey !== finalKey && Object.prototype.hasOwnProperty.call(next, openKey)) {
+      delete next[openKey];
+    }
+    const entry = {};
+    if (dj) entry.detailJson = dj;
+    if (mm) entry.mml = mm;
+    next[finalKey] = entry;
+    state.strategySlots = normalizeStrategySlots(next);
+    persistProfileToLocalStorage();
+    refreshStrategyConsoleAfterPrefs();
+  } catch (err) {
+    console.error(err);
+    const msg = err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
+    window.alert(msg);
+    return;
+  }
+  closeStrategySlotModal();
+}
+
+function onFormatStrategySlotJson() {
+  const ta = document.getElementById("mStrategySlotDetailJson");
+  if (!(ta instanceof HTMLTextAreaElement)) return;
+  const raw = ta.value.trim();
+  if (!raw) return;
+  try {
+    const o = JSON.parse(raw);
+    ta.value = JSON.stringify(o, null, 2);
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+    window.alert(msg);
+  }
+}
+
+let strategySlotModalInfrastructureBound = false;
+let strategySlotDetailJsonInputBound = false;
+let strategySlotTaJBindAttempts = 0;
+
+/** 捕获阶段处理保存/关闭/格式化/遮罩，避免挂载时序导致 saveBtn 未绑定 */
+function onStrategySlotModalUiClickCapture(ev) {
+  const t = ev.target instanceof Element ? ev.target : null;
+  if (!t) return;
+  const shell = document.getElementById("strategySlotModal");
+  if (!shell || shell.classList.contains("hidden")) return;
+
+  if (t.closest("#strategySlotModal .modal-mask")) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    closeStrategySlotModal();
+    return;
+  }
+  const saveEl = t.closest("#saveStrategySlotModal");
+  if (saveEl) {
+    if (saveEl instanceof HTMLButtonElement && saveEl.disabled) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    void onSaveStrategySlotModal().catch((err) => {
+      console.error(err);
+      const msg =
+        err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
+      window.alert(msg);
+    });
+    return;
+  }
+  if (t.closest("#formatStrategySlotModal")) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    onFormatStrategySlotJson();
+    return;
+  }
+  if (t.closest("#closeStrategySlotModal")) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    closeStrategySlotModal();
+  }
+}
+
+function bindStrategySlotDetailJsonInputOnce() {
+  if (strategySlotDetailJsonInputBound) return;
+  const taJ = document.getElementById("mStrategySlotDetailJson");
+  if (!(taJ instanceof HTMLTextAreaElement)) {
+    strategySlotTaJBindAttempts += 1;
+    if (strategySlotTaJBindAttempts < 60) void nextTick(() => bindStrategySlotDetailJsonInputOnce());
+    return;
+  }
+  strategySlotDetailJsonInputBound = true;
+  taJ.addEventListener("input", () => {
+    const n = tryStrategyNameFromJsonText(taJ.value);
+    if (n && n !== strategySlotClassName.value) strategySlotClassName.value = n;
+    if (n && !strategySlotOptions.value.some((o) => o.value === n)) {
+      strategySlotOptions.value = [...strategySlotOptions.value, { value: n, label: n }].sort((a, b) =>
+        a.label.localeCompare(b.label)
+      );
+    }
+  });
+}
+
+function onStrategySlotEditOpenClickCapture(ev) {
+  const el = ev.target instanceof Element ? ev.target.closest("[data-strategy-slot-edit]") : null;
+  if (!el) return;
+  if (el instanceof HTMLButtonElement && el.disabled) return;
+  if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) return;
+  const name = el.getAttribute("data-strategy-slot-edit");
+  if (!name) return;
+  const sidHint = el.getAttribute("data-strategy-slot-id") || "";
+  ev.preventDefault();
+  ev.stopPropagation();
+  void openStrategySlotModal(name, sidHint).catch((err) => {
+    console.error(err);
+  });
+}
+
+function bindStrategySlotModalUi() {
+  if (strategySlotModalInfrastructureBound) return;
+  strategySlotModalInfrastructureBound = true;
+
+  /* 捕获阶段：避免控制台内其它委托在冒泡阶段 stopPropagation 导致点「编辑 JSON/MML」到不了 document */
+  document.addEventListener("click", onStrategySlotEditOpenClickCapture, true);
+  document.addEventListener("click", onStrategySlotModalUiClickCapture, true);
+
+  window.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape") return;
+    const modal = document.getElementById("strategySlotModal");
+    if (!modal || modal.classList.contains("hidden")) return;
+    closeStrategySlotModal();
+  });
+
+  void nextTick(() => bindStrategySlotDetailJsonInputOnce());
+}
 
 function filterStrategySlotOption(input, option) {
   const q = String(input || "").trim().toLowerCase();
@@ -628,6 +1069,28 @@ watch(puPermMonitor, (v) => syncHiddenSelect("puPerm-monitor", v));
 watch(puPermApi, (v) => syncHiddenSelect("puPerm-api", v));
 watch(strategySlotClassName, (v) => syncHiddenSelect("mStrategySlotNameSelect", v));
 
+watch(strategySlotClassName, (v) => {
+  if (strategySlotSuppressJsonRewrite.value) return;
+  const ta = document.getElementById("mStrategySlotDetailJson");
+  if (!(ta instanceof HTMLTextAreaElement)) return;
+  if (v == null || String(v).trim() === "") return;
+  const raw = ta.value.trim();
+  if (!raw) return;
+  try {
+    const o = JSON.parse(raw);
+    if (o && typeof o === "object") {
+      const cur = String(o.strategy || "").trim();
+      const nv = String(v).trim();
+      if (cur !== nv) {
+        o.strategy = nv;
+        ta.value = JSON.stringify(o, null, 2);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+});
+
 function onFormFieldPatch(ev) {
   const d = ev?.detail;
   if (!d || d.id !== "mLlmProvider") return;
@@ -637,17 +1100,14 @@ function onFormFieldPatch(ev) {
 function onStrategySlotNames(ev) {
   const names = ev?.detail?.names;
   if (!Array.isArray(names)) return;
-  const opts = names.map((x) => {
-    const s = String(x ?? "").trim();
-    return s ? { value: s, label: s } : null;
-  }).filter(Boolean);
-  strategySlotOptions.value = opts;
+  mergeStrategySlotOptionsFromNames(names);
 }
 
 onMounted(async () => {
   window.addEventListener("bovin-form-patch", onFormFieldPatch);
   window.addEventListener("bovin-strategy-slot-names", onStrategySlotNames);
   await nextTick();
+  bindStrategySlotModalUi();
   await startPanelApp();
 
   const readHidden = (id, assign) => {

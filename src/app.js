@@ -198,7 +198,7 @@ function unwrapPanelPreferencesBody(body) {
   return body;
 }
 
-function refreshStrategyConsoleAfterPrefs() {
+export function refreshStrategyConsoleAfterPrefs() {
   const dailyPayload = uiState.lastDaily && typeof uiState.lastDaily === "object" ? uiState.lastDaily : {};
   const showCfg = uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
   const profitObj = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
@@ -323,8 +323,17 @@ function bindPanelChromeOnce() {
     syncMockPillUi();
   };
 
-  $("dataSourceBadge")?.addEventListener("click", toggleMockMode);
-  $("toggleMock")?.addEventListener("click", toggleMockMode);
+  /* 用文档级委托，避免路由切换/重挂载后按钮节点替换导致“看得到但点不了”。 */
+  if (!uiState.mockToggleDelegationBound) {
+    uiState.mockToggleDelegationBound = true;
+    document.addEventListener("click", (ev) => {
+      const el = ev.target instanceof Element ? ev.target.closest("#dataSourceBadge, #toggleMock") : null;
+      if (!el) return;
+      if (el instanceof HTMLButtonElement && el.disabled) return;
+      ev.preventDefault();
+      toggleMockMode();
+    });
+  }
 }
 
 function enterShellAfterAuth() {

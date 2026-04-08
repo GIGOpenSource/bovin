@@ -6,7 +6,7 @@
  *   - 策略配置 → 表 panel_profile（strategy_entries_json、strategy_slots_json 等），经同接口的 strategyEntries / strategySlots。
  *   - 面板用户 → 表 panel_user / panel_user_menu，经 /panel/users* 与 /panel/auth/login（与 preferences 分离）。
  * - Strategy AI 控制台展示哪些策略、是否隐藏、卡片形态与 KPI：由 strategyEntries（及 strategySlots、strategyHiddenFromConsole）
- *   驱动，见 control-console.js。app.js 会将 /show_config 当前策略与 GET /panel/strategies 扫描结果合并进 strategyEntries，并防抖 POST 回 SQLite，与设置中心列表对齐。
+ *   驱动，见 control-console.js。轮询会将 /show_config 当前策略与 GET /panel/strategy-slots 列表合并进展示顺序，并与设置中心 strategyEntries 对齐。
  * - state（baseUrl/username/password）：与面板登录同一组凭据；username/baseUrl 存 localStorage；**密码仅存 sessionStorage**（新标签页需重新登录）。
  * - api_bindings：非模拟下 localStorage 为**脱敏副本**；另在 sessionStorage 存本标签页「上次成功 GET/POST 含密钥的快照」，供 GET 偏好失败时恢复列表，**避免假清空**（与 ft_pwd_session 同级风险，登出时清除）。
  * - **GET /panel/preferences 未成功**时，不向 SQLite 做隐式 POST（策略防抖等）；避免内存未与库对齐时覆盖 panel_profile / 对接表。换主题、模拟开关、保存连接、同步按钮等显式操作带 forceFullProfileSync。（登录后见 app.js `syncPanelPreferencesFromServer`。）
@@ -881,8 +881,12 @@ export const uiState = {
   controlConsoleDelegation: false,
   /** 去重后的类名列表，供策略 AI 控制台等多卡逻辑 */
   panelStrategyList: null,
-  /** 与 GET /panel/strategies 的 strategies 数组一致（保留重复项与顺序），供数据面板列表 */
+  /** 与 GET /panel/strategy-slots 解析后的条目顺序一致（保留重复项与顺序），供数据面板列表 */
   panelStrategyListAll: null,
+  /** 策略展示名 → 服务端槽位 id，来自 GET /panel/strategy-slots 条目 */
+  panelStrategySlotIdByName: {},
+  /** 最近一次 GET /panel/strategy-slots 解析出的条目数组（用于弹窗与 mml 同源预填 detailJson） */
+  panelStrategySlotRowsRaw: [],
   panelUserId: null,
   panelUsername: "",
   menuPermissions: null,

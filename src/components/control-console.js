@@ -581,7 +581,12 @@ function formatStrategySlotRowHtml(name) {
   const bd = badges.length
     ? `<div class="sc-slot-badges">${badges.join("")}</div>`
     : `<span class="muted sc-slot-empty">${escapeHtml(t("sc.strategy.slotEmpty"))}</span>`;
-  const btn = `<button type="button" class="ghost sc-strategy-slot-btn" data-strategy-slot-edit="${escapeHtml(name)}">${escapeHtml(t("sc.strategy.editSlot"))}</button>`;
+  const sid =
+    uiState.panelStrategySlotIdByName && typeof uiState.panelStrategySlotIdByName === "object"
+      ? String(uiState.panelStrategySlotIdByName[name] || "").trim()
+      : "";
+  const sidAttr = sid ? ` data-strategy-slot-id="${escapeHtml(sid)}"` : "";
+  const btn = `<button type="button" class="ghost sc-strategy-slot-btn" data-strategy-slot-edit="${escapeHtml(name)}"${sidAttr}>${escapeHtml(t("sc.strategy.editSlot"))}</button>`;
   return `<div class="sc-strategy-slot-row">${bd}${btn}</div>`;
 }
 
@@ -612,6 +617,7 @@ export function renderControlStrategyCards(
 ) {
   const root = $("controlStrategyCards");
   if (!root) return;
+  const chipSep = " · ";
   const activeGlobal = String(showConfig?.strategy || "").trim();
   const settingsName = String(state.strategyName || "").trim();
   const diskSet = new Set(
@@ -745,14 +751,14 @@ export function renderControlStrategyCards(
       const chipCls = metricsActive ? (runningNow ? "ok" : "idle") : "idle";
       let badge;
       if (hasDedicated && dedicatedOk) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)} · ${escapeHtml(exch)} · ${escapeHtml(stateLabel)} · ${escapeHtml(t("sc.strategy.dedicatedBotBadge"))}</span>`;
+        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.dedicatedBotBadge"))}</span>`;
       } else if (hasDedicated && !dedicatedOk) {
         const errT = snap?.error ? escapeHtml(String(snap.error).slice(0, 160)) : "";
         badge = `<span class="sc-chip idle" title="${errT}">${escapeHtml(t("sc.strategy.dedicatedBotOffline"))}</span>`;
       } else if (isConfigStrategy) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)} · ${escapeHtml(exch)} · ${escapeHtml(stateLabel)} · ${escapeHtml(t("sc.strategy.configActive"))}</span>`;
+        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.configActive"))}</span>`;
       } else if (isPanelOnlyFocus || isAiTakeoverSettingsPrimary) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)} · ${escapeHtml(exch)} · ${escapeHtml(stateLabel)} · ${escapeHtml(t("sc.strategy.panelPrefBadge"))}</span>`;
+        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.panelPrefBadge"))}</span>`;
       } else if (manualSet.has(name) && !diskSet.has(name)) {
         badge = `<span class="sc-chip idle">${escapeHtml(t("sc.strategy.manualEntry"))}</span>`;
       } else {
@@ -761,7 +767,12 @@ export function renderControlStrategyCards(
       let perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong>—</strong>`;
       if (metricsActive && profitPct != null && Number.isFinite(profitPct)) {
         const perfClass = profitPct < 0 ? "negative" : "positive";
-        perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong class="${perfClass}">${profitPct >= 0 ? "+" : ""}${profitPct.toFixed(2)}% <small>Σ</small></strong>`;
+        const sign =
+          profitPct < 0
+            ? `<span class="sc-perf-sym sc-perf-sign" aria-hidden="true">-</span>`
+            : `<span class="sc-perf-sym sc-perf-sign" aria-hidden="true">+</span>`;
+        const num = escapeHtml(Math.abs(profitPct).toFixed(2));
+        perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong class="${perfClass}">${sign}<span class="sc-perf-num">${num}</span><span class="sc-perf-sym sc-perf-pct" aria-hidden="true">%</span><span class="sc-perf-sym sc-perf-sigma" aria-hidden="true">Σ</span></strong>`;
       } else if (!metricsActive) {
         perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong>—</strong>`;
       }
@@ -797,11 +808,13 @@ export function renderControlStrategyCards(
         hasDedicated && rowBase ? ` data-strategy-api-base="${encodeURIComponent(rowBase)}"` : "";
       return `<article class="sc-card" data-strategy-card="${escapeHtml(name)}"${apiBaseAttr}>
         <div class="sc-card-head">
-          <div>
-            <h3>${escapeHtml(name)}</h3>
-            <div>${badge}</div>
+          <div class="sc-card-head-main">
+            <div class="sc-card-head-topline">
+              <h3 title="${escapeHtml(name)}">${escapeHtml(name)}</h3>
+              <div class="sc-perf">${perfInner}</div>
+            </div>
+            <div class="sc-card-head-chip">${badge}</div>
           </div>
-          <div class="sc-perf">${perfInner}</div>
         </div>
         <div class="sc-meta">
           <div><span data-i18n="sc.exposure">${escapeHtml(t("sc.exposure"))}</span><b>${expBold}</b></div>

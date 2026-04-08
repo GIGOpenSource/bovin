@@ -7,6 +7,12 @@ import { requestAtBase } from "./http.js";
 import { effectiveApiBasePrimary } from "../api/config.js";
 import { runPanelTickOnce } from "../panel-poll.js";
 
+/** 「强制平掉全部持仓」：POST …/forceenter（参数暂写死，与后端约定） */
+const FORCE_ENTER_CLOSE_ALL_BODY = {
+  pair: "BTC/USDT:USDT",
+  ordertype: "market",
+};
+
 /**
  * @param {string} fullUrl
  * @returns {{ base: string, path: string } | null}
@@ -69,7 +75,39 @@ export function bindControlTradeActionDelegation(controlSection) {
   if (!controlSection) return () => {};
 
   const onClick = (ev) => {
-    const raw = ev.target instanceof Element ? ev.target.closest("button.action-btn") : null;
+    const fromEl = ev.target instanceof Element ? ev.target : null;
+
+    const forceExitRaw = fromEl?.closest("button[data-control-force-exit]");
+    const forceExitBtn = forceExitRaw instanceof HTMLButtonElement ? forceExitRaw : null;
+    if (forceExitBtn && !forceExitBtn.disabled) {
+      const card = forceExitBtn.closest("[data-strategy-card]");
+      const target = resolveTradeControlPostTarget("/forceenter", card);
+      if (!target) {
+        window.alert("缺少 API 基址");
+        return;
+      }
+      ev.preventDefault();
+      ev.stopPropagation();
+      void (async () => {
+        const prevDisabled = forceExitBtn.disabled;
+        forceExitBtn.disabled = true;
+        try {
+          await requestAtBase(target.base, target.path, {
+            method: "POST",
+            json: FORCE_ENTER_CLOSE_ALL_BODY,
+          });
+          await runPanelTickOnce();
+        } catch (e) {
+          const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+          window.alert(msg);
+        } finally {
+          forceExitBtn.disabled = prevDisabled;
+        }
+      })();
+      return;
+    }
+
+    const raw = fromEl?.closest("button.action-btn");
     const btn = raw instanceof HTMLButtonElement ? raw : null;
     if (!btn || btn.disabled) return;
     const method = String(btn.getAttribute("data-method") || "POST").toUpperCase();
