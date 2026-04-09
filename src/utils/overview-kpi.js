@@ -200,6 +200,68 @@ export function computeWinRatePercent(dailyPayload) {
   return null;
 }
 
+/**
+ * 风险敞口矩阵：按 GET /balance 的 `currencies[].currency` 分层，返回百分比数值（已 ×100，便于 toFixed(2) + '%'）。
+ * 1) USDT：`sum(est_stake) / sum(balance)`（仅 USDT 行）
+ * 2) BTC：`sum(est_stake of currency includes 'BTC') / USDT 的 balance 合计`
+ * 3) ETH：`sum(est_stake of currency includes 'ETH') / USDT 的 balance 合计`
+ * 4) 其他：其余币种 `est_stake` 之和 / USDT 的 balance 合计；无 USDT 或分母为 0 时均为 0。
+ * @param {unknown} balance
+ * @returns {{ stable: number, btc: number, eth: number, alt: number }}
+ */
+export function computeRiskExposureBucketsPercent(balance) {
+  const z = { stable: 0, btc: 0, eth: 0, alt: 0 };
+  if (!balance || typeof balance !== "object") return z;
+  const cur = Array.isArray(/** @type {Record<string, unknown>} */ (balance).currencies)
+    ? /** @type {Record<string, unknown>} */ (balance).currencies
+    : [];
+
+  let usdtBalSum = 0;
+  let usdtEstSum = 0;
+  let btcStake = 0;
+  let ethStake = 0;
+  let altStake = 0;
+
+  for (const c of cur) {
+    if (!c || typeof c !== "object") continue;
+    const row = /** @type {Record<string, unknown>} */ (c);
+    const code = String(row.currency ?? row.coin ?? "").trim();
+    const upper = code.toUpperCase();
+    const est = Number(row.est_stake);
+    const estN = Number.isFinite(est) ? est : 0;
+    const bal = Number(row.balance);
+    const balN = Number.isFinite(bal) ? bal : 0;
+
+    if (upper === "USDT") {
+      usdtEstSum += estN;
+      usdtBalSum += balN;
+      continue;
+    }
+    if (upper.includes("BTC")) {
+      btcStake += estN;
+      continue;
+    }
+    if (upper.includes("ETH")) {
+      ethStake += estN;
+      continue;
+    }
+    altStake += estN;
+  }
+
+  const stablePct = usdtBalSum > 0 ? (usdtEstSum / usdtBalSum) * 100 : 0;
+  const denom = usdtBalSum > 0 ? usdtBalSum : 0;
+  const btcPct = denom > 0 ? (btcStake / denom) * 100 : 0;
+  const ethPct = denom > 0 ? (ethStake / denom) * 100 : 0;
+  const altPct = denom > 0 ? (altStake / denom) * 100 : 0;
+
+  return {
+    stable: stablePct,
+    btc: btcPct,
+    eth: ethPct,
+    alt: altPct
+  };
+}
+
 /** @param {unknown} dailyPayload */
 export function lastDayAbsProfit(dailyPayload) {
   const rows = dailyRowsChronological(dailyPayload);

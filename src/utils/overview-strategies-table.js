@@ -1,6 +1,7 @@
 /**
  * 系统概览「运行中的策略」表：仅依据 GET /show_config 解析策略名与机器人状态，
  * 盈亏/回撤等同进程下共用 GET /profit、GET /count、GET /status 的聚合字段。
+ * 「24h 盈亏」列展示 GET /profit 的 `profit_all_coin`（计价币绝对盈亏）。
  */
 import { aggregateForStrategy, normalizeBotState } from "../components/control-console.js";
 import { extractMaxDrawdownPercent } from "./overview-kpi.js";
@@ -80,6 +81,8 @@ export function applyOverviewStrategiesTable(showConfig, profit, count, statusRo
   const p = profit && typeof profit === "object" ? /** @type {Record<string, unknown>} */ (profit) : {};
   const stakeCur = String(showConfig?.stake_currency ?? "").trim() || "—";
   const profitPct = p.profit_all_ratio != null ? Number(p.profit_all_ratio) * 100 : null;
+  const pnlCoinRaw = p.profit_all_coin ?? p.profitAllCoin;
+  const pnlCoin = pnlCoinRaw != null ? Number(pnlCoinRaw) : NaN;
   const ddp = extractMaxDrawdownPercent(p);
   const st = normalizeBotState(showConfig?.state);
   const rows = Array.isArray(statusRows) ? statusRows : [];
@@ -105,7 +108,13 @@ export function applyOverviewStrategiesTable(showConfig, profit, count, statusRo
     return;
   }
 
-  const pnl24 = "—";
+  let pnl24 = "—";
+  let pnl24Cls = "";
+  if (Number.isFinite(pnlCoin)) {
+    const curSuffix = stakeCur && stakeCur !== "—" ? ` ${stakeCur}` : "";
+    pnl24 = `${pnlCoin >= 0 ? "+" : ""}${pnlCoin.toLocaleString(undefined, { maximumFractionDigits: 2 })}${curSuffix}`;
+    pnl24Cls = pnlCoin >= 0 ? "positive" : "negative";
+  }
   const pctStr =
     profitPct != null && Number.isFinite(profitPct)
       ? `${profitPct >= 0 ? "+" : ""}${profitPct.toFixed(2)}%`
@@ -126,7 +135,7 @@ export function applyOverviewStrategiesTable(showConfig, profit, count, statusRo
       return `<tr>
         <td class="mono">${esc(name)}</td>
         <td>${esc(core)}<small class="muted" style="display:block;font-size:11px;margin-top:2px;">${expHint}</small></td>
-        <td>${esc(pnl24)}</td>
+        <td class="${esc(pnl24Cls)}">${esc(pnl24)}</td>
         <td class="${esc(pctCls)}">${esc(pctStr)}</td>
         <td class="negative">${esc(ddStr)}</td>
         <td>${esc(stateText)}</td>

@@ -14,6 +14,7 @@ import {
 import { normalizeSectionIdCandidate } from "./router/bridge.js";
 import { startPanelPolling, stopPanelPolling, applyTopbarDecor } from "./panel-poll.js";
 import { renderControlHeroAndCards } from "./components/control-console.js";
+import { bindMonitorRefreshButtonOnce, refreshMonitorPageMetrics } from "./utils/monitor-page-metrics.js";
 
 /** 为 true：不拦截，直接进入面板（不弹登录）；为 false 时须先登录（/panel/auth/login）再进入。 */
 export const SKIP_PANEL_LOGIN = false;
@@ -158,6 +159,9 @@ export function activateSection(sectionId) {
     /* ignore */
   }
   sectionNavigate?.(id);
+  if (id === "monitor" && uiState.authed) {
+    void refreshMonitorPageMetrics();
+  }
 }
 
 function bindNavOnce() {
@@ -339,6 +343,7 @@ function bindPanelChromeOnce() {
 function enterShellAfterAuth() {
   syncLoginShell();
   bindNavOnce();
+  bindMonitorRefreshButtonOnce();
   bindPanelChromeOnce();
   activateSection(pickInitialSectionId());
   const shell = $("appRoot");

@@ -40,7 +40,8 @@ import {
   extractMaxDrawdownPercent,
   formatOpenPositionsSubtitle,
   computeWinRatePercent,
-  lastDayAbsProfit
+  lastDayAbsProfit,
+  computeRiskExposureBucketsPercent
 } from "./utils/overview-kpi.js";
 import { applyOverviewStrategiesTable } from "./utils/overview-strategies-table.js";
 import {
@@ -74,6 +75,39 @@ function tReplace(key, vars) {
 function toNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+/** @param {HTMLElement | null} el */
+function renderRiskExposureMatrix(el, balancePayload) {
+  if (!el) return;
+  const { stable, btc, eth, alt } = computeRiskExposureBucketsPercent(balancePayload);
+  const fmt = (n) => `${Number(n).toFixed(2)}%`;
+  const barPct = (n) => {
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "0%";
+    return `${Math.min(100, Math.max(0, v))}%`;
+  };
+  const L = (key) => escapeHtml(t(key));
+  el.innerHTML = `<div class="cell">
+    <span data-i18n="overview.risk.bucket.stable">${L("overview.risk.bucket.stable")}</span>
+    <b>${escapeHtml(fmt(stable))}</b>
+    <div class="bar"><i style="--ds-risk-bar-pct: ${barPct(stable)}"></i></div>
+  </div>
+  <div class="cell">
+    <span data-i18n="overview.risk.bucket.btc">${L("overview.risk.bucket.btc")}</span>
+    <b>${escapeHtml(fmt(btc))}</b>
+    <div class="bar"><i class="sec" style="--ds-risk-bar-pct: ${barPct(btc)}"></i></div>
+  </div>
+  <div class="cell">
+    <span data-i18n="overview.risk.bucket.eth">${L("overview.risk.bucket.eth")}</span>
+    <b>${escapeHtml(fmt(eth))}</b>
+    <div class="bar"><i class="dim" style="--ds-risk-bar-pct: ${barPct(eth)}"></i></div>
+  </div>
+  <div class="cell">
+    <span data-i18n="overview.risk.bucket.alt">${L("overview.risk.bucket.alt")}</span>
+    <b>${escapeHtml(fmt(alt))}</b>
+    <div class="bar"><i class="ter" style="--ds-risk-bar-pct: ${barPct(alt)}"></i></div>
+  </div>`;
 }
 
 function pickFirstNumber(obj, keys) {
@@ -116,6 +150,57 @@ function unwrapStatusPayload(raw) {
 /** 未平仓 trade：显式 `is_open === true`，或无该字段时视为未平仓（兼容旧接口） */
 function isOpenTrade(t) {
   return Boolean(t && typeof t === "object" && (t.is_open === true || !("is_open" in t)));
+}
+
+/**
+ * GET /status 中提取杠杆：优先响应顶层（或 `data`），否则取首个未平仓 trade 上的 `leverage`。
+ * @param {unknown} raw
+ * @returns {number | null}
+ */
+function extractLeverageFromStatusPayload(raw) {
+  if (raw == null) return null;
+  if (typeof raw === "object" && !Array.isArray(raw)) {
+    const o = /** @type {Record<string, unknown>} */ (raw);
+    const top = pickFirstNumber(o, ["leverage", "Leverage", "leverage_ratio", "leverageRatio"]);
+    if (top != null && top > 0) return top;
+    const data = o.data;
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      const dv = pickFirstNumber(/** @type {Record<string, unknown>} */ (data), [
+        "leverage",
+        "Leverage",
+        "leverage_ratio",
+        "leverageRatio"
+      ]);
+      if (dv != null && dv > 0) return dv;
+    }
+  }
+  const src = unwrapStatusPayload(raw);
+  if (src && typeof src === "object" && !Array.isArray(src)) {
+    const o = /** @type {Record<string, unknown>} */ (src);
+    const v = pickFirstNumber(o, ["leverage", "Leverage", "leverage_ratio", "leverageRatio"]);
+    if (v != null && v > 0) return v;
+  }
+  const tradeList = Array.isArray(src)
+    ? src
+    : src && typeof src === "object"
+      ? /** @type {Record<string, unknown>} */ (src).trades ??
+        /** @type {Record<string, unknown>} */ (src).open_trades ??
+        /** @type {Record<string, unknown>} */ (src).positions ??
+        []
+      : [];
+  if (!Array.isArray(tradeList)) return null;
+  for (const t of tradeList) {
+    if (!t || typeof t !== "object") continue;
+    if (!isOpenTrade(t)) continue;
+    const lv = pickFirstNumber(/** @type {Record<string, unknown>} */ (t), [
+      "leverage",
+      "Leverage",
+      "leverage_ratio",
+      "leverageRatio"
+    ]);
+    if (lv != null && lv > 0) return lv;
+  }
+  return null;
 }
 
 /**
@@ -339,19 +424,43 @@ function formatOverviewUptimeFromHealth(healthRaw) {
 }
 
 /**
- * 概览风险头「杠杆 / 模式」：取 /show_config 的 trading_mode / margin_mode。
- * @param {unknown} showCfgRaw
+ * 将 /status 的杠杆格式化为「(1.0x)」类后缀（供插在 futures 后）。
+ * @param {unknown} lev
  * @returns {string}
  */
-function formatTradingModePair(showCfgRaw) {
+function formatLeverageForRiskHead(lev) {
+  if (lev == null || lev === "") return "";
+  const n = Number(lev);
+  if (Number.isFinite(n) && n > 0) {
+    return `(${n.toFixed(1)}x)`;
+  }
+  const s = String(lev).trim();
+  if (!s) return "";
+  const core = /x$/i.test(s) ? s : `${s}x`;
+  return `(${core})`;
+}
+
+/**
+ * 概览风险头「杠杆 / 模式」：取 /show_config 的 trading_mode / margin_mode；
+ * 合约模式下在 `futures` 后附加 GET /status 的 leverage（如 futures (10.0x) · cross）。
+ * @param {unknown} showCfgRaw
+ * @param {number | null | undefined} statusLeverage
+ * @returns {string}
+ */
+function formatTradingModePair(showCfgRaw, statusLeverage) {
   if (!showCfgRaw || typeof showCfgRaw !== "object") return "—";
   const sc = /** @type {Record<string, unknown>} */ (showCfgRaw);
   const tradingMode = String(sc.trading_mode ?? sc.tradingMode ?? "").trim();
   const marginMode = String(sc.margin_mode ?? sc.marginMode ?? "").trim();
   if (!tradingMode && !marginMode) return "—";
-  if (!tradingMode) return marginMode;
-  if (!marginMode) return tradingMode;
-  return `${tradingMode} · ${marginMode}`;
+  let left = tradingMode;
+  if (tradingMode && /futures/i.test(tradingMode) && statusLeverage != null && statusLeverage !== "") {
+    const suf = formatLeverageForRiskHead(statusLeverage);
+    if (suf) left = `${tradingMode} ${suf}`;
+  }
+  if (!marginMode) return left || "—";
+  if (!left) return marginMode;
+  return `${left} · ${marginMode}`;
 }
 
 /**
@@ -706,6 +815,8 @@ async function panelTick() {
     const sp4 = $("kpiSpark4");
     if (sp4) sp4.setAttribute("d", buildSparkPolylinePath(seriesBalanceFreeSpark(balFree)));
 
+    renderRiskExposureMatrix($("riskMatrixCells"), balancePayload);
+
     uiState.lastPing = pingOk ? { status: "pong" } : { status: "down" };
 
     const kpiBot = $("kpiBotStatus");
@@ -765,12 +876,15 @@ async function panelTick() {
 
     applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
+    let statusLeverageForRisk = /** @type {number | null} */ (null);
     try {
       /** 持仓/待成交与概览风险同源：走 `apiUrlBases()`（设置里的 REST、同源代理、上次成功基址），避免硬编码 127.0.0.1:18080 在未启动服务时刷屏 ERR_CONNECTION_REFUSED。 */
       const st = await getStatus();
+      statusLeverageForRisk = extractLeverageFromStatusPayload(st);
       uiState.lastStForRisk = Array.isArray(st) ? st : [];
       renderPositionsSectionFromStatus(st);
     } catch {
+      statusLeverageForRisk = null;
       /* ignore */
     }
 
@@ -779,7 +893,7 @@ async function panelTick() {
     const profitObj =
       uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
     const riskLeverageValue = $("riskLeverageValue");
-    if (riskLeverageValue) riskLeverageValue.textContent = formatTradingModePair(showCfg);
+    if (riskLeverageValue) riskLeverageValue.textContent = formatTradingModePair(showCfg, statusLeverageForRisk);
 
     renderControlHeroAndCards(
       dailyPayload,

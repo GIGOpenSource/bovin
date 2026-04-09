@@ -214,6 +214,18 @@
   background: rgba(var(--ft-line-rgb), 0.38);
 }
 
+.ds-risk-cells .bar i.ter {
+  background: linear-gradient(90deg, rgba(138, 180, 255, 0.92) 0%, rgba(167, 139, 250, 0.88) 100%);
+}
+
+.ds-risk-foot {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
 .ds-telemetry {
   min-height: 74px;
 }

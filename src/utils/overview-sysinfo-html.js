@@ -46,6 +46,7 @@ function pickArray(o, keys) {
  * @param {unknown} raw
  * @returns {null | {
  *   ram: number|null,
+ *   disk: number|null,
  *   cpuAvg: number|null,
  *   l1: number|null, l5: number|null, l15: number|null,
  *   cpus: number|null,
@@ -69,6 +70,12 @@ export function parseSysinfoPayload(raw) {
     pickNum(o, ["ram_pct", "memory_pct", "memory_percent", "mem_used_pct", "ram_percent"]) ??
     (o.ram && typeof o.ram === "object"
       ? pickNum(/** @type {Record<string, unknown>} */ (o.ram), ["ram_pct", "percent", "pct", "used_pct"])
+      : null);
+
+  const disk =
+    pickNum(o, ["disk_pct", "disk_percent", "disk_usage_pct", "root_disk_pct", "filesystem_pct"]) ??
+    (o.disk && typeof o.disk === "object"
+      ? pickNum(/** @type {Record<string, unknown>} */ (o.disk), ["percent", "pct", "used_pct", "usage_percent"])
       : null);
 
   let per =
@@ -127,6 +134,7 @@ export function parseSysinfoPayload(raw) {
 
   return {
     ram,
+    disk,
     cpuAvg,
     l1,
     l5,
@@ -141,6 +149,7 @@ function hasRenderableData(v) {
   if (!v) return false;
   if (v.ts) return true;
   if (v.ram != null && Number.isFinite(v.ram)) return true;
+  if (v.disk != null && Number.isFinite(v.disk)) return true;
   if (v.cpuAvg != null && Number.isFinite(v.cpuAvg)) return true;
   if (v.l1 != null || v.l5 != null || v.l15 != null) return true;
   if (v.cpus != null && Number.isFinite(v.cpus)) return true;

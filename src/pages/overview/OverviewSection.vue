@@ -41,7 +41,8 @@
               <article class="ds-risk">
                 <!-- 对接 -->
                 <div class="ds-risk-head"><h3 data-i18n="overview.risk.title">风险敞口矩阵（按加密资产分层）</h3><div><span data-i18n="overview.risk.leverage">杠杆 / 敞口</span><b id="riskLeverageValue">—</b></div></div>
-                <div class="ds-risk-cells" id="riskMatrixCells"></div>
+                <div class="ds-risk-cells" id="riskMatrixCells" aria-live="polite"></div>
+                <p class="ds-risk-foot muted" data-i18n="overview.risk.dryRunCaption">模拟钱包余额 (dry_run) · Simulated balances</p>
               </article>
               <!-- 对接 -->
               <article class="ds-telemetry">
