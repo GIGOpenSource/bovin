@@ -4,7 +4,6 @@
  * 轮询间隔：startPanelPolling → panelTick 约每 8s（含 GET /panel/strategy-slots、/show_config、/profit 等）。
  */
 import { state, uiState, getNormalizedControlTradesFeedLimit } from "./store/state-core.js";
-import { requestAtBase } from "./utils/http.js";
 import {
   getPing,
   getShowConfig,
@@ -18,7 +17,15 @@ import {
   getPanelAiOverview,
   getDaily
 } from "./api/overview.js";
-import { getBalance, getWhitelist, getBlacklist, getTradesFeed } from "./api/positions.js";
+import { Modal, message } from "ant-design-vue";
+import {
+  getBalance,
+  getWhitelist,
+  getBlacklist,
+  getTradesFeed,
+  postForceExit,
+  deleteTradeOpenOrder,
+} from "./api/positions.js";
 import { renderControlHeroAndCards, renderControlGovernanceLists } from "./components/control-console.js";
 import { i18n } from "./i18n/index.js";
 import {
@@ -48,8 +55,6 @@ import { escapeHtml } from "./utils/html-utils.js";
 function $(id) {
   return document.getElementById(id);
 }
-
-const POSITIONS_STATUS_LOCAL_BASE = "http://127.0.0.1:18080/api/v1";
 
 function t(key) {
   const lang = state.lang || "zh-CN";
@@ -89,6 +94,15 @@ function pickFirstString(obj, keys) {
   return "";
 }
 
+/** @param {unknown} t trade 或带 trade_id 的 order */
+function tradeIdFromTrade(t) {
+  if (!t || typeof t !== "object") return null;
+  const id = /** @type {Record<string, unknown>} */ (t).trade_id ?? /** @type {Record<string, unknown>} */ (t).tradeId;
+  if (id == null || id === "") return null;
+  const n = Number(id);
+  return Number.isFinite(n) ? n : null;
+}
+
 function unwrapStatusPayload(raw) {
   if (!raw) return raw;
   if (Array.isArray(raw)) return raw;
@@ -99,20 +113,84 @@ function unwrapStatusPayload(raw) {
   return body;
 }
 
+/** 未平仓 trade：显式 `is_open === true`，或无该字段时视为未平仓（兼容旧接口） */
+function isOpenTrade(t) {
+  return Boolean(t && typeof t === "object" && (t.is_open === true || !("is_open" in t)));
+}
+
+/**
+ * Freqtrade GET /status 常为「未平仓 trade 数组」，每个 trade 内有嵌套 `orders`。
+ * 待成交：仅在 **未平仓 trade** 下收集子订单，且子订单 `is_open === true` 才展示（入场限价成交通常为 closed / is_open false，不占用待成交）。
+ */
+function ordersFromOpenTradesNested(trades) {
+  if (!Array.isArray(trades)) return [];
+  const out = [];
+  for (const t of trades) {
+    if (!isOpenTrade(t)) continue;
+    const nested = t.orders;
+    if (!Array.isArray(nested)) continue;
+    const tid = tradeIdFromTrade(t);
+    for (const o of nested) {
+      if (o && o.is_open === true) {
+        out.push({
+          ...o,
+          __forceexit_trade_id: tid,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/** 顶层 orders 与未平仓 trade 按 pair / trade_id 关联，补全撤单用的 trade_id */
+function enrichOrderWithForceExitContext(order, openTrades) {
+  let tid = tradeIdFromTrade(order);
+  if (tid == null) {
+    const pair = pickFirstString(order, ["pair"]);
+    if (pair) {
+      const tr = openTrades.find(
+        (x) => isOpenTrade(x) && pickFirstString(x, ["pair"]) === pair
+      );
+      if (tr) tid = tradeIdFromTrade(tr);
+    }
+  }
+  return { ...order, __forceexit_trade_id: tid };
+}
+
+function dedupeOrdersById(list) {
+  const seen = new Set();
+  const out = [];
+  for (const o of list) {
+    const id = String(pickFirstString(o, ["order_id", "orderId", "id"]) || "");
+    const key = id || `__idx_${out.length}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(o);
+  }
+  return out;
+}
+
 function normalizePositionsAndOrders(statusRaw) {
   const src = unwrapStatusPayload(statusRaw);
-  if (Array.isArray(src)) return { positions: src, orders: [] };
+  if (Array.isArray(src)) {
+    const positions = src.filter(isOpenTrade);
+    const nested = ordersFromOpenTradesNested(src);
+    const orders = dedupeOrdersById(nested);
+    return { positions, orders };
+  }
   if (!src || typeof src !== "object") return { positions: [], orders: [] };
-  const positions =
+  const positionsRaw =
     (Array.isArray(src.positions) && src.positions) ||
     (Array.isArray(src.trades) && src.trades) ||
     (Array.isArray(src.open_trades) && src.open_trades) ||
     [];
-  const orders =
-    (Array.isArray(src.orders) && src.orders) ||
-    (Array.isArray(src.open_orders) && src.open_orders) ||
-    (Array.isArray(src.pending_orders) && src.pending_orders) ||
-    [];
+  const positions = positionsRaw.filter(isOpenTrade);
+  /** 顶层 `orders`（若有）+ 未平仓 trade 下嵌套 `orders`，子单须 `is_open === true` */
+  const topFlat = Array.isArray(src.orders)
+    ? src.orders.filter((o) => o && o.is_open === true).map((o) => enrichOrderWithForceExitContext(o, positionsRaw))
+    : [];
+  const nested = ordersFromOpenTradesNested(positionsRaw);
+  const orders = dedupeOrdersById([...topFlat, ...nested]);
   return { positions, orders };
 }
 
@@ -129,6 +207,9 @@ function renderPositionsSectionFromStatus(statusRaw) {
       const currentRate = pickFirstNumber(row, ["current_rate", "currentRate", "close_rate", "closeRate", "price"]);
       const pnl = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl", "pnl"]) ?? 0;
       const size = pickFirstNumber(row, ["stake_amount", "stakeAmount", "amount", "size"]);
+      const tid = tradeIdFromTrade(row);
+      const canExit = tid != null;
+      const exitAttr = canExit ? ` data-forceexit-tradeid="${tid}"` : "";
       return `
         <tr>
           <td>${pair}</td>
@@ -136,7 +217,7 @@ function renderPositionsSectionFromStatus(statusRaw) {
           <td class="t-right">${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
           <td class="t-right ${pnl >= 0 ? "positive" : "negative"}">${pnl >= 0 ? "+" : ""}${pnl.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
           <td class="t-right">${size == null ? "—" : size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-center"><button type="button" class="pos-close-btn">平仓</button></td>
+          <td class="t-center"><button type="button" class="pos-close-btn"${exitAttr}${canExit ? "" : " disabled"}>${escapeHtml(t("btn.closePos"))}</button></td>
         </tr>
       `;
     })
@@ -144,17 +225,22 @@ function renderPositionsSectionFromStatus(statusRaw) {
 
   const pendingRows = orders
     .map((row) => {
-      const orderType = escapeHtml(pickFirstString(row, ["order_type", "type", "side"]) || "—");
-      const price = pickFirstNumber(row, ["price", "rate", "limit_price", "limitPrice"]);
+      const orderType = escapeHtml(
+        pickFirstString(row, ["order_type", "type", "side", "ft_order_side", "ftOrderSide"]) || "—"
+      );
+      const price = pickFirstNumber(row, ["price", "rate", "limit_price", "limitPrice", "safe_price", "safePrice"]);
       const qty = pickFirstNumber(row, ["amount", "quantity", "qty", "stake_amount", "stakeAmount"]);
       const status = escapeHtml(pickFirstString(row, ["status", "state"]) || "open");
+      const tid = row.__forceexit_trade_id;
+      const canCancel = tid != null && Number.isFinite(Number(tid));
+      const cancelAttr = canCancel ? ` data-cancel-tradeid="${tid}"` : "";
       return `
         <tr>
           <td>${orderType}</td>
           <td class="t-right">${price == null ? "—" : price.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
           <td class="t-right">${qty == null ? "—" : qty.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
           <td class="t-center"><span class="status-chip">${status}</span></td>
-          <td class="t-center"><button type="button" class="pos-close-btn">平仓</button></td>
+          <td class="t-center"><button type="button" class="pos-cancel-order-btn"${cancelAttr}${canCancel ? "" : " disabled"}>${escapeHtml(t("btn.cancelOrder"))}</button></td>
         </tr>
       `;
     })
@@ -163,12 +249,36 @@ function renderPositionsSectionFromStatus(statusRaw) {
   if (statusTable) {
     statusTable.innerHTML =
       statusRows ||
-      '<tr><td colspan="6" class="empty-row-cell">—</td></tr>';
+      `<tr>
+        <td>—</td>
+        <td class="t-right">—</td>
+        <td class="t-right">—</td>
+        <td class="t-right">—</td>
+        <td class="t-right">—</td>
+        <td class="t-center"><button type="button" class="pos-close-btn" disabled>${escapeHtml(t("btn.closePos"))}</button></td>
+      </tr>`;
   }
   if (pendingTable) {
+    /** 无 `is_open === true` 的挂单时不造「假一行」，避免看起来像有一条待成交记录 */
     pendingTable.innerHTML =
       pendingRows ||
       '<tr data-empty-row="pending"><td colspan="5" class="empty-row-cell">无挂单</td></tr>';
+  }
+
+  const pendingTradeIdSeen = new Set();
+  const pendingTradeIds = [];
+  for (const o of orders) {
+    const id = o?.__forceexit_trade_id;
+    if (id == null || !Number.isFinite(Number(id))) continue;
+    const n = Number(id);
+    if (pendingTradeIdSeen.has(n)) continue;
+    pendingTradeIdSeen.add(n);
+    pendingTradeIds.push(n);
+  }
+  uiState.lastPendingOpenOrderTradeIds = pendingTradeIds;
+  const cancelAllBtn = $("pendingCancelAllBtn");
+  if (cancelAllBtn instanceof HTMLButtonElement) {
+    cancelAllBtn.disabled = pendingTradeIds.length === 0;
   }
 
   const totalPnl = positions.reduce((sum, row) => {
@@ -180,9 +290,12 @@ function renderPositionsSectionFromStatus(statusRaw) {
     return sum + Math.abs(s);
   }, 0);
   const totalPnlEl = $("posTotalPnl");
-  if (totalPnlEl) totalPnlEl.textContent = `${totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
+  if (totalPnlEl) {
+    const pnlAbs = Math.abs(totalPnl).toLocaleString(undefined, { maximumFractionDigits: 4 });
+    totalPnlEl.textContent = totalPnl >= 0 ? `+$${pnlAbs}` : `-$${pnlAbs}`;
+  }
   const exposureEl = $("posExposure");
-  if (exposureEl) exposureEl.textContent = exposure.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  if (exposureEl) exposureEl.textContent = `$${exposure.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
 
   const statusInfo = $("statusPageInfo");
   if (statusInfo) statusInfo.textContent = "1 / 1";
@@ -302,7 +415,131 @@ export function applyTopbarDecor(pingOk, latencyMs) {
 let pollTimer = null;
 const POLL_MS = 8000;
 
+let positionsForceExitDelegationBound = false;
+let positionsCancelOrderDelegationBound = false;
+let positionsPendingCancelAllDelegationBound = false;
+
+function bindPositionsForceExitDelegationOnce() {
+  if (positionsForceExitDelegationBound) return;
+  positionsForceExitDelegationBound = true;
+  document.addEventListener(
+    "click",
+    (ev) => {
+      const raw = ev.target instanceof Element ? ev.target.closest("#positions #statusTable .pos-close-btn") : null;
+      const btn = raw instanceof HTMLButtonElement ? raw : null;
+      if (!btn || btn.disabled) return;
+      const tradeid = btn.getAttribute("data-forceexit-tradeid");
+      if (!tradeid || tradeid === "") return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      Modal.confirm({
+        title: t("positions.forceExitTitle"),
+        content: t("positions.forceExitConfirm"),
+        okText: t("btn.confirm"),
+        cancelText: t("btn.cancel"),
+        okType: "primary",
+        async onOk() {
+          try {
+            await postForceExit({
+              tradeid: Number(tradeid),
+            });
+            await runPanelTickOnce();
+            message.success(t("positions.forceExitOk"));
+          } catch (e) {
+            const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+            message.error(msg || t("positions.forceExitFail"));
+            throw e;
+          }
+        },
+        onCancel() {},
+      });
+    },
+    true
+  );
+}
+
+function bindPositionsCancelOrderDelegationOnce() {
+  if (positionsCancelOrderDelegationBound) return;
+  positionsCancelOrderDelegationBound = true;
+  document.addEventListener(
+    "click",
+    (ev) => {
+      const raw = ev.target instanceof Element ? ev.target.closest("#positions #pendingTable .pos-cancel-order-btn") : null;
+      const btn = raw instanceof HTMLButtonElement ? raw : null;
+      if (!btn || btn.disabled) return;
+      const tradeid = btn.getAttribute("data-cancel-tradeid");
+      if (!tradeid || tradeid === "") return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      Modal.confirm({
+        title: t("positions.cancelOrderTitle"),
+        content: t("positions.cancelOrderConfirm"),
+        okText: t("btn.confirm"),
+        cancelText: t("btn.cancel"),
+        okType: "primary",
+        async onOk() {
+          try {
+            await deleteTradeOpenOrder(tradeid);
+            await runPanelTickOnce();
+            message.success(t("positions.cancelOrderOk"));
+          } catch (e) {
+            const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+            message.error(msg || t("positions.cancelOrderFail"));
+            throw e;
+          }
+        },
+        onCancel() {},
+      });
+    },
+    true
+  );
+}
+
+function bindPendingCancelAllDelegationOnce() {
+  if (positionsPendingCancelAllDelegationBound) return;
+  positionsPendingCancelAllDelegationBound = true;
+  document.addEventListener(
+    "click",
+    (ev) => {
+      const raw = ev.target instanceof Element ? ev.target.closest("#positions #pendingCancelAllBtn") : null;
+      const btn = raw instanceof HTMLButtonElement ? raw : null;
+      if (!btn || btn.disabled) return;
+      const ids = Array.isArray(uiState.lastPendingOpenOrderTradeIds)
+        ? [...uiState.lastPendingOpenOrderTradeIds]
+        : [];
+      if (ids.length === 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      Modal.confirm({
+        title: t("positions.cancelAllModalTitle"),
+        content: t("positions.cancelAllModalConfirm"),
+        okText: t("btn.confirm"),
+        cancelText: t("btn.cancel"),
+        okType: "primary",
+        async onOk() {
+          try {
+            for (let i = 0; i < ids.length; i++) {
+              await deleteTradeOpenOrder(ids[i]);
+            }
+            await runPanelTickOnce();
+            message.success(t("positions.cancelAllOk"));
+          } catch (e) {
+            const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+            message.error(msg || t("positions.cancelAllFail"));
+            throw e;
+          }
+        },
+        onCancel() {},
+      });
+    },
+    true
+  );
+}
+
 export function startPanelPolling() {
+  bindPositionsForceExitDelegationOnce();
+  bindPositionsCancelOrderDelegationOnce();
+  bindPendingCancelAllDelegationOnce();
   stopPanelPolling();
   void panelTick();
   pollTimer = window.setInterval(() => {
@@ -529,12 +766,8 @@ async function panelTick() {
     applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
     try {
-      let st = null;
-      try {
-        st = await requestAtBase(POSITIONS_STATUS_LOCAL_BASE, "/status", { method: "GET" });
-      } catch {
-        st = await getStatus();
-      }
+      /** 持仓/待成交与概览风险同源：走 `apiUrlBases()`（设置里的 REST、同源代理、上次成功基址），避免硬编码 127.0.0.1:18080 在未启动服务时刷屏 ERR_CONNECTION_REFUSED。 */
+      const st = await getStatus();
       uiState.lastStForRisk = Array.isArray(st) ? st : [];
       renderPositionsSectionFromStatus(st);
     } catch {

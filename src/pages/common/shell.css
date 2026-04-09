@@ -680,17 +680,26 @@ body {
   min-height: 96px;
   padding: 10px 12px;
   font-size: 13px;
+  line-height: 1.45;
   font-family: ui-monospace, monospace;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.35);
-  border-radius: 8px;
-  background: rgba(6, 12, 28, 0.85);
-  color: var(--text-main, #e8ecf8);
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.38);
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(232, 241, 255, 0.92);
   resize: vertical;
 }
 
-.modal-card--binding.modal-card--strategy-memo .binding-field input {
-  width: 100%;
-  box-sizing: border-box;
+.modal-card--binding.modal-card--strategy-memo .binding-field textarea::placeholder {
+  color: rgba(180, 197, 255, 0.4);
+}
+
+.modal-card--binding.modal-card--strategy-memo .binding-field textarea:focus {
+  outline: none;
+  border-color: rgba(var(--ft-accent-rgb), 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16);
 }
 
 .modal-card--strategy-slot {
@@ -722,17 +731,20 @@ body {
   padding: 10px 12px;
   font-size: 14px;
   font-family: ui-sans-serif, system-ui, sans-serif;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.4);
-  border-radius: 8px;
-  background: rgba(6, 12, 28, 0.92);
-  color: var(--text-main, #e8ecf8);
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.38);
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(232, 241, 255, 0.92);
   cursor: pointer;
 }
 
 .strategy-slot-name-select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(38, 166, 154, 0.35);
-  border-color: rgba(38, 166, 154, 0.55);
+  border-color: rgba(var(--ft-accent-rgb), 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16);
 }
 
 .strategy-slot-modal-columns {
@@ -760,11 +772,24 @@ body {
   font-size: 13px;
   line-height: 1.45;
   font-family: ui-monospace, monospace;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.35);
-  border-radius: 8px;
-  background: rgba(6, 12, 28, 0.85);
-  color: var(--text-main, #e8ecf8);
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.38);
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(232, 241, 255, 0.92);
   resize: vertical;
+}
+
+.modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea::placeholder {
+  color: rgba(180, 197, 255, 0.4);
+}
+
+.modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea:focus {
+  outline: none;
+  border-color: rgba(var(--ft-accent-rgb), 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16);
 }
 
 .strategy-slot-field {
@@ -1760,7 +1785,10 @@ body {
   text-align: start;
 }
 
-.modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]) {
+/* 与 antd-panel.less 中 .bovin-select-full .ant-select-selector 同色（深底渐变 + 内高光） */
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]),
+.modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]),
+.modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"]) {
   max-width: 100%;
   min-width: 0;
   height: 44px;
@@ -1773,14 +1801,26 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 42px;
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%);
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(232, 241, 255, 0.92);
 }
 
-.modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]) {
-  height: 44px;
-  min-height: 44px;
-  padding: 0 12px;
-  border-radius: 10px;
-  box-sizing: border-box;
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"])::placeholder,
+.modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"])::placeholder,
+.modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"])::placeholder {
+  color: rgba(180, 197, 255, 0.4);
+}
+
+.modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]):focus,
+.modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]):focus,
+.modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"]):focus {
+  outline: none;
+  border-color: rgba(var(--ft-accent-rgb), 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16);
 }
 
 .modal-card--binding label.binding-field-label {

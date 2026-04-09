@@ -50,10 +50,10 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3 id="pendingSectionTitle">待成交（模拟）</h3>
+                <h3 id="pendingSectionTitle" data-i18n="positions.pendingMock">当前持单/待成交</h3>
                 <div class="pending-actions">
                   <button type="button" class="ghost" id="pendingFilterBtn" data-i18n="positions.filter">筛选</button>
-                  <button type="button" class="ghost" id="pendingCancelAllBtn" data-i18n="positions.cancelAll">全部撤销</button>
+                  <button type="button" class="ghost" id="pendingCancelAllBtn" data-i18n="positions.cancelAll" disabled>全部撤单</button>
                 </div>
               </div>
               <div class="positions-table-shell">
@@ -201,8 +201,9 @@
   padding: 10px 4px 2px;
 }
 
-.empty-row-cell {
+:deep(.empty-row-cell) {
   text-align: center;
+  vertical-align: middle;
 }
 
 :deep(.pos-close-btn) {
@@ -221,6 +222,30 @@
 
 :deep(.pos-close-btn:hover) {
   filter: brightness(1.06);
+}
+
+:deep(.pos-cancel-order-btn) {
+  min-width: 52px;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(230, 162, 60, 0.75);
+  background: linear-gradient(180deg, rgba(200, 120, 40, 0.92) 0%, rgba(150, 85, 25, 0.95) 100%);
+  color: #fff8f0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 1px rgba(90, 50, 12, 0.35);
+}
+
+:deep(.pos-cancel-order-btn:hover:not(:disabled)) {
+  filter: brightness(1.06);
+}
+
+:deep(.pos-cancel-order-btn:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: none;
 }
 </style>
 

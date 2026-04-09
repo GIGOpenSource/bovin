@@ -258,15 +258,33 @@ html[data-theme="light"] .settings-strategy-list-title {
 
 html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field textarea,
 html[data-theme="light"] .modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea {
-  background: var(--surface-high);
-  color: var(--text);
-  border-color: rgba(var(--ft-panel-edge-rgb), 0.26);
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: var(--text, #0f172a);
+}
+
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field textarea::placeholder,
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea::placeholder {
+  color: rgba(15, 23, 42, 0.38);
+}
+
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field textarea:focus,
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-slot .strategy-slot-field textarea:focus {
+  border-color: rgba(var(--ft-accent-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.12);
 }
 
 html[data-theme="light"] .strategy-slot-name-select {
-  background: var(--surface-high);
-  color: var(--text);
-  border-color: rgba(var(--ft-panel-edge-rgb), 0.28);
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: var(--text, #0f172a);
+}
+
+html[data-theme="light"] .strategy-slot-name-select:focus {
+  border-color: rgba(var(--ft-accent-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.12);
 }
 
 html[data-theme="light"] .ft-page-hero--data {
@@ -277,6 +295,33 @@ html[data-theme="light"] .bindings-list > .binding-row {
   background: var(--surface-high);
   border-color: var(--outline);
   box-shadow: none;
+}
+
+html[data-theme="light"] #apiBindingsList .binding-row.api-binding-card {
+  background: var(--surface-high);
+  border-color: var(--outline);
+  box-shadow: none;
+}
+
+html[data-theme="light"] #apiBindingsList .api-binding-field {
+  background: var(--surface-low);
+  border-color: var(--outline);
+}
+
+html[data-theme="light"] #apiBindingsList .api-binding-field__label {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] #apiBindingsList .api-binding-field__value {
+  color: var(--text);
+}
+
+html[data-theme="light"] #apiBindingsList .api-binding-card__title {
+  color: var(--text);
+}
+
+html[data-theme="light"] #apiBindingsList .api-binding-card__head {
+  border-bottom-color: var(--outline);
 }
 
 html[data-theme="light"] .bindings-empty {
@@ -369,6 +414,29 @@ html[data-theme="light"] .modal-card--binding .llm-probe-feedback--ok .llm-probe
 
 html[data-theme="light"] .modal-card--binding .llm-probe-feedback--error .llm-probe-feedback__text {
   color: #b42318;
+}
+
+/* API 对接 / 策略配置弹窗：原生 input 与浅色 Ant Select 同底（见 antd-panel.less） */
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]),
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]),
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"]) {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: var(--text, #0f172a);
+}
+
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"])::placeholder,
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"])::placeholder,
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"])::placeholder {
+  color: rgba(15, 23, 42, 0.38);
+}
+
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .binding-column .binding-field input:not([type="checkbox"]):focus,
+html[data-theme="light"] .modal-card--binding.modal-card--api-binding .modal-body > .binding-field input:not([type="checkbox"]):focus,
+html[data-theme="light"] .modal-card--binding.modal-card--strategy-memo .binding-field input:not([type="checkbox"]):focus {
+  border-color: rgba(var(--ft-accent-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.12);
 }
 
 html[data-theme="light"] .modal-body {

@@ -866,6 +866,8 @@ export const uiState = {
   lastHealth: null,
   lastSysinfo: null,
   lastStForRisk: [],
+  /** 「当前持单/待成交」去重后的 trade_id，供全部撤单依次 DELETE …/trades/{id}/open-order */
+  lastPendingOpenOrderTradeIds: [],
   lastWl: null,
   lastBl: null,
   lastTradesMini: null,

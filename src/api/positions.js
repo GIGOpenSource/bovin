@@ -35,4 +35,20 @@ export const postBlacklist = (body) => http.post("/blacklist", body);
 /** @param {unknown} body 请求体（交易对等） */
 export const deleteBlacklist = (body) => request("/blacklist", { method: "DELETE", json: body });
 export const getLocks = () => http.get("/locks");
-export const postForceExit = () => http.post("/forceexit", {});
+/**
+ * 强制平仓：POST …/api/v1/forceexit
+ * @param {{ tradeid: number }} body
+ */
+export function postForceExit(body) {
+  return http.post("/forceexit", body);
+}
+
+/**
+ * 撤销该笔 trade 上的未成交挂单：DELETE …/api/v1/trades/{tradeid}/open-order（与 Freqtrade 约定一致）
+ * @param {number | string} tradeId
+ */
+export function deleteTradeOpenOrder(tradeId) {
+  const id = String(tradeId ?? "").trim();
+  if (!id) return Promise.reject(new Error("缺少 trade id"));
+  return request(`/trades/${encodeURIComponent(id)}/open-order`, { method: "DELETE" });
+}

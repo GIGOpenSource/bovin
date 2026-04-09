@@ -114,10 +114,97 @@
 <style>
 /* settings */
 
-.settings-page .bindings-list .binding-row {
+.settings-page .bindings-list .binding-row:not(.api-binding-card) {
   margin-block: 4px;
   padding-top: 12px;
   padding-bottom: 12px;
+}
+
+/* API 对接映射：卡片 + 字段块（与设置中心视觉稿一致） */
+#apiBindingsList.bindings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-page .binding-row.api-binding-card {
+  margin-block: 0;
+  padding: 0;
+  border: 1px solid rgba(var(--ft-line-rgb), 0.22);
+  border-radius: 14px;
+  background: rgba(16, 24, 44, 0.96);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.api-binding-card__inner {
+  padding: 14px 16px 16px;
+}
+
+.api-binding-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(var(--ft-line-rgb), 0.16);
+}
+
+.api-binding-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f0f4ff;
+  font-family: var(--ft-font-display, inherit);
+}
+
+.api-binding-card__head .binding-row-head-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  justify-content: flex-end;
+}
+
+.api-binding-card__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .api-binding-card__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.api-binding-field {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(10, 16, 32, 0.85);
+  border: 1px solid rgba(var(--ft-line-rgb), 0.2);
+}
+
+.api-binding-field__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8ea0cf;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.api-binding-field__value {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f5f8ff;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .strategy-config-list-panel {
@@ -437,6 +524,52 @@ onMounted(() => {
     let editingBindingId = "";
     const openModal = () => apiBindingModal.classList.remove("hidden");
     const closeModal = () => apiBindingModal.classList.add("hidden");
+
+    const resetApiBindingModalForm = () => {
+      const clearIds = [
+        "mBindingLabel",
+        "mLlmBaseUrl",
+        "mLlmApiKey",
+        "mLlmModel",
+        "mExchangeRestBaseUrl",
+        "mExchangeApiKey",
+        "mExchangeApiSecret",
+        "mExchangePassphrase",
+        "mExchangeName",
+      ];
+      for (const id of clearIds) {
+        const el = document.getElementById(id);
+        if (el && "value" in el) el.value = "";
+      }
+      const enabledEl = document.getElementById("mBindingEnabled");
+      if (enabledEl instanceof HTMLInputElement && enabledEl.type === "checkbox") enabledEl.checked = true;
+      const bindBot = document.getElementById("mBindToBot");
+      if (bindBot instanceof HTMLInputElement && bindBot.type === "checkbox") bindBot.checked = false;
+      const llmHid = document.getElementById("mLlmProvider");
+      if (llmHid instanceof HTMLInputElement) llmHid.value = "deepseek";
+      try {
+        window.dispatchEvent(
+          new CustomEvent("bovin-form-patch", { detail: { id: "mLlmProvider", value: "deepseek" } })
+        );
+      } catch {
+        /* ignore */
+      }
+      const passNote = document.getElementById("mExchangePassphraseNote");
+      if (passNote) passNote.textContent = "";
+      const probeFb = document.getElementById("llmProbeFeedback");
+      if (probeFb) {
+        probeFb.classList.add("hidden");
+        probeFb.textContent = "";
+        probeFb.setAttribute("aria-hidden", "true");
+      }
+    };
+
+    const openModalForNewBinding = () => {
+      editingBindingId = "";
+      editingBindingRow = null;
+      resetApiBindingModalForm();
+      openModal();
+    };
     const saveBtn = document.getElementById("saveApiBindingModal");
     const onEsc = (e) => {
       if (e.key === "Escape") closeModal();
@@ -478,11 +611,11 @@ onMounted(() => {
           const llmModel = String(b.llmModel ?? "").trim();
           const enabled = b.enabled !== false;
           const enabledText = enabled ? "生效" : "停用";
-          const exKeyText = exKey || "未填写";
+          const keyDisplay = exKey ? "••••••••" : tS("binding.keyEmpty");
           const llmText = llmModel ? `${llmProvider} / ${llmModel}` : llmProvider;
           const rowId = String(b._rowId ?? b.id ?? `row-${idx}`).trim() || `row-${idx}`;
           return `
-        <article class="binding-row"
+        <article class="binding-row api-binding-card"
           data-binding-id="${esc(rowId)}"
           data-binding-label="${esc(label)}"
           data-exchange-name="${esc(exName)}"
@@ -490,25 +623,34 @@ onMounted(() => {
           data-llm-provider="${esc(llmProvider)}"
           data-llm-model="${esc(llmModel)}"
           data-binding-enabled="${enabled ? "1" : "0"}">
-          <div class="binding-row-head">
-            <div class="binding-row-head-main">
-              <strong class="binding-row-title">${esc(label)}</strong>
-            </div>
-            <div class="binding-row-head-tools">
-              <label class="binding-row-effective">
-                <input type="checkbox" data-binding-enabled-toggle="1" ${enabled ? "checked" : ""} />
-                <span data-binding-enabled-text="1">${esc(enabledText)}</span>
-              </label>
-              <div class="actions">
-                <button type="button" class="ghost tiny" data-binding-edit="1">编辑</button>
-                <button type="button" class="ghost tiny" data-binding-delete="1">删除</button>
+          <div class="api-binding-card__inner">
+            <div class="api-binding-card__head">
+              <strong class="api-binding-card__title">${esc(label)}</strong>
+              <div class="binding-row-head-tools">
+                <label class="binding-row-effective">
+                  <input type="checkbox" data-binding-enabled-toggle="1" ${enabled ? "checked" : ""} />
+                  <span data-binding-enabled-text="1">${esc(enabledText)}</span>
+                </label>
+                <div class="actions">
+                  <button type="button" class="ghost tiny" data-binding-edit="1">${esc(tS("users.edit"))}</button>
+                  <button type="button" class="ghost tiny" data-binding-delete="1">${esc(tS("users.delete"))}</button>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="binding-summary">
-            <div class="binding-kv"><span class="binding-kv-k">交易所</span><span class="binding-kv-v">${esc(exName)}</span></div>
-            <div class="binding-kv"><span class="binding-kv-k">API KEY</span><span class="binding-kv-v">${esc(exKeyText)}</span></div>
-            <div class="binding-kv"><span class="binding-kv-k">语言模型</span><span class="binding-kv-v">${esc(llmText)}</span></div>
+            <div class="api-binding-card__grid">
+              <div class="api-binding-field">
+                <span class="api-binding-field__label">${esc(tS("binding.exchange"))}</span>
+                <span class="api-binding-field__value">${esc(exName)}</span>
+              </div>
+              <div class="api-binding-field">
+                <span class="api-binding-field__label">${esc(tS("binding.apiKey"))}</span>
+                <span class="api-binding-field__value">${esc(keyDisplay)}</span>
+              </div>
+              <div class="api-binding-field">
+                <span class="api-binding-field__label">${esc(tS("binding.llm"))}</span>
+                <span class="api-binding-field__value">${esc(llmText)}</span>
+              </div>
+            </div>
           </div>
         </article>`;
         })
@@ -646,7 +788,7 @@ onMounted(() => {
       if (enabledEl && "checked" in enabledEl) enabledEl.checked = row.dataset.bindingEnabled !== "0";
       openModal();
     };
-    addApiBindingBtn.addEventListener("click", openModal);
+    addApiBindingBtn.addEventListener("click", openModalForNewBinding);
     closeApiBindingBtn?.addEventListener("click", closeModal);
     apiBindingMask?.addEventListener("click", closeModal);
     saveBtn?.addEventListener("click", onSave);
@@ -655,7 +797,7 @@ onMounted(() => {
       void loadApiBindings();
 
     disposeApiBindingModal = () => {
-      addApiBindingBtn.removeEventListener("click", openModal);
+      addApiBindingBtn.removeEventListener("click", openModalForNewBinding);
       closeApiBindingBtn?.removeEventListener("click", closeModal);
       apiBindingMask?.removeEventListener("click", closeModal);
       saveBtn?.removeEventListener("click", onSave);
