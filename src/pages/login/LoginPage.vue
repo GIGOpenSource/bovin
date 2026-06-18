@@ -52,11 +52,18 @@ const handleSubmit = async () => {
     
     setTimeout(() => {
       enterShellAfterAuth();
-      router.push({ name: "overview" }).then(() => {
-        console.log("[Login] Navigation successful");
-      }).catch(err => {
-        console.error("[Login] Navigation error:", err);
-      });
+      const currentRoute = router.currentRoute.value;
+      if (currentRoute.name === "login") {
+        const lastSection = localStorage.getItem("ft_active_section") || "overview";
+        router.push({ name: lastSection }).then(() => {
+          console.log("[Login] Navigation successful to:", lastSection);
+        }).catch(err => {
+          console.error("[Login] Navigation error:", err);
+          router.push({ name: "overview" });
+        });
+      } else {
+        console.log("[Login] Already on non-login route, staying");
+      }
     }, 0);
     
   } catch (ex) {

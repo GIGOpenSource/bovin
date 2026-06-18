@@ -9,7 +9,7 @@
           </div>
         </div>
         <nav class="sidebar-nav" data-i18n-aria="aria.mainNav" aria-label="主导航">
-          <button type="button" class="nav-btn active" data-section="overview" data-i18n="nav.overview">系统概览</button>
+          <button type="button" class="nav-btn" data-section="overview" data-i18n="nav.overview">系统概览</button>
           <button type="button" class="nav-btn" data-section="positions" data-i18n="nav.positions">持仓与订单</button>
           <button type="button" class="nav-btn" data-section="control" data-i18n="nav.control">策略AI控制台</button>
           <button type="button" class="nav-btn" data-section="data" data-i18n="nav.data">数据面板</button>
@@ -1147,8 +1147,18 @@ onMounted(async () => {
   });
 
   const current = String(panelRouter.currentRoute.value.name || "").trim();
-  if (!current || !panelRouter.hasRoute(current)) {
-    void panelRouter.replace({ name: "overview" });
+  if (current && panelRouter.hasRoute(current)) {
+    const currentSection = document.querySelector(".section.active")?.id;
+    if (currentSection !== current) {
+      document.querySelectorAll(".nav-btn").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+      document.querySelector(`[data-section="${current}"]`)?.classList.add("active");
+      document.querySelectorAll("section.section").forEach((sec) => {
+        sec.classList.remove("active");
+      });
+      document.getElementById(current)?.classList.add("active");
+    }
   }
 });
 

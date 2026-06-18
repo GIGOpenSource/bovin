@@ -662,6 +662,11 @@ export function stopPanelPolling() {
   }
 }
 
+function getCurrentSectionId() {
+  const activeSection = document.querySelector("section.section.active");
+  return activeSection?.id || "overview";
+}
+
 async function panelTick() {
   if (!uiState.authed) return;
 
@@ -677,77 +682,103 @@ async function panelTick() {
     uiState.lastPingLatencyMs = performance.now() - pingStarted;
     uiState.lastPingOk = pingOk;
 
-    const settled = await Promise.allSettled([
+    const currentSection = getCurrentSectionId();
+    
+    const globalRequests = [
       getShowConfig(),
       getHealth(),
       getCount(),
       getProfit(),
-      getSysinfo(),
-      getPanelStrategies(),
-      getPanelStrategySlots(),
-      getPanelAiOverview(),
-      /** 净资产 / 日收益卡：与 profit 同周期轮询，mock 模式下也请求真实接口（与其它 KPI 一致可刷新） */
-      getBalance(),
-      getDaily(14),
-      getWhitelist(),
-      getBlacklist(),
-      getTradesFeed(getNormalizedControlTradesFeedLimit())
-    ]);
+      getSysinfo()
+    ];
+
+    let sectionRequests = [];
+    let sectionRequestNames = [];
+
+    if (currentSection === "overview" || currentSection === "control") {
+      sectionRequests.push(
+        getPanelStrategies(),
+        getPanelStrategySlots(),
+        getPanelAiOverview(),
+        getBalance(),
+        getDaily(14),
+        getWhitelist(),
+        getBlacklist(),
+        getTradesFeed(getNormalizedControlTradesFeedLimit())
+      );
+      sectionRequestNames = ["panelStrategies", "strategySlots", "aiOverview", "balance", "daily", "whitelist", "blacklist", "tradesFeed"];
+    } else if (currentSection === "positions") {
+      sectionRequests.push(
+        getBalance(),
+        getTradesFeed(getNormalizedControlTradesFeedLimit())
+      );
+      sectionRequestNames = ["balance", "tradesFeed"];
+    }
+
+    const settled = await Promise.allSettled([...globalRequests, ...sectionRequests]);
 
     const sc = settled[0];
     const health = settled[1];
     const count = settled[2];
     const profit = settled[3];
     const sysinfo = settled[4];
-    const panelStrategies = settled[5];
-    const strategySlots = settled[6];
-    const aiOverview = settled[7];
-    const balanceR = settled[8];
-    const dailyR = settled[9];
-    const wlR = settled[10];
-    const blR = settled[11];
-    const tradesFeedR = settled[12];
+    
+    let panelStrategies, strategySlots, aiOverview, balanceR, dailyR, wlR, blR, tradesFeedR;
+    let idx = 5;
+    
+    if (sectionRequestNames.includes("panelStrategies")) panelStrategies = settled[idx++];
+    if (sectionRequestNames.includes("strategySlots")) strategySlots = settled[idx++];
+    if (sectionRequestNames.includes("aiOverview")) aiOverview = settled[idx++];
+    if (sectionRequestNames.includes("balance")) balanceR = settled[idx++];
+    if (sectionRequestNames.includes("daily")) dailyR = settled[idx++];
+    if (sectionRequestNames.includes("whitelist")) wlR = settled[idx++];
+    if (sectionRequestNames.includes("blacklist")) blR = settled[idx++];
+    if (sectionRequestNames.includes("tradesFeed")) tradesFeedR = settled[idx++];
 
     if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
     if (count.status === "fulfilled") uiState.lastCount = count.value;
     if (profit.status === "fulfilled") uiState.lastProfit = profit.value;
     if (sysinfo.status === "fulfilled") uiState.lastSysinfo = sysinfo.value;
-    const rawStrategies =
-      panelStrategies.status === "fulfilled" && panelStrategies.value != null
-        ? extractPanelStrategyListPayload(panelStrategies.value)
-        : null;
-    const rawSlots =
-      strategySlots.status === "fulfilled" && strategySlots.value != null
-        ? extractPanelStrategyListPayload(strategySlots.value)
-        : null;
 
-    /* 数据面板左侧策略名：优先 /panel/strategies；空时回退 /panel/strategy-slots。 */
-    const rawForNames = rawStrategies != null ? rawStrategies : rawSlots;
-    if (rawForNames != null) {
-      uiState.panelStrategyListAll = normalizePanelStrategyNames(rawForNames, false);
-      uiState.panelStrategyList = normalizePanelStrategyNames(rawForNames, true);
-      try {
-        window.dispatchEvent(
-          new CustomEvent("bovin-strategy-slot-names", {
-            detail: { names: uiState.panelStrategyList ?? [] }
-          })
-        );
-      } catch {
-        /* ignore */
+    if (currentSection === "overview" || currentSection === "control") {
+      const rawStrategies =
+        panelStrategies.status === "fulfilled" && panelStrategies.value != null
+          ? extractPanelStrategyListPayload(panelStrategies.value)
+          : null;
+      const rawSlots =
+        strategySlots.status === "fulfilled" && strategySlots.value != null
+          ? extractPanelStrategyListPayload(strategySlots.value)
+          : null;
+
+      const rawForNames = rawStrategies != null ? rawStrategies : rawSlots;
+      if (rawForNames != null) {
+        uiState.panelStrategyListAll = normalizePanelStrategyNames(rawForNames, false);
+        uiState.panelStrategyList = normalizePanelStrategyNames(rawForNames, true);
+        try {
+          window.dispatchEvent(
+            new CustomEvent("bovin-strategy-slot-names", {
+              detail: { names: uiState.panelStrategyList ?? [] }
+            })
+          );
+        } catch {
+          /* ignore */
+        }
       }
+      if (rawSlots != null) {
+        uiState.panelStrategySlotIdByName = buildPanelStrategySlotIdByName(rawSlots);
+        uiState.panelStrategySlotRowsRaw = Array.isArray(rawSlots) ? rawSlots : [];
+      }
+      if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
+      if (dailyR.status === "fulfilled" && dailyR.value != null) uiState.lastDaily = dailyR.value;
+      if (wlR.status === "fulfilled") uiState.lastWl = wlR.value;
+      if (blR.status === "fulfilled") uiState.lastBl = blR.value;
     }
-    /* 槽位 id 与编辑 JSON/MML 详情关联：优先 /panel/strategy-slots。 */
-    if (rawSlots != null) {
-      uiState.panelStrategySlotIdByName = buildPanelStrategySlotIdByName(rawSlots);
-      uiState.panelStrategySlotRowsRaw = Array.isArray(rawSlots) ? rawSlots : [];
+
+    if (currentSection === "overview" || currentSection === "control" || currentSection === "positions") {
+      if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
+      if (tradesFeedR.status === "fulfilled") uiState.lastTradesMini = tradesFeedR.value;
     }
-    if (aiOverview.status === "fulfilled") uiState.lastAiOverview = aiOverview.value;
-    if (balanceR.status === "fulfilled" && balanceR.value != null) uiState.lastBalance = balanceR.value;
-    if (dailyR.status === "fulfilled" && dailyR.value != null) uiState.lastDaily = dailyR.value;
-    if (wlR.status === "fulfilled") uiState.lastWl = wlR.value;
-    if (blR.status === "fulfilled") uiState.lastBl = blR.value;
-    if (tradesFeedR.status === "fulfilled") uiState.lastTradesMini = tradesFeedR.value;
 
     const y = uiState.lastCount && typeof uiState.lastCount === "object" ? uiState.lastCount : {};
     const b = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
@@ -756,161 +787,167 @@ async function panelTick() {
     const balancePayload =
       uiState.lastBalance && typeof uiState.lastBalance === "object" ? uiState.lastBalance : {};
 
-    const stake = pickStakeCurrency(balancePayload, dailyPayload);
-    const balTotal = extractBalanceTotal(balancePayload);
-    const balFree = extractBalanceFreeSum(balancePayload);
-
-    const kpiNet = $("kpiNetWorth");
-    if (kpiNet) {
-      if (balTotal != null && Number.isFinite(balTotal)) {
-        kpiNet.textContent = `${balTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
-        kpiNet.classList.remove("positive", "negative");
-      } else {
-        kpiNet.textContent = "—";
-        kpiNet.classList.remove("positive", "negative");
-      }
-    }
-
-    const kpiProfit = $("kpiProfit");
-    if (kpiProfit) {
-      const dayP = lastDayAbsProfit(dailyPayload);
-      const O = dayP != null ? dayP : 0;
-      kpiProfit.textContent = `${O >= 0 ? "+" : ""}${O.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
-      kpiProfit.classList.remove("positive", "negative");
-      kpiProfit.classList.add(O >= 0 ? "positive" : "negative");
-    }
-
-    const kpiDd = $("kpiMaxDrawdown");
-    if (kpiDd) {
-      const ddp = extractMaxDrawdownPercent(b);
-      if (ddp != null && Number.isFinite(ddp)) {
-        kpiDd.textContent = `${Math.abs(ddp).toFixed(2)}%`;
-        kpiDd.classList.remove("positive");
-        kpiDd.classList.add("negative");
-      } else {
-        kpiDd.textContent = "—";
-        kpiDd.classList.remove("positive", "negative");
-      }
-    }
-
-    const sp1 = $("kpiSpark1");
-    if (sp1) sp1.setAttribute("d", buildSparkPolylinePath(seriesNetWorth(dailyPayload, balTotal)));
-    const sp2 = $("kpiSpark2");
-    if (sp2) sp2.setAttribute("d", buildSparkPolylinePath(seriesDailyAbsProfit(dailyPayload)));
-    const eqSer = seriesNetWorth(dailyPayload, balTotal);
-    const sp3 = $("kpiSpark3");
-    if (sp3) sp3.setAttribute("d", buildSparkPolylinePath(seriesDrawdownPercent(eqSer)));
-
-    const kpiBal = $("kpiBalance");
-    if (kpiBal) {
-      if (balFree != null && Number.isFinite(balFree)) {
-        kpiBal.textContent = `${balFree.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
-        kpiBal.classList.remove("positive", "negative");
-      } else {
-        kpiBal.textContent = "—";
-        kpiBal.classList.remove("positive", "negative");
-      }
-    }
-    const sp4 = $("kpiSpark4");
-    if (sp4) sp4.setAttribute("d", buildSparkPolylinePath(seriesBalanceFreeSpark(balFree)));
-
-    renderRiskExposureMatrix($("riskMatrixCells"), balancePayload);
-
+    applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
     uiState.lastPing = pingOk ? { status: "pong" } : { status: "down" };
 
-    const kpiBot = $("kpiBotStatus");
-    if (kpiBot) {
-      kpiBot.classList.remove("muted", "positive", "negative");
-      kpiBot.classList.add("muted");
-      kpiBot.textContent = tReplace("overview.kpi.openPositionsLine", {
-        slot: formatOpenPositionsSubtitle(y)
-      });
-    }
+    if (currentSection === "overview") {
+      const stake = pickStakeCurrency(balancePayload, dailyPayload);
+      const balTotal = extractBalanceTotal(balancePayload);
+      const balFree = extractBalanceFreeSum(balancePayload);
 
-    const kpi2Em = $("kpiCard2Em");
-    if (kpi2Em) {
-      const wr = computeWinRatePercent(dailyPayload);
-      kpi2Em.classList.remove("muted", "positive", "negative");
-      if (wr == null || !Number.isFinite(wr)) {
-        kpi2Em.classList.add("muted");
-        kpi2Em.textContent = "—";
-      } else {
-        kpi2Em.textContent = tReplace("overview.kpi.winRateLine", { pct: wr.toFixed(1) });
-        kpi2Em.classList.add(wr >= 50 ? "positive" : "negative");
+      const kpiNet = $("kpiNetWorth");
+      if (kpiNet) {
+        if (balTotal != null && Number.isFinite(balTotal)) {
+          kpiNet.textContent = `${balTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
+          kpiNet.classList.remove("positive", "negative");
+        } else {
+          kpiNet.textContent = "—";
+          kpiNet.classList.remove("positive", "negative");
+        }
       }
-    }
 
-    const kpi3Em = $("kpiCard3Em");
-    if (kpi3Em) {
-      kpi3Em.textContent = t("overview.kpi.riskUnconfigured");
-      kpi3Em.classList.remove("muted", "negative");
-      kpi3Em.classList.add("positive");
-    }
+      const kpiProfit = $("kpiProfit");
+      if (kpiProfit) {
+        const dayP = lastDayAbsProfit(dailyPayload);
+        const O = dayP != null ? dayP : 0;
+        kpiProfit.textContent = `${O >= 0 ? "+" : ""}${O.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
+        kpiProfit.classList.remove("positive", "negative");
+        kpiProfit.classList.add(O >= 0 ? "positive" : "negative");
+      }
 
-    const kpi4Em = $("kpiCard4Em");
-    if (kpi4Em) {
-      kpi4Em.classList.remove("positive", "negative");
-      kpi4Em.classList.add("muted");
-      if (
-        balTotal != null &&
-        balFree != null &&
-        Number.isFinite(balTotal) &&
-        Number.isFinite(balFree) &&
-        balTotal > 0
-      ) {
-        kpi4Em.textContent = tReplace("overview.kpi.balanceRatioLine", {
-          pct: ((balFree / balTotal) * 100).toFixed(1)
+      const kpiDd = $("kpiMaxDrawdown");
+      if (kpiDd) {
+        const ddp = extractMaxDrawdownPercent(b);
+        if (ddp != null && Number.isFinite(ddp)) {
+          kpiDd.textContent = `${Math.abs(ddp).toFixed(2)}%`;
+          kpiDd.classList.remove("positive");
+          kpiDd.classList.add("negative");
+        } else {
+          kpiDd.textContent = "—";
+          kpiDd.classList.remove("positive", "negative");
+        }
+      }
+
+      const sp1 = $("kpiSpark1");
+      if (sp1) sp1.setAttribute("d", buildSparkPolylinePath(seriesNetWorth(dailyPayload, balTotal)));
+      const sp2 = $("kpiSpark2");
+      if (sp2) sp2.setAttribute("d", buildSparkPolylinePath(seriesDailyAbsProfit(dailyPayload)));
+      const eqSer = seriesNetWorth(dailyPayload, balTotal);
+      const sp3 = $("kpiSpark3");
+      if (sp3) sp3.setAttribute("d", buildSparkPolylinePath(seriesDrawdownPercent(eqSer)));
+
+      const kpiBal = $("kpiBalance");
+      if (kpiBal) {
+        if (balFree != null && Number.isFinite(balFree)) {
+          kpiBal.textContent = `${balFree.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stake}`;
+          kpiBal.classList.remove("positive", "negative");
+        } else {
+          kpiBal.textContent = "—";
+          kpiBal.classList.remove("positive", "negative");
+        }
+      }
+      const sp4 = $("kpiSpark4");
+      if (sp4) sp4.setAttribute("d", buildSparkPolylinePath(seriesBalanceFreeSpark(balFree)));
+
+      renderRiskExposureMatrix($("riskMatrixCells"), balancePayload);
+
+      const kpiBot = $("kpiBotStatus");
+      if (kpiBot) {
+        kpiBot.classList.remove("muted", "positive", "negative");
+        kpiBot.classList.add("muted");
+        kpiBot.textContent = tReplace("overview.kpi.openPositionsLine", {
+          slot: formatOpenPositionsSubtitle(y)
         });
-      } else {
-        kpi4Em.textContent = t("overview.kpi.balanceHint");
       }
+
+      const kpi2Em = $("kpiCard2Em");
+      if (kpi2Em) {
+        const wr = computeWinRatePercent(dailyPayload);
+        kpi2Em.classList.remove("muted", "positive", "negative");
+        if (wr == null || !Number.isFinite(wr)) {
+          kpi2Em.classList.add("muted");
+          kpi2Em.textContent = "—";
+        } else {
+          kpi2Em.textContent = tReplace("overview.kpi.winRateLine", { pct: wr.toFixed(1) });
+          kpi2Em.classList.add(wr >= 50 ? "positive" : "negative");
+        }
+      }
+
+      const kpi3Em = $("kpiCard3Em");
+      if (kpi3Em) {
+        kpi3Em.textContent = t("overview.kpi.riskUnconfigured");
+        kpi3Em.classList.remove("muted", "negative");
+        kpi3Em.classList.add("positive");
+      }
+
+      const kpi4Em = $("kpiCard4Em");
+      if (kpi4Em) {
+        kpi4Em.classList.remove("positive", "negative");
+        kpi4Em.classList.add("muted");
+        if (
+          balTotal != null &&
+          balFree != null &&
+          Number.isFinite(balTotal) &&
+          Number.isFinite(balFree) &&
+          balTotal > 0
+        ) {
+          kpi4Em.textContent = tReplace("overview.kpi.balanceRatioLine", {
+            pct: ((balFree / balTotal) * 100).toFixed(1)
+          });
+        } else {
+          kpi4Em.textContent = t("overview.kpi.balanceHint");
+        }
+      }
+
+      renderOverviewSysinfoInto($("sysinfo"), uiState.lastSysinfo, t, tReplace, uiState.lastHealth);
+
+      const heroLatency = $("heroLatency");
+      if (heroLatency) heroLatency.textContent = `${Math.round(uiState.lastPingLatencyMs)}ms`;
+      const heroUptime = $("heroUptime");
+      if (heroUptime) heroUptime.textContent = formatOverviewUptimeFromHealth(uiState.lastHealth);
     }
-
-    renderOverviewSysinfoInto($("sysinfo"), uiState.lastSysinfo, t, tReplace, uiState.lastHealth);
-
-    const heroLatency = $("heroLatency");
-    if (heroLatency) heroLatency.textContent = `${Math.round(uiState.lastPingLatencyMs)}ms`;
-    const heroUptime = $("heroUptime");
-    if (heroUptime) heroUptime.textContent = formatOverviewUptimeFromHealth(uiState.lastHealth);
-
-    applyTopbarDecor(pingOk, uiState.lastPingLatencyMs);
 
     let statusLeverageForRisk = /** @type {number | null} */ (null);
-    try {
-      /** 持仓/待成交与概览风险同源：走 `apiUrlBases()`（设置里的 REST、同源代理、上次成功基址），避免硬编码 127.0.0.1:18080 在未启动服务时刷屏 ERR_CONNECTION_REFUSED。 */
-      const st = await getStatus();
-      statusLeverageForRisk = extractLeverageFromStatusPayload(st);
-      uiState.lastStForRisk = Array.isArray(st) ? st : [];
-      renderPositionsSectionFromStatus(st);
-    } catch {
-      statusLeverageForRisk = null;
-      /* ignore */
+    if (currentSection === "positions") {
+      try {
+        const st = await getStatus();
+        statusLeverageForRisk = extractLeverageFromStatusPayload(st);
+        uiState.lastStForRisk = Array.isArray(st) ? st : [];
+        renderPositionsSectionFromStatus(st);
+      } catch {
+        statusLeverageForRisk = null;
+      }
     }
 
     const showCfg =
       uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
     const profitObj =
       uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
-    const riskLeverageValue = $("riskLeverageValue");
-    if (riskLeverageValue) riskLeverageValue.textContent = formatTradingModePair(showCfg, statusLeverageForRisk);
 
-    renderControlHeroAndCards(
-      dailyPayload,
-      showCfg,
-      profitObj,
-      uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {},
-      uiState.lastProxyHealth,
-      uiState.strategyBotSnapshots || {}
-    );
+    if (currentSection === "overview") {
+      const riskLeverageValue = $("riskLeverageValue");
+      if (riskLeverageValue) riskLeverageValue.textContent = formatTradingModePair(showCfg, statusLeverageForRisk);
 
-    applyOverviewStrategiesTable(
-      showCfg,
-      profitObj,
-      y,
-      uiState.lastStForRisk || [],
-      t,
-      tReplace
-    );
+      applyOverviewStrategiesTable(
+        showCfg,
+        profitObj,
+        y,
+        uiState.lastStForRisk || [],
+        t,
+        tReplace
+      );
+    }
+
+    if (currentSection === "control") {
+      renderControlHeroAndCards(
+        dailyPayload,
+        showCfg,
+        profitObj,
+        uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {},
+        uiState.lastProxyHealth,
+        uiState.strategyBotSnapshots || {}
+      );
+    }
   } catch {
     /* 单次失败不打断轮询 */
   }

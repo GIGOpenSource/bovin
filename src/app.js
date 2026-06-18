@@ -338,11 +338,7 @@ function bindPanelChromeOnce() {
 }
 
 export function enterShellAfterAuth() {
-  const targetSection = "overview";
-  
   uiState.authed = true;
-  
-  activateSection(targetSection);
   
   const shell = document.getElementById("app") || document.getElementById("appRoot");
   if (shell) applyDomI18n(shell);
@@ -414,7 +410,17 @@ function bindLogoutOnce() {
     uiState.panelPrefsLoadErrorDetail = "";
     clearFreqtradePasswordSession();
     persistProfileToLocalStorage();
-    syncLoginShell();
+    
+    if (panelRouter) {
+      panelRouter.push({ name: "login" }).then(() => {
+        console.log("[Logout] Redirected to login page");
+      }).catch(err => {
+        console.error("[Logout] Navigation error:", err);
+        location.href = `${location.origin}${location.pathname}#/login`;
+      });
+    } else {
+      location.href = `${location.origin}${location.pathname}#/login`;
+    }
   });
 }
 

@@ -15,7 +15,8 @@ panelRouter.beforeEach((to, from, next) => {
   
   if (isLoginPage) {
     if (isLoggedIn) {
-      next({ name: "overview" });
+      const lastSection = localStorage.getItem("ft_active_section") || "overview";
+      next({ name: lastSection });
     } else {
       next();
     }
