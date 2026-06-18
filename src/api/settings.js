@@ -35,4 +35,4 @@ export const patchPanelUser = (userId, body) =>
 export const deletePanelUser = (userId) =>
   http.delete(`/panel/users/${encodeURIComponent(String(userId))}`);
 
-export const postPanelAuthLogin = (body) => http.post("/panel/auth/login", body);
+export const postPanelAuthLogin = (body) => http.post("/token/login", body);

@@ -14,6 +14,10 @@
                 </div>
               </div>
               <div class="ft-page-hero__aside da-actions">
+                <div id="daWhitelistPairs" class="da-pair-selector-inline">
+                  <!-- <span class="da-pair-selector-label">交易对:</span> -->
+                  <div class="da-pair-list-inline" id="daWhitelistPairsList"></div>
+                </div>
                 <button type="button" id="loadPairs" class="primary"><UnorderedListOutlined /><span data-i18n="btn.loadAvailablePairs">加载 available_pairs</span></button>
                 <button type="button" id="loadPairHistory" class="ghost"><HistoryOutlined /><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
                 <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><FilterOutlined /></button>
@@ -21,22 +25,6 @@
             </header>
 
             <div class="da-grid">
-              <aside class="da-left">
-                <div class="da-left-head">
-                  <h3 data-i18n="data.strategies">策略</h3>
-                  <span id="dataStrategiesMeta" class="da-left-meta" data-i18n="data.strategiesMetaEmpty">—</span>
-                </div>
-                <div id="dataStrategiesList" class="da-strategy-list" aria-label="策略列表">
-                  <div class="da-strategy-card da-strategy-card--placeholder">
-                    <small class="muted" data-i18n="data.noStrategy">暂无策略数据</small>
-                  </div>
-                </div>
-                <div class="da-volume">
-                  <h4 data-i18n="data.networkVol">全网约成交量</h4>
-                  <div class="bars da-vol-bars" id="daVolBars" aria-hidden="true"></div>
-                </div>
-              </aside>
-
               <div class="da-main">
                 <div class="da-chart">
                   <div class="da-chart-head da-chart-head--toolbar">
@@ -66,48 +54,9 @@
                       <button type="button" class="da-switch-btn" data-tf="4h">4h</button>
                       <button type="button" class="da-switch-btn" data-tf="1d">1d</button>
                     </div>
-                    <div class="da-kline-mode-toolbar da-chart-head__seg" role="toolbar" data-i18n-aria="aria.klineChartMode">
-                      <span class="da-kline-mode-label muted" data-i18n="kline.modeLabel">K 线</span>
-                      <button type="button" class="ghost tiny da-kline-mode-btn active" id="daKlineModeLw" data-i18n="kline.modeLw">
-                        轻量图库
-                      </button>
-                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModePanel" data-i18n="kline.modePanel">
-                        面板原生
-                      </button>
-                      <button type="button" class="ghost tiny da-kline-mode-btn" id="daKlineModeSvg" data-i18n="kline.modeSvg">SVG 兜底</button>
+                    <div id="daChartPairSelector" class="da-switch-group da-chart-head__seg" data-i18n-aria="aria.pairSwitch" aria-label="切换交易对">
+                      <span class="da-pair-tab-loading">加载中...</span>
                     </div>
-                  </div>
-                  <div
-                    id="daMarketBoard"
-                    class="da-market-board da-market-board--tickers"
-                    data-i18n-aria="aria.dataTickerStrip"
-                    aria-label="行情快览"
-                  >
-                    <button type="button" class="da-ticker-card" data-board-pair="BTC/USDT" aria-pressed="true">
-                      <span class="da-ticker-card__pair">BTC/USDT</span>
-                      <span class="da-ticker-card__price">—</span>
-                      <span class="da-ticker-card__pct muted">—</span>
-                    </button>
-                    <button type="button" class="da-ticker-card" data-board-pair="ETH/USDT" aria-pressed="false">
-                      <span class="da-ticker-card__pair">ETH/USDT</span>
-                      <span class="da-ticker-card__price">—</span>
-                      <span class="da-ticker-card__pct muted">—</span>
-                    </button>
-                    <button type="button" class="da-ticker-card" data-board-pair="BNB/USDT" aria-pressed="false">
-                      <span class="da-ticker-card__pair">BNB/USDT</span>
-                      <span class="da-ticker-card__price">—</span>
-                      <span class="da-ticker-card__pct muted">—</span>
-                    </button>
-                    <button type="button" class="da-ticker-card" data-board-pair="XRP/USDT" aria-pressed="false">
-                      <span class="da-ticker-card__pair">XRP/USDT</span>
-                      <span class="da-ticker-card__price">—</span>
-                      <span class="da-ticker-card__pct muted">—</span>
-                    </button>
-                    <button type="button" class="da-ticker-card" data-board-pair="SOL/USDT" aria-pressed="false">
-                      <span class="da-ticker-card__pair">SOL/USDT</span>
-                      <span class="da-ticker-card__price">—</span>
-                      <span class="da-ticker-card__pct muted">—</span>
-                    </button>
                   </div>
                   <div class="da-chart-body">
                     <div class="mock-grid"></div>
@@ -123,6 +72,10 @@
                     <div id="pairData" class="log"></div>
                   </div>
                 </div>
+
+                
+
+
 
                 <div class="da-history">
                   <div class="da-history-head">
@@ -260,48 +213,62 @@
 
 .da-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 280px) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--ft-page-stack-gap);
 }
 
-.da-left {
+.da-pair-selector-inline {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  align-self: start;
-}
-
-.da-left-head {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  padding-right: 16px;
 }
 
-.da-left-head h3 {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+.da-pair-selector-label {
+  font-size: 12px;
+  color: var(--ft-text-muted);
+  white-space: nowrap;
+}
+
+.da-pair-list-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.da-pair-item-loading {
+  color: var(--ft-text-muted);
   font-size: 12px;
 }
 
-.da-left-head span {
-  font-size: 10px;
-  color: var(--text-dim);
-  background: rgba(var(--ft-accent-rgb), 0.1);
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.2);
+.da-pair-item {
+  padding: 4px 10px;
+  background: rgba(34, 42, 61, 0.8);
+  border: 1px solid var(--ft-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--ft-text-primary);
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-/* 策略列表样式见全局 data.css（列表由 panel 轮询 innerHTML 注入） */
+.da-pair-item:hover {
+  background: var(--ft-accent-bg);
+  border-color: var(--ft-accent-color);
+}
+
+.da-pair-item.active {
+  background: var(--ft-accent-color);
+  border-color: var(--ft-accent-color);
+  color: white;
+}
 
 .da-volume {
   background: var(--ft-panel-surface);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  border-radius: 10px;
+  border-radius: var(--ft-panel-radius);
   padding: 12px;
-  margin-top: 2px;
 }
 
 .da-volume h4 {
@@ -709,47 +676,7 @@
   height: 100%;
 }
 
-.da-kline-mode-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  font-size: 11px;
-}
 
-.da-kline-mode-label {
-  color: #8c90a2;
-  margin-right: 2px;
-}
-
-/* 仅 K 线模式切换：未选白字深蓝底；选中薄荷绿字 + 绿色细边与微光（不影响其他 ghost 按钮） */
-.da-kline-mode-toolbar .da-kline-mode-btn {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  border-radius: 8px;
-  padding: 6px 12px;
-  border: 1px solid transparent;
-  background: rgba(19, 27, 46, 0.92);
-  color: #f0f3fc;
-  box-shadow: none;
-}
-
-.da-kline-mode-toolbar .da-kline-mode-btn:hover:not(.active) {
-  color: #ffffff;
-  background: rgba(26, 36, 62, 0.96);
-}
-
-.da-kline-mode-toolbar .da-kline-mode-btn.active {
-  color: #b8f5d4;
-  border-color: rgba(78, 222, 163, 0.75);
-  background: rgba(11, 19, 38, 0.9);
-  box-shadow:
-    0 0 0 1px rgba(78, 222, 163, 0.28),
-    0 0 14px rgba(78, 222, 163, 0.2);
-}
 
 .da-kline-mount.fallback-interactive {
   cursor: grab;
@@ -1007,12 +934,6 @@
     border-left: 0;
     border-top: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   }
-  .da-grid {
-    grid-template-columns: 1fr;
-  }
-  .da-left {
-    width: 100%;
-  }
   .da-actions {
     width: 100%;
     flex-wrap: wrap;
@@ -1219,7 +1140,8 @@ import {
   LineChartOutlined,
   UnorderedListOutlined
 } from "@ant-design/icons-vue";
-import { getPanelBinanceBoard, getPanelBinanceKlines } from "../../api/data.js";
+import { getPanelBinanceBoard, getPairCandles } from "../../api/data.js";
+import { getWhitelist } from "../../api/positions.js";
 import { HttpError } from "../../utils/http.js";
 import { state, uiState } from "../../store/state-core.js";
 import {
@@ -1229,8 +1151,7 @@ import {
   buildKlineShellHtml,
   maLegendValues,
   renderSvgFallbackKline,
-  sortKlineRowsByTime,
-  renderDaVolumeBars
+  sortKlineRowsByTime
 } from "./data-panel-kline.js";
 import {
   drawPanelKlineCanvas,
@@ -1247,7 +1168,7 @@ onMounted(() => {
   if (!dataRoot) return;
   const pairWrap = dataRoot.querySelector("#daPairButtons");
   const tfWrap = dataRoot.querySelector("#daTfButtons");
-  const modeWrap = dataRoot.querySelector(".da-kline-mode-toolbar");
+  const chartPairContainer = dataRoot.querySelector("#daChartPairSelector");
   const ticker = dataRoot.querySelector("#daSymbolTicker");
   const klineStatus = dataRoot.querySelector("#daKlineStatus");
   const maLayerDemo = dataRoot.querySelector("#daMaLayerDemo");
@@ -1256,12 +1177,38 @@ onMounted(() => {
   const historyEmpty = dataRoot.querySelector("#daHistoryEmpty");
   const pairData = dataRoot.querySelector("#pairData");
   const daDataSource = dataRoot.querySelector("#daDataSource");
-  const daVolBars = dataRoot.querySelector("#daVolBars");
-  const marketBoard = dataRoot.querySelector("#daMarketBoard");
-  if (!tfWrap || !modeWrap || !pairData) return;
+  const whitelistContainer = dataRoot.querySelector("#daWhitelistPairs .da-pair-list-inline");
+  if (!tfWrap || !chartPairContainer || !pairData) return;
 
-  let pairSelection =
-    pairWrap?.querySelector("button.da-switch-btn.active")?.getAttribute("data-pair") || "BTC/USDT";
+  let pairSelection = "";
+
+  const loadWhitelistPairs = async () => {
+    const chartContainer = chartPairContainer;
+    if (!chartContainer) return;
+    try {
+      const res = await getWhitelist();
+      const whitelist = res?.whitelist || [];
+      if (!whitelist.length) {
+        chartContainer.innerHTML = "";
+        return;
+      }
+      if (!pairSelection) {
+        pairSelection = whitelist[0];
+        if (canFetchKlines()) {
+          void refreshBinanceKlines();
+        }
+      }
+      const html = whitelist.map((pair) => {
+        const isActive = pairSelection === pair;
+        return `<button type="button" class="da-switch-btn${isActive ? " active" : ""}" data-pair="${pair}">${pair}</button>`;
+      }).join("");
+      chartContainer.innerHTML = html;
+    } catch (e) {
+      chartContainer.innerHTML = "";
+    }
+  };
+
+  void loadWhitelistPairs();
 
   let boardTimer = null;
   const BOARD_POLL_MS = 20000;
@@ -1279,73 +1226,6 @@ onMounted(() => {
     if (n >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
     if (n >= 1) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
     return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
-  };
-
-  const syncBoardActive = () => {
-    if (!marketBoard) return;
-    const cur = pairSelection;
-    marketBoard.querySelectorAll(".da-ticker-card").forEach((el) => {
-      const p = el.getAttribute("data-board-pair") || "";
-      const on = p === cur;
-      el.classList.toggle("is-active", on);
-      el.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  };
-
-  const applyMarketBoardPayload = (raw) => {
-    if (!marketBoard || !raw || typeof raw !== "object") return;
-    const list = Array.isArray(raw.board) ? raw.board : [];
-    const map = new Map();
-    for (const row of list) {
-      const sym = String(row.symbol || "")
-        .replace(/\//g, "")
-        .toUpperCase();
-      if (sym) map.set(sym, row);
-    }
-    marketBoard.querySelectorAll(".da-ticker-card").forEach((card) => {
-      const p = card.getAttribute("data-board-pair");
-      if (!p) return;
-      const key = pairToBoardSymbol(p);
-      const row = map.get(key);
-      const priceEl = card.querySelector(".da-ticker-card__price");
-      const pctEl = card.querySelector(".da-ticker-card__pct");
-      if (!priceEl || !pctEl) return;
-      if (!row) {
-        priceEl.textContent = "—";
-        pctEl.textContent = "—";
-        pctEl.classList.remove("positive", "negative");
-        pctEl.classList.add("muted");
-        return;
-      }
-      const price = Number(row.lastPrice ?? row.price ?? 0);
-      const pct = Number(row.priceChangePercent ?? row.pct ?? 0);
-      priceEl.textContent = formatBoardPrice(price);
-      pctEl.textContent = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-      pctEl.classList.remove("muted", "positive", "negative");
-      pctEl.classList.add(pct >= 0 ? "positive" : "negative");
-    });
-  };
-
-  const refreshMarketBoard = async () => {
-    if (!canFetchKlines() || !marketBoard) return;
-    try {
-      const raw = await getPanelBinanceBoard();
-      applyMarketBoardPayload(raw);
-    } catch {
-      /* 行情条失败不影响 K 线 */
-    }
-  };
-
-  const onBoardCardClick = (e) => {
-    const card = e.target instanceof Element ? e.target.closest(".da-ticker-card[data-board-pair]") : null;
-    if (!card) return;
-    const p = card.getAttribute("data-board-pair");
-    if (!p) return;
-    pairSelection = p;
-    if (pairWrap) applyActive(pairWrap, "data-pair", p);
-    syncTicker();
-    syncBoardActive();
-    void refreshBinanceKlines();
   };
 
   let lwcApi = null;
@@ -1416,7 +1296,7 @@ onMounted(() => {
     if (prevMount) disconnectPanelKlineResizeObserver(prevMount);
     disposeLwc();
     pairData.dataset.daShellKey = key;
-    pairData.innerHTML = buildKlineShellHtml("MA(7): —", "MA(25): —");
+    pairData.innerHTML = buildKlineShellHtml("MA(7): —", "MA(25): —", "MA(99): —");
   };
 
   const movingAvg = (closes, period) =>
@@ -1429,18 +1309,20 @@ onMounted(() => {
   const applyRowsToRenderer = (rows) => {
     const sorted = sortKlineRowsByTime(rows);
     lastRows = sorted;
-    renderDaVolumeBars(daVolBars, sorted);
     const mount = pairData.querySelector("#daKlineMount");
     if (!mount) return;
-    const { ma7Text, ma25Text } = maLegendValues(sorted);
+    const { ma7Text, ma25Text, ma99Text } = maLegendValues(sorted);
     const leg7 = pairData.querySelector(".da-ma-legend .ma7");
     const leg25 = pairData.querySelector(".da-ma-legend .ma25");
+    const leg99 = pairData.querySelector(".da-ma-legend .ma99");
     if (leg7) leg7.textContent = ma7Text;
     if (leg25) leg25.textContent = ma25Text;
+    if (leg99) leg99.textContent = ma99Text;
 
     const closes = sorted.map((r) => Number(r[4] || 0));
     const ma7 = movingAvg(closes, 7);
     const ma25 = movingAvg(closes, 25);
+    const ma99 = movingAvg(closes, 99);
     const pairLabel = currentPair();
     const tfLabel = currentTf();
 
@@ -1460,6 +1342,7 @@ onMounted(() => {
           viewEnd: sorted.length,
           ma7,
           ma25,
+          ma99,
           pair: pairLabel,
           tf: tfLabel
         });
@@ -1469,7 +1352,7 @@ onMounted(() => {
     } else {
       disconnectPanelKlineResizeObserver(mount);
       disposeLwc();
-      mount.innerHTML = sorted.length ? renderSvgFallbackKline(sorted, ma7, ma25) : "";
+      mount.innerHTML = sorted.length ? renderSvgFallbackKline(sorted, ma7, ma25, ma99) : "";
     }
   };
 
@@ -1499,8 +1382,24 @@ onMounted(() => {
 
   const refreshBinanceKlines = async () => {
     if (!canFetchKlines()) return;
-    const pair = currentPair();
+    let pair = currentPair();
     const tf = currentTf();
+    
+    if (!pair) {
+      try {
+        const res = await getWhitelist();
+        const whitelist = res?.whitelist || [];
+        if (whitelist.length > 0) {
+          pair = whitelist[0];
+          pairSelection = pair;
+        } else {
+          return;
+        }
+      } catch {
+        return;
+      }
+    }
+    
     syncTicker();
     ensureShell(pair, tf);
 
@@ -1509,11 +1408,11 @@ onMounted(() => {
     const myGen = ++loadGen;
 
     try {
-      const raw = await getPanelBinanceKlines(
+      const raw = await getPairCandles(
         {
-          pair: pairForBinanceKlinesRequest(pair),
+          pair: pair,
           timeframe: tf,
-          limit: 500
+          columns: JSON.stringify(["enter_tag", "exit_tag"])
         },
         { signal: abortCtl.signal }
       );
@@ -1522,7 +1421,6 @@ onMounted(() => {
       if (!rows.length) throw new Error("接口返回的 K 线为空");
       updateHeaderFromRows(rows);
       applyRowsToRenderer(rows);
-      syncBoardActive();
       clearKlineError();
       if (daDataSource) daDataSource.textContent = "数据源：BOVIN_BINANCE";
     } catch (e) {
@@ -1535,7 +1433,6 @@ onMounted(() => {
         mount.innerHTML = "";
       }
       lastRows = [];
-      renderDaVolumeBars(daVolBars, []);
       showKlineError(e);
     }
   };
@@ -1546,11 +1443,12 @@ onMounted(() => {
     const value = btn.getAttribute("data-pair");
     if (!value) return;
     pairSelection = value;
-    if (pairWrap) applyActive(pairWrap, "data-pair", value);
+    if (chartPairContainer) applyActive(chartPairContainer, "data-pair", value);
     syncTicker();
-    syncBoardActive();
     void refreshBinanceKlines();
   };
+
+  chartPairContainer?.addEventListener("click", onPairClick);
 
   const onTfClick = (e) => {
     const btn = e.target instanceof Element ? e.target.closest("button.da-switch-btn[data-tf]") : null;
@@ -1560,20 +1458,6 @@ onMounted(() => {
     applyActive(tfWrap, "data-tf", value);
     syncTicker();
     void refreshBinanceKlines();
-  };
-
-  const onModeClick = (e) => {
-    if (!modeWrap) return;
-    const btn = e.target instanceof Element ? e.target.closest("button.da-kline-mode-btn") : null;
-    if (!btn) return;
-    const buttons = Array.from(modeWrap.querySelectorAll("button.da-kline-mode-btn"));
-    for (const b of buttons) {
-      const on = b === btn;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    }
-    if (lastRows.length) applyRowsToRenderer(lastRows);
-    else void refreshBinanceKlines();
   };
 
   const onRetryClick = (e) => {
@@ -1590,9 +1474,6 @@ onMounted(() => {
   const tryRefreshKlinesIfAuthed = () => {
     if (!canFetchKlines()) return;
     void refreshBinanceKlines();
-    void refreshMarketBoard();
-    if (boardTimer != null) window.clearInterval(boardTimer);
-    boardTimer = window.setInterval(() => void refreshMarketBoard(), BOARD_POLL_MS);
   };
 
   const onPanelAuthed = () => tryRefreshKlinesIfAuthed();
@@ -1619,12 +1500,9 @@ onMounted(() => {
 
   pairWrap?.addEventListener("click", onPairClick);
   tfWrap?.addEventListener("click", onTfClick);
-  modeWrap?.addEventListener("click", onModeClick);
-  marketBoard?.addEventListener("click", onBoardCardClick);
   klineStatus?.addEventListener("click", onRetryClick);
   klineHintDemo?.addEventListener("click", onRetryClick);
   syncTicker();
-  syncBoardActive();
   clearKlineError();
   syncHistoryEmptyState();
   historyEmptyTimer = window.setInterval(syncHistoryEmptyState, 1000);
@@ -1635,7 +1513,6 @@ onMounted(() => {
       window.clearInterval(boardTimer);
       boardTimer = null;
     }
-    marketBoard?.removeEventListener("click", onBoardCardClick);
     const km = pairData.querySelector("#daKlineMount");
     if (km) disconnectPanelKlineResizeObserver(km);
     window.removeEventListener("bovin-panel-auth", onPanelAuthed);

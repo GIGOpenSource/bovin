@@ -45,7 +45,6 @@ import {
 } from "./utils/overview-kpi.js";
 import { applyOverviewStrategiesTable } from "./utils/overview-strategies-table.js";
 import {
-  applyDataStrategiesList,
   buildPanelStrategySlotIdByName,
   extractPanelStrategyListPayload,
   normalizePanelStrategyNames
@@ -909,14 +908,6 @@ async function panelTick() {
       profitObj,
       y,
       uiState.lastStForRisk || [],
-      t,
-      tReplace
-    );
-
-    applyDataStrategiesList(
-      uiState.panelStrategyListAll ?? uiState.panelStrategyList,
-      showCfg,
-      profitObj,
       t,
       tReplace
     );

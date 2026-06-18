@@ -4,6 +4,7 @@ import App from "./App.vue";
 import router from "./router";
 import { store } from "./store";
 import { stripSensitiveQueryParamsFromUrl } from "./utils/strip-sensitive-url-params.js";
+import "./app.js";
 import "ant-design-vue/dist/reset.css";
 import "./style/index.less";
 import "./style/antd-panel.less";

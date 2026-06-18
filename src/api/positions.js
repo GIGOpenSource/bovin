@@ -34,6 +34,20 @@ export const getBlacklist = () => http.get("/blacklist");
 export const postBlacklist = (body) => http.post("/blacklist", body);
 /** @param {unknown} body 请求体（交易对等） */
 export const deleteBlacklist = (body) => request("/blacklist", { method: "DELETE", json: body });
+/**
+ * 删除黑名单交易对：DELETE /blacklist?pairs_to_delete=编码后的 pair
+ * @param {string | string[]} pairs 单个交易对或交易对数组
+ */
+export function deleteBlacklistPairs(pairs) {
+  const pairList = Array.isArray(pairs) ? pairs : [pairs];
+  const filtered = pairList.filter(p => p && String(p).trim()).map(p => String(p).trim());
+  if (!filtered.length) return Promise.reject(new Error("缺少交易对"));
+  const qs = new URLSearchParams();
+  for (const p of filtered) {
+    qs.append("pairs_to_delete", p);
+  }
+  return request(`/blacklist?${qs.toString()}`, { method: "DELETE" });
+}
 export const getLocks = () => http.get("/locks");
 /**
  * 强制平仓：POST …/api/v1/forceexit

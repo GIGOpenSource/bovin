@@ -67,7 +67,7 @@ function priceDecimals(maxPx) {
  * }} opts
  */
 export function drawPanelKlineCanvas(canvas, opts) {
-  const { mini, viewStart, viewEnd, ma7, ma25, pair, tf } = opts;
+  const { mini, viewStart, viewEnd, ma7, ma25, ma99, pair, tf } = opts;
   const mount = canvas.parentElement;
   const wCss = Math.max(280, Math.floor(mount?.clientWidth || canvas.clientWidth || 400));
   const hCss = Math.max(260, Math.floor(mount?.clientHeight || canvas.clientHeight || 320));
@@ -204,6 +204,7 @@ export function drawPanelKlineCanvas(canvas, opts) {
   };
   lineMA(ma7, "rgba(241,208,110,0.95)", 1.4);
   lineMA(ma25, "rgba(156,90,255,0.95)", 1.4);
+  lineMA(ma99, "rgba(78,205,196,0.95)", 1.4);
 
   const vols = viewRows.map((r) => Number(r[5] ?? 0));
   const qvs = viewRows.map((r) => Number(r[6] ?? 0));

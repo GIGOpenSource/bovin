@@ -12,6 +12,7 @@ import {
   applyPanelProfileFromPrefs
 } from "./store/state-core.js";
 import { normalizeSectionIdCandidate } from "./router/bridge.js";
+import { panelRouter } from "./router/index.js";
 import { startPanelPolling, stopPanelPolling, applyTopbarDecor } from "./panel-poll.js";
 import { renderControlHeroAndCards } from "./components/control-console.js";
 import { bindMonitorRefreshButtonOnce, refreshMonitorPageMetrics } from "./utils/monitor-page-metrics.js";
@@ -24,6 +25,17 @@ let loginFormBound = false;
 let logoutBound = false;
 let navBound = false;
 let themeSystemMediaQuery = null;
+
+window.handleLoginSubmit = async function(e) {
+  e.preventDefault();
+  console.log("[Login] Legacy login form submitted, redirecting to login route...");
+  if (panelRouter) {
+    await panelRouter.push({ name: "login" });
+  } else {
+    location.href = `${location.origin}${location.pathname}#/login`;
+  }
+  return false;
+};
 
 export function registerSectionRouteNavigator(nav) {
   sectionNavigate = typeof nav === "function" ? nav : null;
@@ -111,22 +123,7 @@ function bindThemeToggleOnce() {
 }
 
 function syncLoginShell() {
-  const loginEl = $("loginScreen");
-  const appRoot = $("appRoot");
-  if (!loginEl || !appRoot) return;
-  const pwd = String(state.password || "").trim();
-  const ok = SKIP_PANEL_LOGIN || (uiState.authed && pwd.length > 0);
-  if (ok) {
-    loginEl.classList.add("hidden");
-    appRoot.classList.remove("hidden");
-  } else {
-    loginEl.classList.remove("hidden");
-    appRoot.classList.add("hidden");
-    const u = $("loginUsername");
-    if (u instanceof HTMLInputElement && String(state.username || "").trim()) {
-      u.value = String(state.username || "").trim();
-    }
-  }
+  console.log("[Login] syncLoginShell called - using Vue Router routes now");
 }
 
 function pickInitialSectionId() {
@@ -340,21 +337,30 @@ function bindPanelChromeOnce() {
   }
 }
 
-function enterShellAfterAuth() {
-  syncLoginShell();
+export function enterShellAfterAuth() {
+  const targetSection = "overview";
+  
+  uiState.authed = true;
+  
+  activateSection(targetSection);
+  
+  const shell = document.getElementById("app") || document.getElementById("appRoot");
+  if (shell) applyDomI18n(shell);
+  
   bindNavOnce();
   bindMonitorRefreshButtonOnce();
   bindPanelChromeOnce();
-  activateSection(pickInitialSectionId());
-  const shell = $("appRoot");
-  if (shell) applyDomI18n(shell);
   startPanelPolling();
+  
   void syncPanelPreferencesFromServer();
+  
   try {
     window.dispatchEvent(new CustomEvent("bovin-panel-auth"));
   } catch {
     /* ignore */
   }
+  
+  console.log("[Login] Shell entered, navigation handled by Vue Router");
 }
 
 function bindLoginOnce() {
@@ -424,6 +430,17 @@ export async function startPanelApp() {
   if (SKIP_PANEL_LOGIN || (uiState.authed && String(state.password || "").trim())) {
     enterShellAfterAuth();
   } else {
-    syncLoginShell();
+    setTimeout(() => {
+      if (panelRouter) {
+        const currentRoute = panelRouter.currentRoute.value.name;
+        if (currentRoute !== "login") {
+          console.log("[Login] Redirecting to login route...");
+          panelRouter.push({ name: "login" });
+        }
+      } else {
+        console.log("[Login] Router not ready, redirecting via location...");
+        location.href = `${location.origin}${location.pathname}#/login`;
+      }
+    }, 50);
   }
 }

@@ -12,27 +12,40 @@ export function pairForBinanceKlinesRequest(displayPair) {
   return `${base}/${q}`;
 }
 
-/** 解析 /panel/binance_klines 的 data 为 [openTime, o, h, l, c, v][] */
+/** 解析 /api/v1/pair_candles 的 columns + data 为 [openTime, o, h, l, c, v][] */
 export function parseBinanceKlinesRows(raw) {
   if (!raw || typeof raw !== "object") return [];
   const data = Array.isArray(raw.data) ? raw.data : [];
+  const columns = Array.isArray(raw.columns) ? raw.columns : [];
+  
+  const dateIdx = columns.indexOf("date");
+  const openIdx = columns.indexOf("open");
+  const highIdx = columns.indexOf("high");
+  const lowIdx = columns.indexOf("low");
+  const closeIdx = columns.indexOf("close");
+  const volumeIdx = columns.indexOf("volume");
+  
   const out = [];
   for (const row of data) {
-    if (!Array.isArray(row) || row.length < 5) continue;
-    const tOpen = Number(row[0]);
-    const o = Number(row[1]);
-    const h = Number(row[2]);
-    const l = Number(row[3]);
-    const c = Number(row[4]);
-    const v = row.length >= 6 ? Number(row[5] ?? 0) : 0;
-    /** 币安 klines 第 8 列为 quote asset volume；缺失时用 close×volume 近似 USDT 成交额 */
-    let qv = row.length >= 8 ? Number(row[7] ?? 0) : NaN;
-    if (![tOpen, o, h, l, c].every(Number.isFinite)) continue;
+    if (!Array.isArray(row)) continue;
+    
+    const dateVal = row[dateIdx >= 0 ? dateIdx : 0];
+    const o = Number(row[openIdx >= 0 ? openIdx : 1]);
+    const h = Number(row[highIdx >= 0 ? highIdx : 2]);
+    const l = Number(row[lowIdx >= 0 ? lowIdx : 3]);
+    const c = Number(row[closeIdx >= 0 ? closeIdx : 4]);
+    const v = volumeIdx >= 0 ? Number(row[volumeIdx] ?? 0) : 0;
+    
+    let tOpen = toLwTimeSec(dateVal);
+    if (tOpen === null) continue;
+    
+    if (![o, h, l, c].every(Number.isFinite)) continue;
     if (o <= 0 || h <= 0 || l <= 0 || c <= 0) continue;
+    
     const vSafe = Number.isFinite(v) && v >= 0 ? v : 0;
-    if (!Number.isFinite(qv) || qv < 0) qv = 0;
-    if (qv === 0 && vSafe > 0 && c > 0) qv = c * vSafe;
-    out.push([tOpen, o, h, l, c, vSafe, Number.isFinite(qv) && qv >= 0 ? qv : 0]);
+    const qv = vSafe > 0 && c > 0 ? c * vSafe : 0;
+    
+    out.push([tOpen, o, h, l, c, vSafe, qv]);
   }
   return out;
 }
@@ -126,11 +139,14 @@ export function maLegendValues(rows) {
   const closes = rows.map((r) => Number(r?.[4] || 0));
   const ma7 = movingAverage(closes, 7);
   const ma25 = movingAverage(closes, 25);
+  const ma99 = movingAverage(closes, 99);
   const v7 = ma7[ma7.length - 1];
   const v25 = ma25[ma25.length - 1];
+  const v99 = ma99[ma99.length - 1];
   return {
     ma7Text: `MA(7): ${v7 == null ? "—" : Number(v7).toFixed(2)}`,
-    ma25Text: `MA(25): ${v25 == null ? "—" : Number(v25).toFixed(2)}`
+    ma25Text: `MA(25): ${v25 == null ? "—" : Number(v25).toFixed(2)}`,
+    ma99Text: `MA(99): ${v99 == null ? "—" : Number(v99).toFixed(2)}`
   };
 }
 
@@ -159,7 +175,26 @@ export function createLwcKline(mount) {
     rightPriceScale: { borderColor: "rgba(66,70,86,0.25)" },
     timeScale: { borderColor: "rgba(66,70,86,0.25)", timeVisible: true, secondsVisible: false },
     handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
-    handleScale: { mouseWheel: true, pinch: true }
+    handleScale: { mouseWheel: true, pinch: true },
+    crosshair: {
+      mode: 1,
+      vertLine: {
+        color: "rgba(140,144,162,0.4)",
+        width: 1,
+        style: 2,
+        labelBackgroundColor: "#2a2d3a"
+      },
+      horzLine: {
+        color: "rgba(140,144,162,0.4)",
+        width: 1,
+        style: 2,
+        labelBackgroundColor: "#2a2d3a"
+      }
+    },
+    localization: {
+      dateFormat: "yyyy-MM-dd HH:mm",
+      locale: "zh-CN"
+    }
   });
   const candles = chart.addCandlestickSeries({
     upColor: "#4edea3",
@@ -172,11 +207,147 @@ export function createLwcKline(mount) {
   });
   const ma7s = chart.addLineSeries({ color: "#f1d06e", lineWidth: 2, priceLineVisible: false });
   const ma25s = chart.addLineSeries({ color: "#9c5aff", lineWidth: 2, priceLineVisible: false });
+  const ma99s = chart.addLineSeries({ color: "#4ecdc4", lineWidth: 2, priceLineVisible: false });
   const vol = chart.addHistogramSeries({
     priceFormat: { type: "volume" },
     priceScaleId: "",
     scaleMargins: { top: 0.78, bottom: 0 }
   });
+
+  let tooltip = null;
+  function createTooltip() {
+    if (tooltip) return;
+    tooltip = document.createElement("div");
+    tooltip.className = "da-kline-tooltip";
+    tooltip.style.cssText = `
+      position: absolute;
+      pointer-events: none;
+      background: rgba(42, 45, 58, 0.95);
+      border: 1px solid rgba(66, 70, 86, 0.4);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11px;
+      color: #e8e9ed;
+      z-index: 1000;
+      min-width: 200px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: none;
+    `;
+    mount.appendChild(tooltip);
+  }
+
+  let candleData = [];
+  let volumeData = [];
+  let ma7Data = [];
+  let ma25Data = [];
+  let ma99Data = [];
+
+  function showTooltip(x, y) {
+    if (!tooltip) createTooltip();
+    if (!candleData.length) return;
+
+    const timeScale = chart.timeScale();
+    const xPercent = x / mount.clientWidth;
+    const visibleRange = timeScale.getVisibleRange();
+    if (!visibleRange) return;
+    
+    const timeStart = visibleRange.from;
+    const timeEnd = visibleRange.to;
+    const timeRange = timeEnd - timeStart;
+    const dataTime = timeStart + timeRange * xPercent;
+    
+    let closestIdx = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < candleData.length; i++) {
+      const diff = Math.abs(candleData[i].time - dataTime);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = i;
+      }
+    }
+
+    const candle = candleData[closestIdx];
+    const vol = volumeData[closestIdx];
+    const ma7 = ma7Data[closestIdx];
+    const ma25 = ma25Data[closestIdx];
+    const ma99 = ma99Data[closestIdx];
+
+    const date = new Date(candle.time * 1000);
+    const timeStr = date.toLocaleString("zh-CN", { 
+      year: "numeric", 
+      month: "2-digit", 
+      day: "2-digit", 
+      hour: "2-digit", 
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    let html = `
+      <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(66,70,86,0.3); font-weight: 600; color: #e8e9ed;">${timeStr}</div>
+      
+      <div style="display: flex; align-items: center; margin-bottom: 6px;">
+        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #8c90a2; margin-right: 8px;"></span>
+        <span style="color: #8c90a2;">Volume</span>
+        <span style="margin-left: auto; font-family: ui-monospace; color: #e8e9ed;">${(vol?.value || 0).toLocaleString()}</span>
+      </div>
+
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(66,70,86,0.3);">
+        <div style="font-weight: 600; margin-bottom: 6px; color: #ffb4ab;">Candles</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+          <span style="color: #8c90a2;">open</span>
+          <span style="font-family: ui-monospace; color: #e8e9ed;">${(candle?.open || 0).toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+          <span style="color: #8c90a2;">highest</span>
+          <span style="font-family: ui-monospace; color: #e8e9ed;">${(candle?.high || 0).toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+          <span style="color: #8c90a2;">lowest</span>
+          <span style="font-family: ui-monospace; color: #e8e9ed;">${(candle?.low || 0).toFixed(2)}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #8c90a2;">close</span>
+          <span style="font-family: ui-monospace; color: #e8e9ed;">${(candle?.close || 0).toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-top: 8px;">
+        <span style="display: inline-block; width: 10px; height: 2px; background: #f1d06e; margin-right: 8px;"></span>
+        <span style="color: #f1d06e;">MA(7)</span>
+        <span style="margin-left: auto; font-family: ui-monospace; color: #e8e9ed;">${(ma7?.value || 0).toFixed(2)}</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-top: 4px;">
+        <span style="display: inline-block; width: 10px; height: 2px; background: #9c5aff; margin-right: 8px;"></span>
+        <span style="color: #9c5aff;">MA(25)</span>
+        <span style="margin-left: auto; font-family: ui-monospace; color: #e8e9ed;">${(ma25?.value || 0).toFixed(2)}</span>
+      </div>
+      <div style="display: flex; align-items: center; margin-top: 4px;">
+        <span style="display: inline-block; width: 10px; height: 2px; background: #4ecdc4; margin-right: 8px;"></span>
+        <span style="color: #4ecdc4;">MA(99)</span>
+        <span style="margin-left: auto; font-family: ui-monospace; color: #e8e9ed;">${(ma99?.value || 0).toFixed(2)}</span>
+      </div>
+    `;
+
+    tooltip.innerHTML = html;
+    tooltip.style.left = `${Math.min(x, mount.clientWidth - tooltip.offsetWidth - 15)}px`;
+    tooltip.style.top = `${Math.min(y, mount.clientHeight - tooltip.offsetHeight - 15)}px`;
+    tooltip.style.display = "block";
+  }
+
+  function hideTooltip() {
+    if (tooltip) {
+      tooltip.style.display = "none";
+    }
+  }
+
+  mount.addEventListener("mousemove", (e) => {
+    const rect = mount.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    showTooltip(x, y);
+  });
+
+  mount.addEventListener("mouseleave", hideTooltip);
 
   let ro = null;
   if (typeof ResizeObserver !== "undefined") {
@@ -199,6 +370,7 @@ export function createLwcKline(mount) {
         candles.setData([]);
         ma7s.setData([]);
         ma25s.setData([]);
+        ma99s.setData([]);
         vol.setData([]);
       } catch {
         // ignore
@@ -213,20 +385,24 @@ export function createLwcKline(mount) {
     const closes = sorted.map((r) => Number(r[4] || 0));
     const ma7 = movingAverage(closes, 7);
     const ma25 = movingAverage(closes, 25);
-    const cData = sorted.map((r, idx) => ({
+    const ma99 = movingAverage(closes, 99);
+    candleData = sorted.map((r, idx) => ({
       time: times[idx],
       open: Number(r[1]),
       high: Number(r[2]),
       low: Number(r[3]),
       close: Number(r[4])
     }));
-    const ma7Data = ma7
+    const ma7sData = ma7
       .map((v, idx) => (v == null ? null : { time: times[idx], value: Number(v) }))
       .filter(Boolean);
-    const ma25Data = ma25
+    const ma25sData = ma25
       .map((v, idx) => (v == null ? null : { time: times[idx], value: Number(v) }))
       .filter(Boolean);
-    const vData = sorted.map((r, idx) => {
+    const ma99sData = ma99
+      .map((v, idx) => (v == null ? null : { time: times[idx], value: Number(v) }))
+      .filter(Boolean);
+    volumeData = sorted.map((r, idx) => {
       const up = Number(r[4]) >= Number(r[1]);
       return {
         time: times[idx],
@@ -234,11 +410,17 @@ export function createLwcKline(mount) {
         color: up ? "rgba(78,222,163,0.55)" : "rgba(255,180,171,0.55)"
       };
     });
+    
+    ma7Data = ma7.map((v, idx) => ({ time: times[idx], value: Number(v) }));
+    ma25Data = ma25.map((v, idx) => ({ time: times[idx], value: Number(v) }));
+    ma99Data = ma99.map((v, idx) => ({ time: times[idx], value: Number(v) }));
+    
     try {
-      candles.setData(cData);
-      ma7s.setData(ma7Data);
-      ma25s.setData(ma25Data);
-      vol.setData(vData);
+      candles.setData(candleData);
+      ma7s.setData(ma7sData);
+      ma25s.setData(ma25sData);
+      ma99s.setData(ma99sData);
+      vol.setData(volumeData);
       chart.timeScale().fitContent();
     } catch {
       // ignore
@@ -253,6 +435,17 @@ export function createLwcKline(mount) {
     }
     ro = null;
     try {
+      tooltip?.remove();
+    } catch {
+      // ignore
+    }
+    tooltip = null;
+    try {
+      mount.removeEventListener("mouseleave", hideTooltip);
+    } catch {
+      // ignore
+    }
+    try {
       chart.remove();
     } catch {
       // ignore
@@ -262,20 +455,21 @@ export function createLwcKline(mount) {
   return { setCandleRows, dispose };
 }
 
-export function buildKlineShellHtml(ma7Text, ma25Text) {
+export function buildKlineShellHtml(ma7Text, ma25Text, ma99Text) {
   return `
     <div class="da-candle-strip">
       <div id="daKlineMount" class="da-kline-mount"></div>
       <div class="da-ma-legend">
         <span class="ma7">${ma7Text}</span>
         <span class="ma25">${ma25Text}</span>
+        <span class="ma99">${ma99Text}</span>
       </div>
     </div>
   `;
 }
 
 /** SVG 模式：无 TradingView 库时的静态 K 线（与 rows 同序） */
-export function renderSvgFallbackKline(rows, ma7, ma25) {
+export function renderSvgFallbackKline(rows, ma7, ma25, ma99) {
   const w = 1000;
   const h = 320;
   const padL = 20;
@@ -324,10 +518,12 @@ export function renderSvgFallbackKline(rows, ma7, ma25) {
   };
   const ma7d = maPath(ma7);
   const ma25d = maPath(ma25);
+  const ma99d = maPath(ma99);
   return `<svg class="da-fallback-kline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
 <rect x="0" y="0" width="${w}" height="${h}" fill="transparent" />
 ${candles}
 ${ma7d ? `<path d="${ma7d}" stroke="#f1d06e" stroke-width="1.5" fill="none" />` : ""}
 ${ma25d ? `<path d="${ma25d}" stroke="#9c5aff" stroke-width="1.5" fill="none" />` : ""}
+${ma99d ? `<path d="${ma99d}" stroke="#4ecdc4" stroke-width="1.5" fill="none" />` : ""}
 </svg>`;
 }

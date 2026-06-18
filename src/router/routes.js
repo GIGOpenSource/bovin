@@ -1,8 +1,14 @@
 import PanelShell from "../layouts/PanelShell.vue";
+import LoginPage from "../pages/login/LoginPage.vue";
 import { PANEL_SECTION_IDS } from "./sections.js";
 
 export function buildPanelRoutes() {
   return [
+    {
+      path: "/login",
+      name: "login",
+      component: LoginPage
+    },
     {
       path: "/",
       component: PanelShell,

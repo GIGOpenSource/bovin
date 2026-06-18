@@ -3,6 +3,9 @@ import OverviewSection from "../../pages/overview/OverviewSection.vue";
 import PositionsSection from "../../pages/positions/PositionsSection.vue";
 import ControlSection from "../../pages/control/ControlSection.vue";
 import DataSection from "../../pages/data/DataSection.vue";
+import PerformanceSection from "../../pages/performance/PerformanceSection.vue";
+import PeriodSection from "../../pages/period/PeriodSection.vue";
+import PairListSection from "../../pages/pairlist/PairListSection.vue";
 import SettingsSection from "../../pages/settings/SettingsSection.vue";
 import MonitorSection from "../../pages/monitor/MonitorSection.vue";
 import ApiSection from "../../pages/api/ApiSection.vue";
@@ -13,6 +16,9 @@ import ApiSection from "../../pages/api/ApiSection.vue";
   <PositionsSection />
   <ControlSection />
   <DataSection />
+  <PerformanceSection />
+  <PeriodSection />
+  <PairListSection />
   <SettingsSection />
   <MonitorSection />
   <ApiSection />
