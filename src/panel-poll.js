@@ -374,6 +374,7 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
                 <button type="button" class="dropdown-item" data-action="forceexit-limit" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出限制</button>
                 <button type="button" class="dropdown-item" data-action="forceexit-market" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出市场</button>
                 <button type="button" class="dropdown-item" data-action="forceexit-partial" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出部分</button>
+                ${row.has_open_orders === true ? `<button type="button" class="dropdown-item" data-action="cancel-open-order" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 取消挂单</button>` : ""}
                 <button type="button" class="dropdown-item" data-action="increase-position" data-tradeid="${tid}"><span class="dropdown-icon">⊕</span> 提升仓位</button>
                 <button type="button" class="dropdown-item" data-action="reload" data-tradeid="${tid}"><span class="dropdown-icon">↻</span> 重新加载</button>
                 <button type="button" class="dropdown-item" data-action="delete-trade" data-tradeid="${tid}"><span class="dropdown-icon">🗑</span> 删除交易</button>
@@ -1152,6 +1153,22 @@ function handleDropdownAction(e) {
     handleForceExit(tradeId, "market");
   } else if (action === "forceexit-partial") {
     handleForceExit(tradeId, "partial");
+  } else if (action === "cancel-open-order") {
+    Modal.confirm({
+      title: "取消挂单",
+      content: "确定取消挂单吗？",
+      okText: "确认",
+      cancelText: "取消",
+      async onOk() {
+        try {
+          await deleteTradeOpenOrder(tradeId);
+          message.success("取消挂单成功");
+          runPanelTickOnce();
+        } catch (e) {
+          message.error("取消挂单失败");
+        }
+      }
+    });
   } else if (action === "increase-position") {
     if (window.openIncreasePositionModal) {
       const tradeIdNum = Number(tradeId);
