@@ -28,8 +28,8 @@ import { useRouter } from "vue-router";
 import { enterShellAfterAuth } from "../../app.js";
 
 const router = useRouter();
-const username = ref("admin");
-const password = ref("admin");
+const username = ref("freqtrader");
+const password = ref("tiger123");
 const loading = ref(false);
 const error = ref("");
 

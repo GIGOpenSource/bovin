@@ -14,6 +14,10 @@ export function getTradesFeed(limit = 12) {
   const lim = Math.min(500, Math.max(1, Math.round(Number(limit) || 12)));
   return http.get(`/trades?limit=${lim}&order_by_id=false`);
 }
+/**
+ * 获取已平仓交易列表
+ */
+export const getClosedTrades = () => http.get("/trades?limit=500&offset=0");
 /** @param {string} tradeId */
 export const getTrade = (tradeId) => http.get(`/trade/${encodeURIComponent(tradeId)}`);
 export const getWhitelist = () => http.get("/whitelist");
@@ -49,6 +53,7 @@ export function deleteBlacklistPairs(pairs) {
   return request(`/blacklist?${qs.toString()}`, { method: "DELETE" });
 }
 export const getLocks = () => http.get("/locks");
+export const getProfitAll = () => http.get("/profit_all");
 /**
  * 强制平仓：POST …/api/v1/forceexit
  * @param {{ tradeid: number }} body

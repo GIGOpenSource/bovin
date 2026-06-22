@@ -23,6 +23,8 @@ import {
   getWhitelist,
   getBlacklist,
   getTradesFeed,
+  getClosedTrades,
+  getProfitAll,
   postForceExit,
   deleteTradeOpenOrder,
 } from "./api/positions.js";
@@ -278,91 +280,118 @@ function normalizePositionsAndOrders(statusRaw) {
   return { positions, orders };
 }
 
-function renderPositionsSectionFromStatus(statusRaw) {
-  const statusTable = $("statusTable");
-  const pendingTable = $("pendingTable");
-  if (!statusTable && !pendingTable) return;
+function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance = null) {
+  const botComparisonTable = $("botComparisonTable");
+  const openTradesTable = $("openTradesTable");
+  if (!botComparisonTable && !openTradesTable) return;
 
   const { positions, orders } = normalizePositionsAndOrders(statusRaw);
-  const statusRows = positions
+  
+  const showCfg = uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
+  const botName = showCfg.bot_name || "freqtrade";
+  const isDryRun = showCfg.dry_run === true;
+  
+  const maxOpenTrades = showCfg.max_open_trades ?? 3;
+  const allData = profitAll?.all || {};
+  const tradeCount = allData.trade_count ?? 0;
+  const closedTradeCount = allData.closed_trade_count ?? 0;
+  const openTradeCount = tradeCount - closedTradeCount;
+  
+  const profitAllFiat = allData.profit_all_fiat ?? 0;
+  const profitClosedFiat = allData.profit_closed_fiat ?? 0;
+  const profitAllPercent = allData.profit_all_percent ?? 0;
+  const profitClosedPercent = allData.profit_closed_percent ?? 0;
+  const winningTrades = allData.winning_trades ?? 0;
+  const losingTrades = allData.losing_trades ?? 0;
+  
+  const unrealizedFiat = profitAllFiat - profitClosedFiat;
+  const unrealizedPercent = profitAllPercent - profitClosedPercent;
+  
+  const openPnlClass = unrealizedPercent >= 0 ? "positive" : "negative";
+  const closedPnlClass = profitClosedPercent >= 0 ? "positive" : "negative";
+  
+  const openPnlDisplay = unrealizedPercent >= 0 
+    ? `+${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(3)})` 
+    : `${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(3)})`;
+  const closedPnlDisplay = profitClosedPercent >= 0 
+    ? `+${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(3)})` 
+    : `${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(3)})`;
+  
+  const totalBot = balance?.total_bot ?? 0;
+  const modeText = isDryRun ? "dry" : "live";
+  const balanceDisplay = `${totalBot.toLocaleString(undefined, { maximumFractionDigits: 3 })} USDT(${modeText})`;
+  
+  const botComparisonRows = `
+    <tr>
+      <td>${escapeHtml(botName)}</td>
+      <td><span class="status-chip green">Dry</span> <span>${openTradeCount}/${maxOpenTrades}</span></td>
+      <td class="t-right"><span class="pnl-box ${openPnlClass}">${openPnlDisplay}</span></td>
+      <td class="t-right"><span class="pnl-box ${closedPnlClass}">${closedPnlDisplay}</span></td>
+      <td class="t-right">${balanceDisplay}</td>
+      <td class="t-right">${winningTrades}/${losingTrades}</td>
+    </tr>
+  `;
+
+  const openTradesRows = positions
     .map((row) => {
+      const tid = pickFirstNumber(row, ["trade_id", "tradeId"]);
+      const isShort = row.is_short === true;
+      const sideText = isShort ? "Short" : "Long";
+      const idText = tid != null ? `${tid} | ${sideText}` : "—";
       const pair = escapeHtml(pickFirstString(row, ["pair", "symbol", "market"]) || "—");
+      const amount = pickFirstNumber(row, ["amount", "quantity", "qty"]) ?? 0;
+      const stakeAmount = pickFirstNumber(row, ["stake_amount", "stakeAmount"]) ?? 0;
+      const leverage = pickFirstNumber(row, ["leverage", "Leverage"]) ?? 1;
+      const stakeDisplay = stakeAmount > 0 ? `${stakeAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} (${leverage}x)` : "—";
       const openRate = pickFirstNumber(row, ["open_rate", "openRate", "entry_price", "entryPrice"]);
-      const currentRate = pickFirstNumber(row, ["current_rate", "currentRate", "close_rate", "closeRate", "price"]);
-      const pnl = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl", "pnl"]) ?? 0;
-      const size = pickFirstNumber(row, ["stake_amount", "stakeAmount", "amount", "size"]);
-      const tid = tradeIdFromTrade(row);
+      const currentRate = pickFirstNumber(row, ["current_rate", "currentRate", "price"]);
+      const pnlPct = pickFirstNumber(row, ["profit_pct", "profitPct", "unrealized_pnl_pct", "unrealizedPnlPct"]) ?? 0;
+      const pnlAbs = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl"]) ?? 0;
+      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})`;
+      const openDate = pickFirstString(row, ["open_date", "openDate", "open_timestamp", "openTimestamp"]);
       const canExit = tid != null;
       const exitAttr = canExit ? ` data-forceexit-tradeid="${tid}"` : "";
+      
       return `
         <tr>
+          <td>7</td>
+          <td>${idText}</td>
           <td>${pair}</td>
-          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
-          <td class="t-right">${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
-          <td class="t-right ${pnl >= 0 ? "positive" : "negative"}">${pnl >= 0 ? "+" : ""}${pnl.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-right">${size == null ? "—" : size.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-center"><button type="button" class="pos-close-btn"${exitAttr}${canExit ? "" : " disabled"}>${escapeHtml(t("btn.closePos"))}</button></td>
+          <td class="t-right">${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td class="t-right">${stakeDisplay}</td>
+          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td class="t-right">${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td class="t-right"><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
+          <td class="t-right">${openDate || "—"}</td>
+          <td class="t-center">
+            <div class="action-dropdown">
+              <button type="button" class="pos-action-btn"${canExit ? "" : " disabled"}>平仓</button>
+              <div class="action-dropdown-menu" style="display: none;">
+                <button type="button" class="dropdown-item" data-action="forceexit-limit" data-tradeid="${tid}">Forceexit limit</button>
+                <button type="button" class="dropdown-item" data-action="forceexit-market" data-tradeid="${tid}">Forceexit market</button>
+                <button type="button" class="dropdown-item" data-action="forceexit-partial" data-tradeid="${tid}">Forceexit partial</button>
+                <button type="button" class="dropdown-item" data-action="increase-position" data-tradeid="${tid}">Increase position</button>
+                <button type="button" class="dropdown-item" data-action="reload" data-tradeid="${tid}">Reload</button>
+                <button type="button" class="dropdown-item" data-action="delete-trade" data-tradeid="${tid}">Delete trade</button>
+                <button type="button" class="dropdown-item" data-action="close-menu">Close Actions menu</button>
+              </div>
+            </div>
+          </td>
         </tr>
       `;
     })
     .join("");
 
-  const pendingRows = orders
-    .map((row) => {
-      const orderType = escapeHtml(
-        pickFirstString(row, ["order_type", "type", "side", "ft_order_side", "ftOrderSide"]) || "—"
-      );
-      const price = pickFirstNumber(row, ["price", "rate", "limit_price", "limitPrice", "safe_price", "safePrice"]);
-      const qty = pickFirstNumber(row, ["amount", "quantity", "qty", "stake_amount", "stakeAmount"]);
-      const status = escapeHtml(pickFirstString(row, ["status", "state"]) || "open");
-      const tid = row.__forceexit_trade_id;
-      const canCancel = tid != null && Number.isFinite(Number(tid));
-      const cancelAttr = canCancel ? ` data-cancel-tradeid="${tid}"` : "";
-      return `
-        <tr>
-          <td>${orderType}</td>
-          <td class="t-right">${price == null ? "—" : price.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td>
-          <td class="t-right">${qty == null ? "—" : qty.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-center"><span class="status-chip">${status}</span></td>
-          <td class="t-center"><button type="button" class="pos-cancel-order-btn"${cancelAttr}${canCancel ? "" : " disabled"}>${escapeHtml(t("btn.cancelOrder"))}</button></td>
-        </tr>
-      `;
-    })
-    .join("");
+  if (botComparisonTable) {
+    botComparisonTable.innerHTML = botComparisonRows;
+  }
 
-  if (statusTable) {
-    statusTable.innerHTML =
-      statusRows ||
+  if (openTradesTable) {
+    openTradesTable.innerHTML =
+      openTradesRows ||
       `<tr>
-        <td>—</td>
-        <td class="t-right">—</td>
-        <td class="t-right">—</td>
-        <td class="t-right">—</td>
-        <td class="t-right">—</td>
-        <td class="t-center"><button type="button" class="pos-close-btn" disabled>${escapeHtml(t("btn.closePos"))}</button></td>
+        <td colspan="10" class="t-center">暂无数据</td>
       </tr>`;
-  }
-  if (pendingTable) {
-    /** 无 `is_open === true` 的挂单时不造「假一行」，避免看起来像有一条待成交记录 */
-    pendingTable.innerHTML =
-      pendingRows ||
-      '<tr data-empty-row="pending"><td colspan="5" class="empty-row-cell">无挂单</td></tr>';
-  }
-
-  const pendingTradeIdSeen = new Set();
-  const pendingTradeIds = [];
-  for (const o of orders) {
-    const id = o?.__forceexit_trade_id;
-    if (id == null || !Number.isFinite(Number(id))) continue;
-    const n = Number(id);
-    if (pendingTradeIdSeen.has(n)) continue;
-    pendingTradeIdSeen.add(n);
-    pendingTradeIds.push(n);
-  }
-  uiState.lastPendingOpenOrderTradeIds = pendingTradeIds;
-  const cancelAllBtn = $("pendingCancelAllBtn");
-  if (cancelAllBtn instanceof HTMLButtonElement) {
-    cancelAllBtn.disabled = pendingTradeIds.length === 0;
   }
 
   const totalPnl = positions.reduce((sum, row) => {
@@ -381,18 +410,75 @@ function renderPositionsSectionFromStatus(statusRaw) {
   const exposureEl = $("posExposure");
   if (exposureEl) exposureEl.textContent = `$${exposure.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
 
-  const statusInfo = $("statusPageInfo");
-  if (statusInfo) statusInfo.textContent = "1 / 1";
-  const pendingInfo = $("pendingPageInfo");
-  if (pendingInfo) pendingInfo.textContent = "1 / 1";
-  const statusPrev = $("statusPrev");
-  if (statusPrev) statusPrev.disabled = true;
-  const statusNext = $("statusNext");
-  if (statusNext) statusNext.disabled = true;
-  const pendingPrev = $("pendingPrev");
-  if (pendingPrev) pendingPrev.disabled = true;
-  const pendingNext = $("pendingNext");
-  if (pendingNext) pendingNext.disabled = true;
+  const openInfo = $("openPageInfo");
+  if (openInfo) openInfo.textContent = "1 / 1";
+  const openPrev = $("openPrev");
+  if (openPrev) openPrev.disabled = true;
+  const openNext = $("openNext");
+  if (openNext) openNext.disabled = true;
+  
+  setTimeout(setupActionDropdowns, 0);
+}
+
+function renderClosedTradesFromApi(tradesRaw) {
+  const closedTradesTable = $("closedTradesTable");
+  if (!closedTradesTable) return;
+
+  const trades = Array.isArray(tradesRaw?.trades) ? tradesRaw.trades : [];
+  const closedTrades = trades.filter(t => t && typeof t === "object" && t.is_open === false);
+
+  const closedTradesRows = closedTrades
+    .map((row) => {
+      const tid = pickFirstNumber(row, ["trade_id", "tradeId"]);
+      const isShort = row.is_short === true;
+      const sideText = isShort ? "Short" : "Long";
+      const idText = tid != null ? `${tid} | ${sideText}` : "—";
+      const pair = escapeHtml(pickFirstString(row, ["pair", "symbol", "market"]) || "—");
+      const amount = pickFirstNumber(row, ["amount", "quantity", "qty"]) ?? 0;
+      const stakeAmount = pickFirstNumber(row, ["stake_amount", "stakeAmount"]) ?? 0;
+      const leverage = pickFirstNumber(row, ["leverage", "Leverage"]) ?? 1;
+      const stakeDisplay = stakeAmount > 0 ? `${stakeAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} (${leverage}x)` : "—";
+      const openRate = pickFirstNumber(row, ["open_rate", "openRate", "entry_price", "entryPrice"]);
+      const closeRate = pickFirstNumber(row, ["close_rate", "closeRate"]);
+      const pnlPct = pickFirstNumber(row, ["profit_pct", "profitPct"]) ?? 0;
+      const pnlAbs = pickFirstNumber(row, ["profit_abs", "profitAbs", "close_profit", "closeProfit"]) ?? 0;
+      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})`;
+      const openDate = pickFirstString(row, ["open_date", "openDate", "open_timestamp", "openTimestamp"]);
+      const closeDate = pickFirstString(row, ["close_date", "closeDate", "close_timestamp", "closeTimestamp"]);
+      const exitReason = escapeHtml(pickFirstString(row, ["exit_reason", "exitReason"]) || "—");
+      const exitReasonText = exitReason 
+
+      return `
+        <tr>
+          <td>${idText}</td>
+          <td>${pair}</td>
+          <td class="t-right">${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td class="t-right">${stakeDisplay}</td>
+          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td class="t-right">${closeRate == null ? "—" : closeRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td class="t-right"><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
+          <td class="t-right">${openDate || "—"}</td>
+          <td class="t-right">${closeDate || "—"}</td>
+          <td>${exitReasonText}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  if (closedTradesTable) {
+    closedTradesTable.innerHTML =
+      closedTradesRows ||
+      `<tr>
+        <td colspan="10" class="t-center">暂无数据</td>
+      </tr>`;
+  }
+
+  const closedInfo = $("closedPageInfo");
+  if (closedInfo) closedInfo.textContent = "1 / 1";
+  const closedPrev = $("closedPrev");
+  if (closedPrev) closedPrev.disabled = true;
+  const closedNext = $("closedNext");
+  if (closedNext) closedNext.disabled = true;
 }
 
 /** @param {unknown} raw */
@@ -710,9 +796,11 @@ async function panelTick() {
     } else if (currentSection === "positions") {
       sectionRequests.push(
         getBalance(),
-        getTradesFeed(getNormalizedControlTradesFeedLimit())
+        getTradesFeed(getNormalizedControlTradesFeedLimit()),
+        getClosedTrades(),
+        getProfitAll()
       );
-      sectionRequestNames = ["balance", "tradesFeed"];
+      sectionRequestNames = ["balance", "tradesFeed", "closedTrades", "profitAll"];
     }
 
     const settled = await Promise.allSettled([...globalRequests, ...sectionRequests]);
@@ -909,14 +997,26 @@ async function panelTick() {
 
     let statusLeverageForRisk = /** @type {number | null} */ (null);
     if (currentSection === "positions") {
+      const balanceR = settled[5];
+      const closedTradesR = settled[7];
+      const profitAllR = settled[8];
+      
+      const balance = balanceR && balanceR.status === "fulfilled" && balanceR.value != null ? balanceR.value : null;
+      const profitAll = profitAllR && profitAllR.status === "fulfilled" && profitAllR.value != null ? profitAllR.value : null;
+      
       try {
         const st = await getStatus();
         statusLeverageForRisk = extractLeverageFromStatusPayload(st);
         uiState.lastStForRisk = Array.isArray(st) ? st : [];
-        renderPositionsSectionFromStatus(st);
+        renderPositionsSectionFromStatus(st, profitAll, balance);
       } catch {
         statusLeverageForRisk = null;
       }
+      try {
+        if (closedTradesR && closedTradesR.status === "fulfilled" && closedTradesR.value != null) {
+          renderClosedTradesFromApi(closedTradesR.value);
+        }
+      } catch {}
     }
 
     const showCfg =
@@ -971,5 +1071,84 @@ export async function refreshGovernanceListsOnly() {
     renderControlGovernanceLists(uiState.lastWl, uiState.lastBl, scGov);
   } catch {
     /* ignore */
+  }
+}
+
+function setupActionDropdowns() {
+  document.querySelectorAll(".pos-action-btn").forEach(btn => {
+    btn.removeEventListener("click", toggleDropdown);
+    btn.addEventListener("click", toggleDropdown);
+  });
+  
+  document.querySelectorAll(".dropdown-item").forEach(item => {
+    item.removeEventListener("click", handleDropdownAction);
+    item.addEventListener("click", handleDropdownAction);
+  });
+  
+  document.removeEventListener("click", closeAllDropdowns);
+  document.addEventListener("click", closeAllDropdowns);
+}
+
+function toggleDropdown(e) {
+  e.stopPropagation();
+  const dropdown = this.parentElement.querySelector(".action-dropdown-menu");
+  if (dropdown) {
+    closeAllDropdowns();
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll(".action-dropdown-menu").forEach(menu => {
+    menu.style.display = "none";
+  });
+}
+
+function handleDropdownAction(e) {
+  e.stopPropagation();
+  const action = this.dataset.action;
+  const tradeId = this.dataset.tradeid;
+  
+  if (action === "close-menu") {
+    closeAllDropdowns();
+    return;
+  }
+  
+  if (action === "forceexit-limit") {
+    handleForceExit(tradeId, "limit");
+  } else if (action === "forceexit-market") {
+    handleForceExit(tradeId, "market");
+  } else if (action === "forceexit-partial") {
+    handleForceExit(tradeId, "partial");
+  } else if (action === "increase-position") {
+    message.info("Increase position not implemented");
+  } else if (action === "reload") {
+    runPanelTickOnce();
+  } else if (action === "delete-trade") {
+    handleDeleteTrade(tradeId);
+  }
+  
+  closeAllDropdowns();
+}
+
+async function handleForceExit(tradeId, type) {
+  if (!tradeId) return;
+  try {
+    await postForceExit({ tradeid: Number(tradeId) });
+    message.success(t("msg.forceExitSuccess"));
+    runPanelTickOnce();
+  } catch (e) {
+    message.error(t("msg.forceExitFailed"));
+  }
+}
+
+async function handleDeleteTrade(tradeId) {
+  if (!tradeId) return;
+  try {
+    await deleteTradeOpenOrder(tradeId);
+    message.success(t("msg.deleteTradeSuccess"));
+    runPanelTickOnce();
+  } catch (e) {
+    message.error(t("msg.deleteTradeFailed"));
   }
 }
