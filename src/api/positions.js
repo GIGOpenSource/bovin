@@ -62,6 +62,28 @@ export function postForceExit(body) {
   return http.post("/forceexit", body);
 }
 
+export function postForceSell(tradeId, orderType = "limit", amount = null, price = null) {
+  const body = {
+    ordertype: orderType,
+    tradeid: Number(tradeId)
+  };
+  if (amount !== null && amount !== undefined && !isNaN(amount)) {
+    body.amount = amount;
+  }
+  if (price !== null && price !== undefined && !isNaN(price)) {
+    body.price = price;
+  }
+  return http.post("/forcesell", body);
+}
+
+export function postTradeReload(tradeId) {
+  return http.post(`/trades/${Number(tradeId)}/reload`);
+}
+
+export function deleteTrade(tradeId) {
+  return http.delete(`/trades/${Number(tradeId)}`);
+}
+
 /**
  * 撤销该笔 trade 上的未成交挂单：DELETE …/api/v1/trades/{tradeid}/open-order（与 Freqtrade 约定一致）
  * @param {number | string} tradeId

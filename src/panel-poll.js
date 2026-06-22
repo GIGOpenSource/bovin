@@ -26,6 +26,9 @@ import {
   getClosedTrades,
   getProfitAll,
   postForceExit,
+  postForceSell,
+  postTradeReload,
+  deleteTrade,
   deleteTradeOpenOrder,
 } from "./api/positions.js";
 import { renderControlHeroAndCards, renderControlGovernanceLists } from "./components/control-console.js";
@@ -286,6 +289,7 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
   if (!botComparisonTable && !openTradesTable) return;
 
   const { positions, orders } = normalizePositionsAndOrders(statusRaw);
+  uiState.positionsRows = positions;
   
   const showCfg = uiState.lastShowConfig && typeof uiState.lastShowConfig === "object" ? uiState.lastShowConfig : {};
   const botName = showCfg.bot_name || "freqtrade";
@@ -365,15 +369,15 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
           <td class="t-right">${openDate || "—"}</td>
           <td class="t-center">
             <div class="action-dropdown">
-              <button type="button" class="pos-action-btn"${canExit ? "" : " disabled"}>平仓</button>
-              <div class="action-dropdown-menu" style="display: none;">
-                <button type="button" class="dropdown-item" data-action="forceexit-limit" data-tradeid="${tid}">Forceexit limit</button>
-                <button type="button" class="dropdown-item" data-action="forceexit-market" data-tradeid="${tid}">Forceexit market</button>
-                <button type="button" class="dropdown-item" data-action="forceexit-partial" data-tradeid="${tid}">Forceexit partial</button>
-                <button type="button" class="dropdown-item" data-action="increase-position" data-tradeid="${tid}">Increase position</button>
-                <button type="button" class="dropdown-item" data-action="reload" data-tradeid="${tid}">Reload</button>
-                <button type="button" class="dropdown-item" data-action="delete-trade" data-tradeid="${tid}">Delete trade</button>
-                <button type="button" class="dropdown-item" data-action="close-menu">Close Actions menu</button>
+              <button type="button" class="action-icon-btn"${canExit ? "" : " disabled"}><span class="action-icon-dots">⋮</span></button>
+              <div class="action-dropdown-menu">
+                <button type="button" class="dropdown-item" data-action="forceexit-limit" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出限制</button>
+                <button type="button" class="dropdown-item" data-action="forceexit-market" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出市场</button>
+                <button type="button" class="dropdown-item" data-action="forceexit-partial" data-tradeid="${tid}"><span class="dropdown-icon">⊗</span> 强制退出部分</button>
+                <button type="button" class="dropdown-item" data-action="increase-position" data-tradeid="${tid}"><span class="dropdown-icon">⊕</span> 提升仓位</button>
+                <button type="button" class="dropdown-item" data-action="reload" data-tradeid="${tid}"><span class="dropdown-icon">↻</span> 重新加载</button>
+                <button type="button" class="dropdown-item" data-action="delete-trade" data-tradeid="${tid}"><span class="dropdown-icon">🗑</span> 删除交易</button>
+                <button type="button" class="dropdown-item" data-action="close-menu"><span class="dropdown-icon">✕</span> 关闭操作菜单</button>
               </div>
             </div>
           </td>
@@ -1075,7 +1079,7 @@ export async function refreshGovernanceListsOnly() {
 }
 
 function setupActionDropdowns() {
-  document.querySelectorAll(".pos-action-btn").forEach(btn => {
+  document.querySelectorAll(".action-icon-btn").forEach(btn => {
     btn.removeEventListener("click", toggleDropdown);
     btn.addEventListener("click", toggleDropdown);
   });
@@ -1089,12 +1093,33 @@ function setupActionDropdowns() {
   document.addEventListener("click", closeAllDropdowns);
 }
 
+let activeDropdownBtn = null;
+
 function toggleDropdown(e) {
   e.stopPropagation();
   const dropdown = this.parentElement.querySelector(".action-dropdown-menu");
+  
   if (dropdown) {
     closeAllDropdowns();
-    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    if (dropdown.style.display === "block") {
+      dropdown.style.display = "none";
+      activeDropdownBtn = null;
+    } else {
+      activeDropdownBtn = this;
+      updateDropdownPosition();
+      dropdown.style.display = "block";
+      window.addEventListener("scroll", updateDropdownPosition);
+    }
+  }
+}
+
+function updateDropdownPosition() {
+  if (!activeDropdownBtn) return;
+  const dropdown = activeDropdownBtn.parentElement.querySelector(".action-dropdown-menu");
+  if (dropdown) {
+    const rect = activeDropdownBtn.getBoundingClientRect();
+    dropdown.style.left = `${rect.right - 190}px`;
+    dropdown.style.top = `${rect.bottom + 4}px`;
   }
 }
 
@@ -1102,6 +1127,8 @@ function closeAllDropdowns() {
   document.querySelectorAll(".action-dropdown-menu").forEach(menu => {
     menu.style.display = "none";
   });
+  activeDropdownBtn = null;
+  window.removeEventListener("scroll", updateDropdownPosition);
 }
 
 function handleDropdownAction(e) {
@@ -1110,7 +1137,12 @@ function handleDropdownAction(e) {
   const tradeId = this.dataset.tradeid;
   
   if (action === "close-menu") {
-    closeAllDropdowns();
+    const menu = this.parentElement;
+    if (menu) {
+      menu.style.display = "none";
+    }
+    activeDropdownBtn = null;
+    window.removeEventListener("scroll", updateDropdownPosition);
     return;
   }
   
@@ -1121,9 +1153,17 @@ function handleDropdownAction(e) {
   } else if (action === "forceexit-partial") {
     handleForceExit(tradeId, "partial");
   } else if (action === "increase-position") {
-    message.info("Increase position not implemented");
+    if (window.openIncreasePositionModal) {
+      const tradeIdNum = Number(tradeId);
+      const row = uiState.positionsRows.find(t => 
+        Number(t.trade_id) === tradeIdNum || Number(t.id) === tradeIdNum || 
+        String(t.trade_id) === String(tradeId) || String(t.id) === String(tradeId)
+      );
+      const pair = row?.pair || row?.symbol || row?.market || "";
+      window.openIncreasePositionModal(tradeId, pair);
+    }
   } else if (action === "reload") {
-    runPanelTickOnce();
+    handleReload(tradeId);
   } else if (action === "delete-trade") {
     handleDeleteTrade(tradeId);
   }
@@ -1133,22 +1173,77 @@ function handleDropdownAction(e) {
 
 async function handleForceExit(tradeId, type) {
   if (!tradeId) return;
-  try {
-    await postForceExit({ tradeid: Number(tradeId) });
-    message.success(t("msg.forceExitSuccess"));
-    runPanelTickOnce();
-  } catch (e) {
-    message.error(t("msg.forceExitFailed"));
+  
+  const tradeIdNum = Number(tradeId);
+  const row = uiState.positionsRows.find(t => 
+    Number(t.trade_id) === tradeIdNum || Number(t.id) === tradeIdNum || 
+    String(t.trade_id) === String(tradeId) || String(t.id) === String(tradeId)
+  );
+  const amount = row?.amount != null ? parseFloat(row.amount) : null;
+  
+  if (type === "partial") {
+    if (window.openForceExitModal) {
+      const pair = row?.pair || "";
+      const currentAmount = row?.amount || "0.04";
+      const baseCurrency = row?.base_currency || "ETH";
+      const currentRate = row?.current_rate || row?.currentRate || 0;
+      window.openForceExitModal(tradeId, pair, currentAmount, baseCurrency, currentRate);
+    }
+  } else if (type === "limit" || type === "market") {
+    const orderTypeName = type === "limit" ? "限价单" : "市价单";
+    Modal.confirm({
+      title: "强制退出交易",
+      content: `此操作无法撤销。\n\n真的要用${orderTypeName}平掉这笔交易吗？`,
+      okText: "确认",
+      cancelText: "取消",
+      async onOk() {
+        try {
+          await postForceSell(tradeId, type, amount);
+          message.success("强制退出成功");
+          runPanelTickOnce();
+        } catch (e) {
+          message.error("强制退出失败");
+        }
+      }
+    });
+  } else {
+    try {
+      await postForceExit({ tradeid: Number(tradeId) });
+      message.success(t("msg.forceExitSuccess"));
+      runPanelTickOnce();
+    } catch (e) {
+      message.error(t("msg.forceExitFailed"));
+    }
   }
 }
 
 async function handleDeleteTrade(tradeId) {
   if (!tradeId) return;
+  
+  Modal.confirm({
+    title: "删除交易",
+    content: "此操作无法撤销。\n\n确定要删除这笔交易吗？",
+    okText: "确认",
+    cancelText: "取消",
+    async onOk() {
+      try {
+        await deleteTrade(tradeId);
+        message.success("删除成功");
+        runPanelTickOnce();
+      } catch (e) {
+        message.error("删除失败");
+      }
+    }
+  });
+}
+
+async function handleReload(tradeId) {
+  if (!tradeId) return;
   try {
-    await deleteTradeOpenOrder(tradeId);
-    message.success(t("msg.deleteTradeSuccess"));
+    await postTradeReload(tradeId);
+    message.success("重新加载成功");
     runPanelTickOnce();
   } catch (e) {
-    message.error(t("msg.deleteTradeFailed"));
+    message.error("重新加载失败");
   }
 }
