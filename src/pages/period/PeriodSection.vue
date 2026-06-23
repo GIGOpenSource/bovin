@@ -9,7 +9,7 @@
         </div>
         <div class="ft-page-hero__aside">
           <div class="pb-legend">
-            <span class="pb-legend-item" id="pbLegendProfit" data-i18n="pb.legend.profit">绝对收益</span>
+            <span class="pb-legend-item"><span class="pb-legend-line"></span><span id="pbLegendProfit" data-i18n="pb.legend.profit">绝对收益</span></span>
             <span class="pb-legend-item"><span class="pb-legend-dot pb-legend-dot--trade"></span><span data-i18n="pb.legend.trade">成交数</span></span>
           </div>
         </div>
@@ -142,6 +142,15 @@
 .pb-legend-dot--profit {
   background: #4edea3;
   box-shadow: 0 0 0 3px rgba(78, 222, 163, 0.18);
+}
+
+.pb-legend-line {
+  width: 20px;
+  height: 2px;
+  background: #4edea3;
+  box-shadow: 0 0 4px rgba(78, 222, 163, 0.5);
+  border-radius: 1px;
+  display: inline-block;
 }
 
 .pb-legend-dot--trade {
