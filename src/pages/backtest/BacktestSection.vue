@@ -30,31 +30,59 @@
           <div class="bt-tab-content">
             <div v-show="activeTab === 'load'" class="bt-tab-panel">
               <div class="bt-section">
-                <h3 class="bt-section-title">加载历史回测结果</h3>
-                <div class="bt-history-list">
-                  <div 
-                    v-for="(item, index) in historyResults" 
-                    :key="index"
-                    class="bt-history-item"
-                    @click="loadHistoryResult(item)"
-                  >
-                    <div class="bt-history-info">
-                      <div class="bt-history-name">{{ item.strategy }}</div>
-                      <div class="bt-history-time">{{ item.date }}</div>
-                    </div>
-                    <div class="bt-history-stats">
-                      <span :class="item.profit >= 0 ? 'bt-profit' : 'bt-loss'">
-                        {{ item.profit >= 0 ? '+' : '' }}{{ item.profit }}%
-                      </span>
-                    </div>
-                    <button type="button" class="bt-load-btn">加载</button>
-                  </div>
+                <div class="bt-section-header">
+                  <h3 class="bt-section-title">加载历史回测结果</h3>
+                  <button type="button" class="bt-refresh-btn" @click="loadHistory">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 8l3.26-3.26A9.75 9.75 0 0 1 12 3a9 9 0 0 1 9 9Z"/>
+                      <path d="M16 3h5v5"/>
+                      <path d="M21 16v5h-5"/>
+                    </svg>
+                  </button>
                 </div>
-                <div v-if="historyResults.length === 0" class="bt-empty-state">
+                <div v-if="isLoadingHistory" class="bt-loading">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4edea3" stroke-width="2" class="bt-spinner">
+                    <circle cx="12" cy="12" r="10" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div v-else-if="historyResults.length === 0" class="bt-empty-state">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6e7591" stroke-width="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                   </svg>
                   <p>暂无历史回测结果</p>
+                </div>
+                <div v-else class="bt-table-container">
+                  <table class="bt-table">
+                    <thead>
+                      <tr>
+                        <th>战略</th>
+                        <th>详情</th>
+                        <th>回测时间</th>
+                        <th>文件名</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(item, index) in historyResults" :key="index">
+                        <td>{{ item.strategy }}</td>
+                        <td>{{ formatDetail(item) }}</td>
+                        <td>{{ formatDateTime(item.backtest_start_time) }}</td>
+                        <td>{{ item.filename }}</td>
+                        <td class="bt-table-actions">
+                          <button type="button" class="bt-action-btn bt-action-btn--load" @click="loadHistoryResult(item)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                          </button>
+                          <button type="button" class="bt-action-btn bt-action-btn--delete" @click="deleteHistoryItem(item)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -362,7 +390,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { Modal, message } from 'ant-design-vue';
+import { getBacktestHistory, getBacktestHistoryResult, deleteBacktestHistory } from '../../api/backtest.js';
 
 const tabs = [
   { key: 'load', label: '加载结果', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
@@ -382,6 +412,7 @@ const advancedExpanded = ref(false);
 const startDate = ref('2026-05-01');
 const endDate = ref('');
 const isRunning = ref(false);
+const isLoadingHistory = ref(false);
 
 const advancedOptions = reactive({
   enablePositionSizing: true,
@@ -391,11 +422,81 @@ const advancedOptions = reactive({
   feePercent: 0.1
 });
 
-const historyResults = ref([
-  { strategy: 'SampleStrategy_202606', date: '2026-06-20 14:30', profit: 12.5 },
-  { strategy: 'SampleStrategy_202605', date: '2026-05-15 09:15', profit: -3.2 },
-  { strategy: 'TrendStrategy_v1', date: '2026-06-18 16:45', profit: 18.8 }
-]);
+const historyResults = ref([]);
+
+const loadHistory = async () => {
+  isLoadingHistory.value = true;
+  try {
+    const result = await getBacktestHistory();
+    historyResults.value = result || [];
+  } catch (error) {
+    console.error('加载回测历史失败:', error);
+    historyResults.value = [];
+  } finally {
+    isLoadingHistory.value = false;
+  }
+};
+
+const deleteHistoryItem = (item) => {
+  Modal.confirm({
+    title: '确认删除',
+    content: '确定要删除这条回测记录吗？',
+    okText: '确定',
+    cancelText: '取消',
+    async onOk() {
+      try {
+        await deleteBacktestHistory(item.filename);
+        const index = historyResults.value.findIndex(h => h.filename === item.filename);
+        if (index > -1) {
+          historyResults.value.splice(index, 1);
+        }
+        message.success('删除成功');
+      } catch (error) {
+        message.error('删除失败');
+      }
+    }
+  });
+};
+
+const formatDetail = (item) => {
+  const timeframe = item.timeframe || '';
+  const start = formatTimestamp(item.backtest_start_ts);
+  const end = formatTimestamp(item.backtest_end_ts);
+  return `${timeframe} ${start}-${end}`.trim();
+};
+
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+};
+
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+onMounted(() => {
+  if (activeTab.value === 'load') {
+    loadHistory();
+  }
+});
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'load') {
+    loadHistory();
+  }
+});
 
 const currentResult = ref(null);
 
@@ -454,28 +555,18 @@ const increaseDays = () => backtestDays.value++;
 const decreaseDays = () => { if (backtestDays.value > 1) backtestDays.value--; };
 const toggleAdvanced = () => advancedExpanded.value = !advancedExpanded.value;
 
-const loadHistoryResult = (item) => {
-  currentResult.value = {
-    strategy: item.strategy,
-    profit: item.profit,
-    winRate: 58,
-    maxDrawdown: 8.2,
-    trades: 120,
-    winCount: 70,
-    lossCount: 50,
-    sharpeRatio: 1.8,
-    sortinoRatio: 2.5,
-    volatility: 12.3,
-    maxProfit: 25.6,
-    tradesDetail: [
-      { pair: 'BTC/USDT', time: '09:30', direction: 'LONG', profit: 2.5 },
-      { pair: 'ETH/USDT', time: '10:15', direction: 'SHORT', profit: -1.2 },
-      { pair: 'BTC/USDT', time: '11:00', direction: 'LONG', profit: 3.8 },
-      { pair: 'BTC/USDT', time: '14:30', direction: 'LONG', profit: 1.5 },
-      { pair: 'ETH/USDT', time: '15:45', direction: 'SHORT', profit: 4.2 }
-    ]
-  };
-  activeTab.value = 'analyze';
+const loadHistoryResult = async (item) => {
+  try {
+    const result = await getBacktestHistoryResult({
+      filename: item.filename,
+      strategy: item.strategy
+    });
+    if (result) {
+      currentResult.value = result;
+    }
+  } catch (error) {
+    console.error('加载回测结果失败:', error);
+  }
 };
 
 const handleBacktest = async () => {
@@ -516,7 +607,6 @@ const handleBacktest = async () => {
 <style scoped>
 .bt-wrap {
   width: 100%;
-  max-width: 1200px;
 }
 
 .bt-main {
@@ -525,6 +615,7 @@ const handleBacktest = async () => {
 }
 
 .bt-card {
+  width: 100%;
   background: var(--ft-panel-surface);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
   border-radius: 10px;
@@ -533,36 +624,36 @@ const handleBacktest = async () => {
 
 .bt-tabs {
   display: flex;
+  justify-content: flex-start;
+  gap: 4px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   background: rgba(var(--ft-panel-edge-rgb), 0.05);
+  padding: 8px;
 }
 
 .bt-tab {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 14px 12px;
+  padding: 8px 16px;
   border: none;
-  background: transparent;
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
   color: #8c90a2;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 2px solid transparent;
+  border-radius: 6px;
 }
 
 .bt-tab:hover {
   color: #dae2fd;
-  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  background: rgba(var(--ft-panel-edge-rgb), 0.2);
 }
 
 .bt-tab--active {
-  color: #4edea3;
-  border-bottom-color: #4edea3;
-  background: rgba(78, 222, 163, 0.05);
+  color: #1a1a1a;
+  background: #4edea3;
 }
 
 .bt-tab-content {
@@ -667,6 +758,112 @@ const handleBacktest = async () => {
 .bt-empty-state p {
   margin-top: 12px;
   font-size: 13px;
+}
+
+.bt-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.bt-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  border: none;
+  border-radius: 6px;
+  color: #8c90a2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bt-refresh-btn:hover {
+  color: #dae2fd;
+  background: rgba(var(--ft-panel-edge-rgb), 0.2);
+}
+
+.bt-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.bt-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.bt-table-container {
+  overflow-x: auto;
+}
+
+.bt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bt-table thead th {
+  text-align: left;
+  padding: 10px 14px;
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  color: #8c90a2;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bt-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
+  color: #e8e9ed;
+}
+
+.bt-table tbody tr:hover {
+  background: rgba(var(--ft-panel-edge-rgb), 0.05);
+}
+
+.bt-table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bt-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bt-action-btn--load {
+  background: rgba(78, 222, 163, 0.1);
+  color: #4edea3;
+}
+
+.bt-action-btn--load:hover {
+  background: rgba(78, 222, 163, 0.2);
+}
+
+.bt-action-btn--delete {
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+}
+
+.bt-action-btn--delete:hover {
+  background: rgba(248, 113, 113, 0.2);
 }
 
 .bt-grid {
