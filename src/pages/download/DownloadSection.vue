@@ -24,7 +24,7 @@
                   </button>
                 </div>
               </div>
-              <button type="button" class="dl-add-btn" @click="addPair">
+              <button type="button" class="dl-add-btn" style="margin-top: 10px;" @click="addPair">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14M5 12h14"/>
                 </svg>
@@ -34,10 +34,10 @@
             <div class="dl-column">
               <h3 class="dl-section-title">从模板导入交易对</h3>
               <div class="dl-template-buttons">
-                <button type="button" class="dl-template-btn">所有 USDT 交易对</button>
-                <button type="button" class="dl-template-btn">所有 USDT 期货交易对</button>
-                <button type="button" class="dl-template-btn">所有 USDT 期货合约</button>
-                <button type="button" class="dl-template-btn dl-template-btn-secondary">使用交易对列表配置</button>
+                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT')">所有 USDT 交易对</button>
+                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT:USDT')">所有 USDT 期货交易对</button>
+                <!-- <button type="button" class="dl-template-btn">所有 USDT 期货合约</button>
+                <button type="button" class="dl-template-btn dl-template-btn-secondary">使用交易对列表配置</button> -->
               </div>
             </div>
 
@@ -53,7 +53,7 @@
                   </button>
                 </div>
               </div>
-              <button type="button" class="dl-add-btn" @click="addTimeframe">
+              <button type="button" class="dl-add-btn" style="margin-top: 10px;" @click="addTimeframe">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14M5 12h14"/>
                 </svg>
@@ -75,7 +75,7 @@
               <div class="dl-time-control">
                 <button type="button" class="dl-time-btn" @click="decreaseDays">-</button>
                 <input type="number" v-model="downloadDays" class="dl-time-input" />
-                <button type="button" class="dl-time-btn" @click="increaseDays">+</button>
+                <button type="button" class="dl-time-btn " @click="increaseDays">+</button>
               </div>
             </div>
             
@@ -151,11 +151,11 @@
           </div>
 
           <div class="dl-actions">
-            <button type="button" class="dl-download-btn">
+            <button type="button" class="dl-download-btn" :disabled="isDownloading" @click="handleDownload">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
-              <span>开始下载</span>
+              <span>{{ isDownloading ? '下载中...' : '开始下载' }}</span>
             </button>
           </div>
         </div>
@@ -166,6 +166,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
+import { downloadData } from '../../api/download.js';
 
 const pairs = ref(['BTC/USDT', 'ETH/USDT']);
 const timeframes = ref(['5m', '1h']);
@@ -174,6 +175,7 @@ const useCustomTimerange = ref(false);
 const advancedExpanded = ref(false);
 const startDate = ref('2026-05-01');
 const endDate = ref('');
+const isDownloading = ref(false);
 
 const advancedOptions = reactive({
   eraseExisting: false,
@@ -190,6 +192,10 @@ const addPair = () => {
 
 const removePair = (index) => {
   pairs.value.splice(index, 1);
+};
+
+const addTemplatePair = (pair) => {
+  pairs.value.push(pair);
 };
 
 const addTimeframe = () => {
@@ -229,6 +235,32 @@ const formatDate = (date) => {
     }
   }
   return '';
+};
+
+const handleDownload = async () => {
+  isDownloading.value = true;
+  try {
+    const params = {
+      pair: pairs.value.filter(p => p.trim()),
+      timeframes: timeframes.value.filter(tf => tf.trim()),
+      download_trades: false,
+      erase: false
+    };
+    
+    if (useCustomTimerange.value) {
+      params.timerange = "20260501-20260624";
+    } else {
+      params.days = downloadDays.value;
+    }
+    
+    await downloadData(params);
+    alert('下载成功');
+  } catch (error) {
+    console.error('下载失败:', error);
+    alert('下载失败');
+  } finally {
+    isDownloading.value = false;
+  }
 };
 </script>
 
@@ -336,6 +368,10 @@ const formatDate = (date) => {
   background: rgba(78, 222, 163, 0.15);
   border-color: #4edea3;
   color: #4edea3;
+}
+
+.dl-add-btn {
+  margin-top: -4px;
 }
 
 .dl-template-buttons {

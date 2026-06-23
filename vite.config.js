@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** 开发时代理 /api → 真实 Bovin REST，避免浏览器跨域（须与 default-api-base.js 的 DEFAULT_REST_ORIGIN 一致或可设环境变量覆盖） */
 const DEV_API_UPSTREAM = process.env.VITE_DEV_API_UPSTREAM || "http://101.32.179.223:8680";
+const DOWNLOAD_API_UPSTREAM = process.env.VITE_DOWNLOAD_API_UPSTREAM || "http://101.32.179.223:8681";
 
 export default defineConfig({
   base: '/freqfrontend/',
@@ -33,16 +34,19 @@ export default defineConfig({
       "/api": {
         target: DEV_API_UPSTREAM,
         changeOrigin: true
+      },
+      "/download": {
+        target: DOWNLOAD_API_UPSTREAM,
+        changeOrigin: true,
+        // configure: (proxy) => {
+        //   proxy.on('proxyReq', (proxyReq, req) => {
+        //     const url = req.url;
+        //     if (url.startsWith('/download')) {
+        //       proxyReq.path = url.replace(/^\/download/, '');
+        //     }
+        //   });
+        // }
       }
     }
-  },
-  // preview: {
-  //   port: 3000,
-  //   proxy: {
-  //     "/api": {
-  //       target: DEV_API_UPSTREAM,
-  //       changeOrigin: true
-  //     }
-  //   }
-  // }
+  }
 });
