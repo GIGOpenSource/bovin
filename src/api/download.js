@@ -25,3 +25,7 @@ const http = {
 export const downloadData = (params) => {
   return http.post("/download_data", params);
 };
+
+export const getBackgroundStatus = (jobId) => {
+  return http.get(`/background/${jobId}`);
+};

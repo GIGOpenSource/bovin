@@ -87,6 +87,7 @@
                   class="dl-date-picker"
                   :placeholder="'yyyy-mm-dd'"
                   format="YYYY-MM-DD"
+                  @change="handleStartDateChange"
                 />
               </div>
               <div class="dl-date-input-group">
@@ -96,6 +97,7 @@
                   class="dl-date-picker"
                   :placeholder="'yyyy-mm-dd'"
                   format="YYYY-MM-DD"
+                  @change="handleEndDateChange"
                 />
               </div>
             </div>
@@ -129,7 +131,8 @@
               </div>
               <div class="dl-select-wrap">
                 <a-select
-                  v-model="advancedOptions.candleType"
+                  v-model="candleTypes"
+                  @change="handleChange"
                   mode="multiple"
                   class="dl-select"
                   placeholder="选择蜡烛类型"
@@ -147,6 +150,21 @@
                 <input type="checkbox" v-model="advancedOptions.customExchange" />
                 <span>自定义交易所</span>
               </label>
+
+              <div v-if="advancedOptions.customExchange" class="dl-custom-exchange">
+                <div class="dl-exchange-row">
+                  <a-select v-model="customExchangeValue" :default-value="customExchangeValue" class="dl-select">
+                    <a-select-option value="binance">Binance</a-select-option>
+                    <a-select-option value="binance_us">Binance US</a-select-option>
+                    <a-select-option value="binance_usdm">Binance USDⓈ-M</a-select-option>
+                  </a-select>
+                </div>
+                <div class="dl-exchange-row">
+                  <div class="dl-static-value">
+                    <span>现金</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -166,7 +184,8 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { downloadData } from '../../api/download.js';
+import { message } from 'ant-design-vue';
+import { downloadData, getBackgroundStatus } from '../../api/download.js';
 
 const pairs = ref(['BTC/USDT', 'ETH/USDT']);
 const timeframes = ref(['5m', '1h']);
@@ -176,13 +195,14 @@ const advancedExpanded = ref(false);
 const startDate = ref('2026-05-01');
 const endDate = ref('');
 const isDownloading = ref(false);
+const candleTypes = ref([]);
+const customExchangeValue = ref('binance');
 
 const advancedOptions = reactive({
   eraseExisting: false,
   prependData: false,
   prependData2: false,
   downloadTrades: false,
-  candleType: [],
   customExchange: false
 });
 
@@ -236,28 +256,81 @@ const formatDate = (date) => {
   }
   return '';
 };
+const handleChange = (val) => {
+  candleTypes.value = val
+}
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const pollBackgroundStatus = async (jobId) => {
+  while (true) {
+    const result = await getBackgroundStatus(jobId);
+    
+    if (result.status === 'failed') {
+      message.error(result.error || '下载失败');
+      return;
+    }
+    
+    if (!result.running) {
+      message.success('下载成功');
+      return;
+    }
+    
+    await sleep(2000);
+  }
+};
+const handleStartDateChange = (val) => {
+  startDate.value = val;
+}
+const handleEndDateChange = (val) => {
+  endDate.value = val;
+}
 const handleDownload = async () => {
   isDownloading.value = true;
   try {
     const params = {
       pairs: pairs.value.filter(p => p.trim()),
       timeframes: timeframes.value.filter(tf => tf.trim()),
-      // download_trades: false,
-      // erase: false
+      erase: advancedOptions.eraseExisting,
+      download_trades: advancedOptions.downloadTrades,
+      prepend_data: advancedOptions.prependData,
+      candle_types: candleTypes.value
     };
+    console.log(startDate.value,'startDate.value')
+    console.log(endDate.value,'endDate.value');
     
     if (useCustomTimerange.value) {
-      params.timerange = "20260501-20260624";
+      const startVal = startDate.value instanceof Date ? startDate.value : (startDate.value?.$d || startDate.value);
+      const endVal = endDate.value instanceof Date ? endDate.value : (endDate.value?.$d || endDate.value);
+      
+      if (!startVal) {
+        message.error('请选择开始日期');
+        return;
+      }
+      if (!endVal) {
+        message.error('请选择结束日期');
+        return;
+      }
+      const start = formatDate(startVal);
+      const end = formatDate(endVal);
+      params.timerange = `${start}-${end}`;
     } else {
       params.days = downloadDays.value;
     }
     
-    await downloadData(params);
-    alert('下载成功');
+    if (advancedOptions.customExchange) {
+      params.exchange = customExchangeValue.value;
+      params.trading_mode = "spot";
+    }
+    
+    const downloadResult = await downloadData(params);
+    if (downloadResult && downloadResult.job_id) {
+      await pollBackgroundStatus(downloadResult.job_id);
+    } else {
+      message.success('下载成功');
+    }
   } catch (error) {
     console.error('下载失败:', error);
-    alert('下载失败');
+    message.error('下载失败');
   } finally {
     isDownloading.value = false;
   }
@@ -633,6 +706,32 @@ const handleDownload = async () => {
 .dl-select-hint {
   font-size: 11px;
   color: #6e7591;
+}
+
+.dl-custom-exchange {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+}
+
+.dl-exchange-row {
+  margin-bottom: 12px;
+}
+
+.dl-exchange-row:last-child {
+  margin-bottom: 0;
+}
+
+.dl-static-value {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #e8e9ed;
+  font-size: 12px;
+  min-width: 200px;
 }
 
 .dl-actions {
