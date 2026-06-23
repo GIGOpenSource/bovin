@@ -1,0 +1,629 @@
+<template>
+  <section id="download" class="section">
+    <div class="ft-page dl-wrap">
+      <header class="ft-page-hero ft-page-hero--data">
+        <div class="ft-page-hero__intro">
+          <span class="ft-page-hero__kicker ft-kicker-accent">数据下载</span>
+          <h1 class="ft-page-hero__title">下载数据</h1>
+          <p class="ft-page-hero__desc">下载交易对历史数据</p>
+        </div>
+      </header>
+
+      <div class="dl-main">
+        <div class="dl-card">
+          <div class="dl-grid">
+            <div class="dl-column">
+              <h3 class="dl-section-title">Select Pairs</h3>
+              <div class="dl-input-list">
+                <div v-for="(pair, index) in pairs" :key="index" class="dl-input-row">
+                  <input type="text" v-model="pairs[index]" class="dl-input" :placeholder="'Pair'" />
+                  <button type="button" class="dl-remove-btn" @click="removePair(index)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="dl-add-btn" @click="addPair">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="dl-column">
+              <h3 class="dl-section-title">Pairs from template</h3>
+              <div class="dl-template-buttons">
+                <button type="button" class="dl-template-btn">All USDT Pairs</button>
+                <button type="button" class="dl-template-btn">All USDT Futures Pairs</button>
+                <button type="button" class="dl-template-btn">All USDT Futures Coing</button>
+                <button type="button" class="dl-template-btn dl-template-btn-secondary">Use Pairs from Pairlist Config</button>
+              </div>
+            </div>
+
+            <div class="dl-column">
+              <h3 class="dl-section-title">Select timeframes</h3>
+              <div class="dl-input-list">
+                <div v-for="(tf, index) in timeframes" :key="index" class="dl-input-row">
+                  <input type="text" v-model="timeframes[index]" class="dl-input" :placeholder="'Timeframe'" />
+                  <button type="button" class="dl-remove-btn" @click="removeTimeframe(index)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="dl-add-btn" @click="addTimeframe">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="dl-time-section">
+            <div class="dl-time-header">
+              <h3 class="dl-section-title">Time Selection</h3>
+              <label class="dl-checkbox-label">
+                <input type="checkbox" v-model="useCustomTimerange" />
+                <span>Use custom timerange</span>
+              </label>
+            </div>
+            
+            <div v-show="!useCustomTimerange" class="dl-time-input-wrap">
+              <span class="dl-time-label">Days to download:</span>
+              <div class="dl-time-control">
+                <button type="button" class="dl-time-btn" @click="decreaseDays">-</button>
+                <input type="number" v-model="downloadDays" class="dl-time-input" />
+                <button type="button" class="dl-time-btn" @click="increaseDays">+</button>
+              </div>
+            </div>
+            
+            <div v-show="useCustomTimerange" class="dl-date-range-wrap">
+              <div class="dl-date-input-group">
+                <span class="dl-date-label">Start Date</span>
+                <a-date-picker
+                  v-model="startDate"
+                  class="dl-date-picker"
+                  :placeholder="'yyyy-mm-dd'"
+                  format="YYYY-MM-DD"
+                />
+              </div>
+              <div class="dl-date-input-group">
+                <span class="dl-date-label">End Date</span>
+                <a-date-picker
+                  v-model="endDate"
+                  class="dl-date-picker"
+                  :placeholder="'yyyy-mm-dd'"
+                  format="YYYY-MM-DD"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="dl-advanced-section" :class="{ 'dl-advanced-section--expanded': advancedExpanded }">
+            <button type="button" class="dl-advanced-header" @click="toggleAdvanced">
+              <h3 class="dl-section-title">Advanced options</h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   :class="{ 'dl-rotate': advancedExpanded }">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div v-show="advancedExpanded" class="dl-advanced-content">
+              <div class="dl-advanced-hint">
+                Advanced options (Erase data, Download trades, and Custom Exchange settings) will only be applied when this section is expanded.
+              </div>
+              <div class="dl-checkbox-list">
+                <label class="dl-checkbox-label">
+                  <input type="checkbox" v-model="advancedOptions.eraseExisting" />
+                  <span>Erase existing data</span>
+                </label>
+                <label class="dl-checkbox-label">
+                  <input type="checkbox" v-model="advancedOptions.prependData" />
+                  <span>Prepend data when downloading</span>
+                </label>
+                <!-- <label class="dl-checkbox-label">
+                  <input type="checkbox" v-model="advancedOptions.prependData2" />
+                  <span>Prepend data when downloading</span>
+                </label> -->
+                <label class="dl-checkbox-label">
+                  <input type="checkbox" v-model="advancedOptions.downloadTrades" />
+                  <span>Download Trades instead of OHLCV data</span>
+                </label>
+              </div>
+              <div class="dl-select-wrap">
+                <a-select
+                  v-model="advancedOptions.candleType"
+                  mode="multiple"
+                  class="dl-select"
+                  placeholder="Select Candle Types"
+                >
+                  <a-select-option value="spot">Spot</a-select-option>
+                  <a-select-option value="futures">Futures</a-select-option>
+                  <a-select-option value="funding_rate">Funding Rate</a-select-option>
+                  <a-select-option value="mark">Mark</a-select-option>
+                  <a-select-option value="index">Index</a-select-option>
+                  <a-select-option value="premium_index">Premium Index</a-select-option>
+                </a-select>
+                <span class="dl-select-hint">When no candle-type is selected, freqtrade will download the necessary candle types for regular operation automatically.</span>
+              </div>
+              <label class="dl-checkbox-label">
+                <input type="checkbox" v-model="advancedOptions.customExchange" />
+                <span>Custom Exchange</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="dl-actions">
+            <button type="button" class="dl-download-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              <span>Start Download</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue';
+
+const pairs = ref(['BTC/USDT', 'ETH/USDT']);
+const timeframes = ref(['5m', '1h']);
+const downloadDays = ref(30);
+const useCustomTimerange = ref(false);
+const advancedExpanded = ref(false);
+const startDate = ref('2026-05-01');
+const endDate = ref('');
+
+const advancedOptions = reactive({
+  eraseExisting: false,
+  prependData: false,
+  prependData2: false,
+  downloadTrades: false,
+  candleType: [],
+  customExchange: false
+});
+
+const addPair = () => {
+  pairs.value.push('');
+};
+
+const removePair = (index) => {
+  pairs.value.splice(index, 1);
+};
+
+const addTimeframe = () => {
+  timeframes.value.push('');
+};
+
+const removeTimeframe = (index) => {
+  timeframes.value.splice(index, 1);
+};
+
+const increaseDays = () => {
+  downloadDays.value++;
+};
+
+const decreaseDays = () => {
+  if (downloadDays.value > 1) {
+    downloadDays.value--;
+  }
+};
+
+const toggleAdvanced = () => {
+  advancedExpanded.value = !advancedExpanded.value;
+};
+
+const formatDate = (date) => {
+  if (!date) return '';
+  if (date instanceof Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+  }
+  if (typeof date === 'string') {
+    const match = date.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      return `${match[1]}${match[2]}${match[3]}`;
+    }
+  }
+  return '';
+};
+</script>
+
+<style scoped>
+.dl-wrap {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.dl-main {
+  display: grid;
+  gap: 14px;
+}
+
+.dl-card {
+  background: var(--ft-panel-surface);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+}
+
+@media (max-width: 900px) {
+  .dl-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dl-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.dl-section-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8e9ed;
+}
+
+.dl-input-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dl-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dl-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #e8e9ed;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.dl-input:focus {
+  outline: none;
+  border-color: #4edea3;
+}
+
+.dl-input::placeholder {
+  color: #6e7591;
+}
+
+.dl-remove-btn,
+.dl-add-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  background: var(--ft-panel-surface-inset);
+  color: #8c90a2;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dl-remove-btn:hover,
+.dl-add-btn:hover {
+  background: rgba(255, 91, 107, 0.15);
+  border-color: #ff5b6b;
+  color: #ff5b6b;
+}
+
+.dl-add-btn:hover {
+  background: rgba(78, 222, 163, 0.15);
+  border-color: #4edea3;
+  color: #4edea3;
+}
+
+.dl-template-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dl-template-btn {
+  padding: 10px 12px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #dae2fd;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.dl-template-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(78, 222, 163, 0.4);
+}
+
+.dl-template-btn-secondary {
+  background: rgba(var(--ft-panel-edge-rgb), 0.15);
+  color: #8c90a2;
+}
+
+.dl-time-section {
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.dl-time-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dl-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #dae2fd;
+}
+
+.dl-checkbox-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #4edea3;
+}
+
+.dl-time-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dl-time-label {
+  font-size: 12px;
+  color: #8c90a2;
+}
+
+.dl-time-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dl-time-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  background: var(--ft-panel-surface-inset);
+  color: #dae2fd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.dl-time-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(78, 222, 163, 0.4);
+}
+
+.dl-time-input {
+  width: 60px;
+  padding: 6px 10px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #e8e9ed;
+  font-size: 12px;
+  text-align: center;
+}
+
+.dl-time-input:focus {
+  outline: none;
+  border-color: #4edea3;
+}
+
+.dl-date-range-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dl-date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dl-date-label {
+  font-size: 11px;
+  color: #6e7591;
+}
+
+.dl-date-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dl-date-picker :deep(.ant-picker) {
+  padding: 6px 10px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #e8e9ed;
+  font-size: 12px;
+  min-width: 140px;
+}
+
+.dl-date-picker :deep(.ant-picker:hover) {
+  border-color: rgba(78, 222, 163, 0.4);
+}
+
+.dl-date-picker :deep(.ant-picker:focus),
+.dl-date-picker :deep(.ant-picker-focused) {
+  outline: none;
+  border-color: #4edea3;
+  box-shadow: 0 0 0 2px rgba(78, 222, 163, 0.1);
+}
+
+.dl-date-picker :deep(.ant-picker-input > input) {
+  color: #e8e9ed;
+}
+
+.dl-date-picker :deep(.ant-picker-placeholder) {
+  color: #6e7591;
+}
+
+.dl-date-picker :deep(.ant-picker-suffix) {
+  color: #8c90a2;
+}
+
+.dl-date-picker :deep(.ant-picker-panel) {
+  background: var(--ft-panel-surface);
+  border-color: rgba(var(--ft-panel-edge-rgb), 0.3);
+}
+
+.dl-date-picker :deep(.ant-picker-cell-inner) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dl-date-picker :deep(.ant-picker-cell-selected .ant-picker-cell-inner) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.dl-date-picker :deep(.ant-picker-cell-selected::before) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dl-advanced-section {
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.dl-advanced-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.dl-rotate {
+  transform: rotate(180deg);
+}
+
+.dl-advanced-content {
+  padding: 0 16px 16px;
+}
+
+.dl-advanced-hint {
+  padding: 10px 12px;
+  background: rgba(78, 222, 163, 0.1);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #4edea3;
+  margin-bottom: 16px;
+}
+
+.dl-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dl-select-wrap {
+  margin-bottom: 16px;
+}
+
+.dl-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: #e8e9ed;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.dl-select:focus {
+  outline: none;
+  border-color: #4edea3;
+}
+
+.dl-select-hint {
+  font-size: 11px;
+  color: #6e7591;
+}
+
+.dl-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.dl-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #4edea3;
+  border: none;
+  border-radius: 8px;
+  color: #0c111d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-download-btn:hover {
+  background: #5ef7b3;
+}
+</style>
