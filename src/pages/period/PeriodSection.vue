@@ -274,7 +274,7 @@
 }
 
 .pb-chart-axis-label--y-right {
-  right: 14px;
+  right: -30px;
   transform: translateY(-50%) rotate(90deg);
 }
 
@@ -443,13 +443,22 @@ const drawChart = (data, mode = "abs") => {
     return;
   }
 
-  // 倒序：列表前面的数据（最新日期）渲染到图表右侧
-  const chartData = [...data].reverse();
+  // 按日期升序排列，旧日期在左侧，新日期在右侧
+  const chartData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
   // mode: 'abs' => abs_profit, 'rel' => rel_profit(%)
   const valueKey = mode === "rel" ? "profitPct" : "profit";
 
-  // 极值
-  const maxVal = Math.max(0.5, ...chartData.map((d) => Math.abs(d[valueKey] || 0)));
+  // 计算数据范围（支持负数）
+  const allValues = chartData.map((d) => d[valueKey] || 0);
+  const minVal = Math.min(...allValues);
+  const maxVal = Math.max(...allValues);
+  
+  // 计算对称范围，确保0点在图表中间
+  const absMax = Math.max(Math.abs(minVal), Math.abs(maxVal), 0.5);
+  const yMin = -absMax;
+  const yMax = absMax;
+  const yRange = yMax - yMin;
+  
   const maxTrades = Math.max(1, ...chartData.map((d) => d.trades));
 
   const stepX = w / Math.max(1, chartData.length - 1);
@@ -458,7 +467,8 @@ const drawChart = (data, mode = "abs") => {
   ctx.beginPath();
   chartData.forEach((d, i) => {
     const x = i * stepX;
-    const y = h - ((d[valueKey] || 0) / maxVal) * h;
+    const val = d[valueKey] || 0;
+    const y = h - ((val - yMin) / yRange) * h * 0.8 - h * 0.1;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   });
@@ -469,25 +479,19 @@ const drawChart = (data, mode = "abs") => {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // 节点：低值用红色小点，高值用绿色突起
+  // 节点：根据正负值显示不同颜色
   chartData.forEach((d, i) => {
     const x = i * stepX;
     const val = d[valueKey] || 0;
-    if (val === 0 || Math.abs(val) < maxVal * 0.15) {
-      ctx.beginPath();
-      ctx.arc(x, h - 1, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#ff5b6b";
-      ctx.fill();
-    } else {
-      const y = h - (val / maxVal) * h;
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#0c111d";
-      ctx.fill();
-      ctx.strokeStyle = "#4edea3";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
+    const y = h - ((val - yMin) / yRange) * h * 0.8 - h * 0.1;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = val >= 0 ? "#4edea3" : "#ff5b6b";
+    ctx.fill();
+    ctx.strokeStyle = "#0c111d";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   });
 
   // 柱（交易数）— 白色雾蒙蒙
@@ -505,15 +509,16 @@ const drawChart = (data, mode = "abs") => {
     .map((d, i) => (i % labelStep === 0 || i === chartData.length - 1 ? `<span>${fmtDate(d.date)}</span>` : "<span></span>"))
     .join("");
 
-  // Y 轴刻度 & 左轴标签
+  // Y 轴刻度 & 左轴标签（支持负数）
   const yAxisLeft = document.getElementById("pbYLeft");
   const yLabelLeft = document.getElementById("pbYLabelLeft");
   if (mode === "rel") {
-    const step = maxVal / 6;
+    const step = yRange / 6;
     if (yAxisLeft) {
       yAxisLeft.innerHTML = Array.from({ length: 7 }, (_, i) => {
-        const v = (6 - i) * step;
-        return `<span>${v.toFixed(1)}%</span>`;
+        const v = yMax - i * step;
+        const suffix = "%";
+        return `<span>${v.toFixed(1)}${suffix}</span>`;
       }).join("");
     }
     if (yLabelLeft) {
@@ -521,10 +526,10 @@ const drawChart = (data, mode = "abs") => {
       yLabelLeft.setAttribute("data-i18n", "pb.yLabel.rel");
     }
   } else {
-    const step = maxVal / 6;
+    const step = yRange / 6;
     if (yAxisLeft) {
       yAxisLeft.innerHTML = Array.from({ length: 7 }, (_, i) => {
-        const v = (6 - i) * step;
+        const v = yMax - i * step;
         return `<span>${v.toFixed(1)}</span>`;
       }).join("");
     }

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- CSP：生产建议由反向代理收紧 connect-src。K 线数据经同源 /panel/* 转发，无需浏览器直连交易所，故省略 unsafe-eval（TradingView LWC v4 standalone 亦不依赖 eval）。 -->
+    <!-- connect-src 含 http: 便于局域网访问 :19090 代理；生产请改为仅 self 或固定上游 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https: http: ws: wss: http://127.0.0.1:* http://localhost:*; img-src 'self' data: blob:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Bovin AI 量化交易系统：本地化部署，本机核心与面板协同；策略、数据与偏好默认仅存于本机。"
+    />
+    <meta property="og:title" content="Bovin · AI 量化交易系统" />
+    <meta property="og:description" content="本地化运维与观测：无云端托管，数据与能力以本机为主。" />
+    <meta property="og:type" content="website" />
+    <meta name="panel-version" content="1.0.0" />
+    <title>Bovin · AI 量化交易系统</title>
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%2326a69a" width="32" height="32" rx="6"/></svg>' />
+    <script type="module" crossorigin src="/freqfrontend/assets/index-aq2s1nbf.js"></script>
+    <link rel="stylesheet" crossorigin href="/freqfrontend/assets/index-L3907_mp.css">
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- 勿用「打开文件」或 serve 根目录：浏览器无法解析 from "vue"。开发请 npm run dev；生产先 npm run build 再部署 dist/ 或 npm run preview。 -->
+  </body>
+</html>

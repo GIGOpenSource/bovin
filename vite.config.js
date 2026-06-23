@@ -9,6 +9,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEV_API_UPSTREAM = process.env.VITE_DEV_API_UPSTREAM || "http://101.32.179.223:8680";
 
 export default defineConfig({
+  base: '/freqfrontend/',
+  build: {
+    outDir: 'freqfrontend',
+  },
   plugins: [vue()],
   resolve: {
     alias: {
@@ -32,17 +36,13 @@ export default defineConfig({
       }
     }
   },
-  preview: {
-    port: 3000,
-    proxy: {
-      "/api": {
-        target: DEV_API_UPSTREAM,
-        changeOrigin: true
-      }
-    }
-  },
-  build: {
-    outDir: "dist",
-    emptyOutDir: true
-  }
+  // preview: {
+  //   port: 3000,
+  //   proxy: {
+  //     "/api": {
+  //       target: DEV_API_UPSTREAM,
+  //       changeOrigin: true
+  //     }
+  //   }
+  // }
 });

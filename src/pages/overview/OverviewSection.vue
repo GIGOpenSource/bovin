@@ -32,11 +32,11 @@
                   <div class="ds-card-value negative" id="kpiMaxDrawdown">—</div>
                   <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark3" d="M0 10 L100 10"></path></svg>
                 </article>
-                <article class="ds-card">
+<!--                 <article class="ds-card">
                   <div class="ds-card-top"><span id="kpiCard4Title" data-i18n="overview.kpi.balance">余额</span><em id="kpiCard4Em" class="muted" data-i18n="overview.kpi.balanceHint">各币种可用（free）合计</em></div>
                   <div class="ds-card-value" id="kpiBalance">—</div>
                   <svg viewBox="0 0 100 20" aria-hidden="true"><path id="kpiSpark4" d="M0 10 L100 10"></path></svg>
-                </article>
+                </article> -->
               </div>
               <article class="ds-risk">
                 <!-- 对接 -->

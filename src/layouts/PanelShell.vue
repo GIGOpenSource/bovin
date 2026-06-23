@@ -579,7 +579,8 @@ import {
   startPanelApp,
   registerSectionRouteNavigator,
   refreshStrategyConsoleAfterPrefs,
-  applyDomI18n
+  applyDomI18n,
+  bindNavOnce
 } from "../app.js";
 import { i18n } from "../i18n/index.js";
 import {
@@ -1108,8 +1109,12 @@ onMounted(async () => {
   window.addEventListener("bovin-form-patch", onFormFieldPatch);
   window.addEventListener("bovin-strategy-slot-names", onStrategySlotNames);
   await nextTick();
+  bindNavOnce();
   bindStrategySlotModalUi();
   await startPanelApp();
+  await nextTick();
+  const shell = document.getElementById("app") || document.getElementById("appRoot");
+  if (shell) applyDomI18n(shell);
 
   const readHidden = (id, assign) => {
     const el = document.getElementById(id);

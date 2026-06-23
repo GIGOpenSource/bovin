@@ -21,17 +21,26 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { postPanelAuthLogin } from "../../api/settings.js";
 import { state, uiState, persistProfileToLocalStorage } from "../../store/state-core.js";
 import { useRouter } from "vue-router";
 import { enterShellAfterAuth } from "../../app.js";
 
 const router = useRouter();
-const username = ref("freqtrader");
-const password = ref("tiger123");
+const username = ref(state.username || "freqtrader");
+const password = ref(state.password || "tiger123");
 const loading = ref(false);
 const error = ref("");
+
+onMounted(() => {
+  if (state.username) {
+    username.value = state.username;
+  }
+  if (state.password) {
+    password.value = state.password;
+  }
+});
 
 const handleSubmit = async () => {
   loading.value = true;

@@ -38,6 +38,8 @@ export function buildSparkPolylinePath(values, w = 100, h = 20, pad = 1.5) {
 export function extractBalanceTotal(balance) {
   if (!balance || typeof balance !== "object") return null;
   const b = /** @type {Record<string, unknown>} */ (balance);
+  const totalBot = Number(b.total_bot);
+  if (Number.isFinite(totalBot) && totalBot >= 0) return totalBot;
   const total = Number(b.total);
   if (Number.isFinite(total) && total >= 0) return total;
   const cur = Array.isArray(b.currencies) ? b.currencies : [];

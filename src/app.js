@@ -155,28 +155,33 @@ export function activateSection(sectionId) {
   } catch {
     /* ignore */
   }
-  sectionNavigate?.(id);
+  if (sectionNavigate) {
+    sectionNavigate(id);
+  } else if (panelRouter) {
+    if (panelRouter.hasRoute?.(id) && String(panelRouter.currentRoute?.value?.name || "") !== id) {
+      void panelRouter.push({ name: id });
+    }
+  }
   if (id === "monitor" && uiState.authed) {
     void refreshMonitorPageMetrics();
   }
 }
 
-function bindNavOnce() {
-  if (navBound) return;
-  navBound = true;
+export function bindNavOnce() {
   document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const s = btn.getAttribute("data-section");
       if (s) activateSection(s);
     });
   });
-  window.addEventListener("hashchange", () => {
+  const handleHashChange = () => {
     const id = normalizeSectionIdCandidate(location.hash);
     if (!id || !document.getElementById(id)?.classList.contains("section")) return;
     const cur = document.querySelector(".section.active")?.id;
     if (cur === id) return;
     activateSection(id);
-  });
+  };
+  window.addEventListener("hashchange", handleHashChange);
 }
 
 function reconcileStaleAuth() {
@@ -343,7 +348,6 @@ export function enterShellAfterAuth() {
   const shell = document.getElementById("app") || document.getElementById("appRoot");
   if (shell) applyDomI18n(shell);
   
-  bindNavOnce();
   bindMonitorRefreshButtonOnce();
   bindPanelChromeOnce();
   startPanelPolling();
@@ -408,8 +412,6 @@ function bindLogoutOnce() {
     uiState.panelPrefsSyncedFromDb = false;
     uiState.panelPrefsBindingsLoadedFromDb = false;
     uiState.panelPrefsLoadErrorDetail = "";
-    clearFreqtradePasswordSession();
-    persistProfileToLocalStorage();
     
     if (panelRouter) {
       panelRouter.push({ name: "login" }).then(() => {
