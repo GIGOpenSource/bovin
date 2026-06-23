@@ -7,6 +7,7 @@ export const PANEL_SECTION_IDS = [
   "period",
   "pairlist",
   "download",
+  "backtest",
   "settings",
   "monitor",
   "api"

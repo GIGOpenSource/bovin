@@ -7,6 +7,7 @@ import PerformanceSection from "../../pages/performance/PerformanceSection.vue";
 import PeriodSection from "../../pages/period/PeriodSection.vue";
 import PairListSection from "../../pages/pairlist/PairListSection.vue";
 import DownloadSection from "../../pages/download/DownloadSection.vue";
+import BacktestSection from "../../pages/backtest/BacktestSection.vue";
 import SettingsSection from "../../pages/settings/SettingsSection.vue";
 import MonitorSection from "../../pages/monitor/MonitorSection.vue";
 import ApiSection from "../../pages/api/ApiSection.vue";
@@ -21,6 +22,7 @@ import ApiSection from "../../pages/api/ApiSection.vue";
   <PeriodSection />
   <PairListSection />
   <DownloadSection />
+  <BacktestSection />
   <SettingsSection />
   <MonitorSection />
   <ApiSection />

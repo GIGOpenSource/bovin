@@ -241,10 +241,10 @@ const handleDownload = async () => {
   isDownloading.value = true;
   try {
     const params = {
-      pair: pairs.value.filter(p => p.trim()),
+      pairs: pairs.value.filter(p => p.trim()),
       timeframes: timeframes.value.filter(tf => tf.trim()),
-      download_trades: false,
-      erase: false
+      // download_trades: false,
+      // erase: false
     };
     
     if (useCustomTimerange.value) {

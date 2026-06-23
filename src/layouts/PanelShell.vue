@@ -17,6 +17,7 @@
           <button type="button" class="nav-btn" data-section="period" data-i18n="nav.period">Period Breakdown</button>
           <button type="button" class="nav-btn" data-section="pairlist" data-i18n="nav.pairlist">Pair Lists</button>
           <button type="button" class="nav-btn" data-section="download" data-i18n="nav.download">下载数据</button>
+          <button type="button" class="nav-btn" data-section="backtest" data-i18n="nav.backtest">回测管理</button>
           <button type="button" class="nav-btn" data-section="settings" data-i18n="nav.settings">设置中心</button>
           <button type="button" class="nav-btn" data-section="monitor" data-i18n="nav.monitor">系统监控</button>
           <!-- 暂时隐藏：接口能力面板 -->

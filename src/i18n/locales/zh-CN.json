@@ -8,6 +8,7 @@
   "nav.period": "周期分析",
   "nav.pairlist": "交易对列表",
   "nav.download": "下载数据",
+  "nav.backtest": "回测管理",
   "nav.settings": "设置中心",
   "nav.monitor": "系统监控",
   "nav.api": "接口能力面板",
