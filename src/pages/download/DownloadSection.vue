@@ -13,10 +13,10 @@
         <div class="dl-card">
           <div class="dl-grid">
             <div class="dl-column">
-              <h3 class="dl-section-title">Select Pairs</h3>
+              <h3 class="dl-section-title">选择交易对</h3>
               <div class="dl-input-list">
                 <div v-for="(pair, index) in pairs" :key="index" class="dl-input-row">
-                  <input type="text" v-model="pairs[index]" class="dl-input" :placeholder="'Pair'" />
+                  <input type="text" v-model="pairs[index]" class="dl-input" :placeholder="'交易对'" />
                   <button type="button" class="dl-remove-btn" @click="removePair(index)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -32,20 +32,20 @@
             </div>
 
             <div class="dl-column">
-              <h3 class="dl-section-title">Pairs from template</h3>
+              <h3 class="dl-section-title">从模板导入交易对</h3>
               <div class="dl-template-buttons">
-                <button type="button" class="dl-template-btn">All USDT Pairs</button>
-                <button type="button" class="dl-template-btn">All USDT Futures Pairs</button>
-                <button type="button" class="dl-template-btn">All USDT Futures Coing</button>
-                <button type="button" class="dl-template-btn dl-template-btn-secondary">Use Pairs from Pairlist Config</button>
+                <button type="button" class="dl-template-btn">所有 USDT 交易对</button>
+                <button type="button" class="dl-template-btn">所有 USDT 期货交易对</button>
+                <button type="button" class="dl-template-btn">所有 USDT 期货合约</button>
+                <button type="button" class="dl-template-btn dl-template-btn-secondary">使用交易对列表配置</button>
               </div>
             </div>
 
             <div class="dl-column">
-              <h3 class="dl-section-title">Select timeframes</h3>
+              <h3 class="dl-section-title">选择时间周期</h3>
               <div class="dl-input-list">
                 <div v-for="(tf, index) in timeframes" :key="index" class="dl-input-row">
-                  <input type="text" v-model="timeframes[index]" class="dl-input" :placeholder="'Timeframe'" />
+                  <input type="text" v-model="timeframes[index]" class="dl-input" :placeholder="'时间周期'" />
                   <button type="button" class="dl-remove-btn" @click="removeTimeframe(index)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -63,15 +63,15 @@
 
           <div class="dl-time-section">
             <div class="dl-time-header">
-              <h3 class="dl-section-title">Time Selection</h3>
+              <h3 class="dl-section-title">时间选择</h3>
               <label class="dl-checkbox-label">
                 <input type="checkbox" v-model="useCustomTimerange" />
-                <span>Use custom timerange</span>
+                <span>使用自定义时间范围</span>
               </label>
             </div>
             
             <div v-show="!useCustomTimerange" class="dl-time-input-wrap">
-              <span class="dl-time-label">Days to download:</span>
+              <span class="dl-time-label">下载天数:</span>
               <div class="dl-time-control">
                 <button type="button" class="dl-time-btn" @click="decreaseDays">-</button>
                 <input type="number" v-model="downloadDays" class="dl-time-input" />
@@ -81,7 +81,7 @@
             
             <div v-show="useCustomTimerange" class="dl-date-range-wrap">
               <div class="dl-date-input-group">
-                <span class="dl-date-label">Start Date</span>
+                <span class="dl-date-label">开始日期</span>
                 <a-date-picker
                   v-model="startDate"
                   class="dl-date-picker"
@@ -90,7 +90,7 @@
                 />
               </div>
               <div class="dl-date-input-group">
-                <span class="dl-date-label">End Date</span>
+                <span class="dl-date-label">结束日期</span>
                 <a-date-picker
                   v-model="endDate"
                   class="dl-date-picker"
@@ -103,7 +103,7 @@
 
           <div class="dl-advanced-section" :class="{ 'dl-advanced-section--expanded': advancedExpanded }">
             <button type="button" class="dl-advanced-header" @click="toggleAdvanced">
-              <h3 class="dl-section-title">Advanced options</h3>
+              <h3 class="dl-section-title">高级选项</h3>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                    :class="{ 'dl-rotate': advancedExpanded }">
                 <path d="M6 9l6 6 6-6"/>
@@ -111,24 +111,20 @@
             </button>
             <div v-show="advancedExpanded" class="dl-advanced-content">
               <div class="dl-advanced-hint">
-                Advanced options (Erase data, Download trades, and Custom Exchange settings) will only be applied when this section is expanded.
+                高级选项（删除数据、下载交易数据和自定义交易所设置）仅在展开此部分时生效。
               </div>
               <div class="dl-checkbox-list">
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.eraseExisting" />
-                  <span>Erase existing data</span>
+                  <span>删除现有数据</span>
                 </label>
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.prependData" />
-                  <span>Prepend data when downloading</span>
+                  <span>下载时前置数据</span>
                 </label>
-                <!-- <label class="dl-checkbox-label">
-                  <input type="checkbox" v-model="advancedOptions.prependData2" />
-                  <span>Prepend data when downloading</span>
-                </label> -->
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.downloadTrades" />
-                  <span>Download Trades instead of OHLCV data</span>
+                  <span>下载交易数据而非 OHLCV 数据</span>
                 </label>
               </div>
               <div class="dl-select-wrap">
@@ -136,20 +132,20 @@
                   v-model="advancedOptions.candleType"
                   mode="multiple"
                   class="dl-select"
-                  placeholder="Select Candle Types"
+                  placeholder="选择蜡烛类型"
                 >
-                  <a-select-option value="spot">Spot</a-select-option>
-                  <a-select-option value="futures">Futures</a-select-option>
-                  <a-select-option value="funding_rate">Funding Rate</a-select-option>
-                  <a-select-option value="mark">Mark</a-select-option>
-                  <a-select-option value="index">Index</a-select-option>
-                  <a-select-option value="premium_index">Premium Index</a-select-option>
+                  <a-select-option value="spot">现货</a-select-option>
+                  <a-select-option value="futures">期货</a-select-option>
+                  <a-select-option value="funding_rate">资金费率</a-select-option>
+                  <a-select-option value="mark">标记价格</a-select-option>
+                  <a-select-option value="index">指数</a-select-option>
+                  <a-select-option value="premium_index">溢价指数</a-select-option>
                 </a-select>
-                <span class="dl-select-hint">When no candle-type is selected, freqtrade will download the necessary candle types for regular operation automatically.</span>
+                <span class="dl-select-hint">当未选择蜡烛类型时，freqtrade 将自动下载常规操作所需的蜡烛类型。</span>
               </div>
               <label class="dl-checkbox-label">
                 <input type="checkbox" v-model="advancedOptions.customExchange" />
-                <span>Custom Exchange</span>
+                <span>自定义交易所</span>
               </label>
             </div>
           </div>
@@ -159,7 +155,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
-              <span>Start Download</span>
+              <span>开始下载</span>
             </button>
           </div>
         </div>
