@@ -49,56 +49,26 @@
             <div class="sc-console-grid">
             <section class="sc-strategy-grid" id="controlStrategyCards" aria-live="polite"></section>
 
-            <section class="sc-bottom">
-              <div class="sc-governance">
-                <div class="sc-governance-head">
-                  <div class="sc-governance-head-main">
-                    <h2 data-i18n="sc.gov.title">资产访问治理</h2>
-                    <p id="scGovMeta" class="sc-gov-meta" aria-live="polite"></p>
-                  </div>
-                  <button type="button" class="ghost sc-gov-export-btn" data-i18n="sc.gov.export">导出配置</button>
-                </div>
-                <div class="sc-governance-grid">
-                  <div class="sc-list sc-list--wl">
-                    <div class="sc-list-head">
-                      <h4 data-i18n="sc.gov.activeWl">当前白名单</h4>
-                      <span id="scWlCount" class="sc-gov-count-pill sc-gov-count-pill--wl">0 个交易对</span>
-                    </div>
-                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceWlItems"></div>
-                    <button type="button" class="sc-gov-add-wl-btn" id="scGovAddWhitelist" data-i18n="sc.gov.addWhitelistBtn">
-                      添加白名单
-                    </button>
-                  </div>
-                  <div class="sc-list sc-list--bl">
-                    <div class="sc-list-head">
-                      <h4 data-i18n="sc.gov.globalBl">全局黑名单</h4>
-                      <span id="scBlCount" class="sc-gov-count-pill sc-gov-count-pill--bl">0 个交易对</span>
-                    </div>
-                    <div class="sc-list-items sc-gov-list-items" id="scGovernanceBlItems"></div>
-                  </div>
-                </div>
+            <aside class="sc-feed">
+              <div class="sc-feed-head">
+                <h3><BarChartOutlined /><span data-i18n="sc.feed.title">实时成交流</span></h3>
+                <label class="sc-feed-limit">
+                  <span data-i18n="sc.feed.limitLabel">最近条数</span>
+                  <input
+                    id="scFeedLimitInput"
+                    type="number"
+                    name="scFeedLimit"
+                    min="1"
+                    max="500"
+                    step="1"
+                    autocomplete="off"
+                    aria-label="Trades feed row limit"
+                  />
+                </label>
               </div>
-              <aside class="sc-feed">
-                <div class="sc-feed-head">
-                  <h3><BarChartOutlined /><span data-i18n="sc.feed.title">实时成交流</span></h3>
-                  <label class="sc-feed-limit">
-                    <span data-i18n="sc.feed.limitLabel">最近条数</span>
-                    <input
-                      id="scFeedLimitInput"
-                      type="number"
-                      name="scFeedLimit"
-                      min="1"
-                      max="500"
-                      step="1"
-                      autocomplete="off"
-                      aria-label="Trades feed row limit"
-                    />
-                  </label>
-                </div>
-                <div id="scFeedRows"></div>
-                <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
-              </aside>
-            </section>
+              <div id="scFeedRows"></div>
+              <button type="button" class="ghost sc-feed-btn" id="scFeedAuditBtn" data-i18n="sc.feed.audit">查看完整审计日志</button>
+            </aside>
             </div>
 
             <div class="hidden-control">
@@ -268,7 +238,6 @@
   min-width: 0;
 }
 
-/* 独立占满一行，避免原先 display:contents 时卡片与 .sc-governance（span 2）同属一格网而叠在第二张策略卡上，导致底部按钮无法点击 */
 .sc-strategy-grid {
   display: grid;
   align-items: center;
@@ -980,7 +949,7 @@
 }
 
 .sc-feed {
-  grid-column: 3 / 4;
+  grid-column: span 1;
   background: var(--ft-panel-surface-raised);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
   border-radius: var(--ft-panel-radius);
