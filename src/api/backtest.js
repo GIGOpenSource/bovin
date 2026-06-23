@@ -28,3 +28,7 @@ export const getBacktestHistoryResult = (params) => {
 export const deleteBacktestHistory = (filename) => {
   return http.delete(`/backtest/history/${filename}`);
 };
+
+export const getStrategyDetail = (strategyName) => {
+  return http.get(`/strategy/${strategyName}`);
+};

@@ -63,8 +63,15 @@ export async function requestAtBase(baseUrl, path, options = {}) {
   const base = trimBase(baseUrl);
   if (!base) throw new HttpError("缺少 API 基址", { status: 0, url: "" });
 
-  const { json, headers: extraHeaders, signal, method = "GET", ...rest } = options;
-  const url = path.startsWith("http") ? path : buildUrl(base, path);
+  const { json, headers: extraHeaders, signal, method = "GET", params, ...rest } = options;
+  let url = path.startsWith("http") ? path : buildUrl(base, path);
+  
+  if (params) {
+    const queryString = new URLSearchParams(params).toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
 
   const headers = {
     Accept: "application/json",

@@ -32,13 +32,13 @@
               <div class="bt-section">
                 <div class="bt-section-header">
                   <h3 class="bt-section-title">加载历史回测结果</h3>
-                  <button type="button" class="bt-refresh-btn" @click="loadHistory">
+                  <!-- <button type="button" class="bt-refresh-btn" @click="loadHistory">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 8l3.26-3.26A9.75 9.75 0 0 1 12 3a9 9 0 0 1 9 9Z"/>
                       <path d="M16 3h5v5"/>
                       <path d="M21 16v5h-5"/>
                     </svg>
-                  </button>
+                  </button> -->
                 </div>
                 <div v-if="isLoadingHistory" class="bt-loading">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4edea3" stroke-width="2" class="bt-spinner">
@@ -69,9 +69,12 @@
                         <td>{{ formatDateTime(item.backtest_start_time) }}</td>
                         <td>{{ item.filename }}</td>
                         <td class="bt-table-actions">
-                          <button type="button" class="bt-action-btn bt-action-btn--load" @click="loadHistoryResult(item)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <button type="button" class="bt-action-btn bt-action-btn--load" :disabled="isLoadingResult" @click="loadHistoryResult(item)">
+                            <svg v-if="!isLoadingResult" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bt-spin">
+                              <circle cx="12" cy="12" r="10" stroke-linecap="round"/>
                             </svg>
                           </button>
                           <button type="button" class="bt-action-btn bt-action-btn--delete" @click="deleteHistoryItem(item)">
@@ -392,7 +395,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { Modal, message } from 'ant-design-vue';
-import { getBacktestHistory, getBacktestHistoryResult, deleteBacktestHistory } from '../../api/backtest.js';
+import { getBacktestHistory, getBacktestHistoryResult, deleteBacktestHistory, getStrategyDetail } from '../../api/backtest.js';
 
 const tabs = [
   { key: 'load', label: '加载结果', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
@@ -412,6 +415,7 @@ const advancedExpanded = ref(false);
 const startDate = ref('2026-05-01');
 const endDate = ref('');
 const isRunning = ref(false);
+const isLoadingResult = ref(false);
 const isLoadingHistory = ref(false);
 
 const advancedOptions = reactive({
@@ -556,6 +560,8 @@ const decreaseDays = () => { if (backtestDays.value > 1) backtestDays.value--; }
 const toggleAdvanced = () => advancedExpanded.value = !advancedExpanded.value;
 
 const loadHistoryResult = async (item) => {
+  if (isLoadingResult.value) return;
+  isLoadingResult.value = true;
   try {
     const result = await getBacktestHistoryResult({
       filename: item.filename,
@@ -563,9 +569,17 @@ const loadHistoryResult = async (item) => {
     });
     if (result) {
       currentResult.value = result;
+      const strategyDetail = await getStrategyDetail(item.strategy);
+      if (strategyDetail) {
+        currentResult.value.strategyDetail = strategyDetail;
+      }
     }
+    message.success('分析成功');
   } catch (error) {
     console.error('加载回测结果失败:', error);
+    message.error('分析失败');
+  } finally {
+    isLoadingResult.value = false;
   }
 };
 
@@ -855,6 +869,15 @@ const handleBacktest = async () => {
 
 .bt-action-btn--load:hover {
   background: rgba(78, 222, 163, 0.2);
+}
+
+.bt-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .bt-action-btn--delete {
