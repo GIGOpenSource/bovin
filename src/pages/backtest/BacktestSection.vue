@@ -465,12 +465,12 @@
                   <div class="bt-results-table">
                     <div class="bt-table-header">
                       <h4 class="bt-table-title">Periodic breakdown</h4>
-                      <div class="bt-table-shown">
+                      <!-- <div class="bt-table-shown">
                         <span>Shown metrics:</span>
                         <select class="bt-table-select">
                           <option>Profit Factor, Expectancy</option>
                         </select>
-                      </div>
+                      </div> -->
                     </div>
                     <div class="bt-periodic-tabs">
                       <button 
@@ -516,10 +516,10 @@
                     <div class="bt-table-header">
                       <h4 class="bt-table-title">Single trades</h4>
                       <div class="bt-table-shown">
-                        <span>Shown metrics:</span>
+                        <!-- <span>Shown metrics:</span>
                         <select class="bt-table-select">
                           <option>Profit Factor, Expectancy</option>
-                        </select>
+                        </select> -->
                       </div>
                     </div>
                     <div class="bt-table-container">
@@ -539,24 +539,64 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="(trade, index) in (currentResult.trades || [])" :key="index">
-                            <td>{{ trade.id || index + 1 }}</td>
+                          <tr v-for="(trade, index) in paginatedTrades" :key="index">
+                            <td>{{ trade.is_short ? 'Short' : 'Long' }}</td>
                             <td>{{ trade.pair }}</td>
                             <td>{{ trade.amount }}</td>
-                            <td>{{ trade.total_stake_amount }}</td>
+                            <td>{{ trade.stake_amount }}(1X)</td>
                             <td>{{ trade.open_rate }}</td>
                             <td>{{ trade.close_rate }}</td>
-                            <td :class="['bt-profit-cell', trade.profit_pct >= 0 ? 'profit' : 'loss']">
-                              <span v-if="trade.profit_pct >= 0">▲</span>
+                            <td :class="['bt-profit-cell', trade.profit_ratio >= 0 ? 'profit' : 'loss']">
+                              <span v-if="trade.profit_abs >= 0">▲</span>
                               <span v-else>▼</span>
-                              {{ trade.profit_pct }}%
+                              {{ Number(trade.profit_ratio * 100).toFixed(2) }}%（{{Number(trade.profit_abs).toFixed(2)}}）
                             </td>
-                            <td>{{ trade.open_date }}</td>
-                            <td>{{ trade.close_date }}</td>
-                            <td>{{ trade.close_reason }}</td>
+                            <td>{{ formatDate(trade.open_date) }}</td>
+                            <td>{{ formatDate(trade.close_date) }}</td>
+                            <td>{{ trade.exit_reason }}</td>
                           </tr>
                         </tbody>
                       </table>
+                    </div>
+                    <div class="bt-pagination">
+                      <button 
+                        class="bt-pagination-btn" 
+                        :disabled="currentPage === 1"
+                        @click="currentPage = 1"
+                      >
+                        «
+                      </button>
+                      <button 
+                        class="bt-pagination-btn" 
+                        :disabled="currentPage === 1"
+                        @click="currentPage--"
+                      >
+                        ‹
+                      </button>
+                      <template v-for="(page, index) in visiblePages" :key="index">
+                        <button 
+                          v-if="typeof page === 'number'"
+                          :class="['bt-pagination-btn', { active: currentPage === page }]"
+                          @click="currentPage = page"
+                        >
+                          {{ page }}
+                        </button>
+                        <span v-else class="bt-pagination-dots">{{ page }}</span>
+                      </template>
+                      <button 
+                        class="bt-pagination-btn" 
+                        :disabled="currentPage >= totalPages"
+                        @click="currentPage++"
+                      >
+                        ›
+                      </button>
+                      <button 
+                        class="bt-pagination-btn" 
+                        :disabled="currentPage >= totalPages"
+                        @click="currentPage = totalPages"
+                      >
+                        »
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -692,6 +732,68 @@ const periodicTabs = ref([
   { key: 'weekday', label: 'Weekday' }
 ]);
 const activePeriodicTab = ref('month');
+const currentPage = ref(1);
+const pageSize = ref(20);
+
+const paginatedTrades = computed(() => {
+  const trades = currentResult.value?.trades || [];
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return trades.slice(start, end);
+});
+
+const totalPages = computed(() => {
+  const total = currentResult.value?.trades?.length || 0;
+  return Math.ceil(total / pageSize.value);
+});
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+const visiblePages = computed(() => {
+  const pages = [];
+  const total = totalPages.value;
+  const current = currentPage.value;
+  
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    if (current <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i);
+      }
+      pages.push('...');
+      pages.push(total);
+    } else if (current >= total - 3) {
+      pages.push(1);
+      pages.push('...');
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      pages.push('...');
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i);
+      }
+      pages.push('...');
+      pages.push(total);
+    }
+  }
+  
+  return pages;
+});
 
 watch(activePeriodicTab, (newTab) => {
   if (savedBacktestResult.value) {
@@ -2740,5 +2842,11 @@ const handleBacktest = async () => {
 .bt-pagination-info {
   color: #8c90a2;
   font-size: 11px;
+}
+
+.bt-pagination-dots {
+  padding: 4px 8px;
+  color: #8c90a2;
+  font-size: 12px;
 }
 </style>
