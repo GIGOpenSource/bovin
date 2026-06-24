@@ -18,7 +18,7 @@ export const getBacktestHistory = () => {
 };
 
 export const runBacktest = (params) => {
-  return http.post("/backtest/run", params);
+  return http.post("/backtest", params);
 };
 
 export const getBacktestHistoryResult = (params) => {
@@ -31,4 +31,28 @@ export const deleteBacktestHistory = (filename) => {
 
 export const getStrategyDetail = (strategyName) => {
   return http.get(`/strategy/${strategyName}`);
+};
+
+export const getStrategies = () => {
+  return http.get("/strategies");
+};
+
+export const getBacktest = () => {
+  return http.get("/backtest");
+};
+
+export const deleteBacktest = () => {
+  return http.delete("/backtest");
+};
+
+export const getFreqaiModels = () => {
+  return http.get("/freqaimodels");
+};
+
+export const abortBacktest = () => {
+  return http.post("/backtest/abort");
+};
+
+export const getStrategy = () => {
+  return http.get("/strategy");
 };
