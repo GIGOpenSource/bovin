@@ -287,9 +287,17 @@
                       <h4 class="bt-table-title">Results per Enter tag</h4>
                       <div class="bt-table-shown">
                         <span>Shown metrics:</span>
-                        <select class="bt-table-select">
-                          <option>Profit Factor, Expectancy</option>
-                        </select>
+                        <a-select
+                          v-model:value="enterTagVisibleMetrics"
+                          mode="multiple"
+                          class="bt-table-select"
+                          placeholder="Select metrics"
+                          :style="{ minWidth: '200px' }"
+                        >
+                          <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                          </a-select-option>
+                        </a-select>
                       </div>
                     </div>
                     <div class="bt-table-container">
@@ -304,11 +312,14 @@
                             <th>Wins</th>
                             <th>Draws</th>
                             <th>Losses</th>
-                            <th>Expectancy</th>
-                            <th>Profit Factor</th>
-                            <th>Sharpe</th>
-                            <th>Sortino</th>
-                            <th>Max Drawdown</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sqn')">SQN</th>
+                            <th v-if="enterTagVisibleMetrics.includes('cagr')">Cagr</th>
+                            <th v-if="enterTagVisibleMetrics.includes('calmar')">Calmar</th>
+                            <th v-if="enterTagVisibleMetrics.includes('expectancy')">Expectancy</th>
+                            <th v-if="enterTagVisibleMetrics.includes('profit_factor')">Profit Factor</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sharpe')">Sharpe</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sortino')">Sortino</th>
+                            <th v-if="enterTagVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -321,11 +332,14 @@
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td>{{ item.expectancy }}</td>
-                            <td>{{ item.profit_factor }}</td>
-                            <td>{{ item.sharpe || '-100' }}</td>
-                            <td>{{ item.sortino || '-100' }}</td>
-                            <td>{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -337,9 +351,17 @@
                       <h4 class="bt-table-title">Results per Exit reason</h4>
                       <div class="bt-table-shown">
                         <span>Shown metrics:</span>
-                        <select class="bt-table-select">
-                          <option>Profit Factor, Expectancy</option>
-                        </select>
+                        <a-select
+                          v-model:value="exitReasonVisibleMetrics"
+                          mode="multiple"
+                          class="bt-table-select"
+                          placeholder="Select metrics"
+                          :style="{ minWidth: '200px' }"
+                        >
+                          <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                          </a-select-option>
+                        </a-select>
                       </div>
                     </div>
                     <div class="bt-table-container">
@@ -354,11 +376,14 @@
                             <th>Wins</th>
                             <th>Draws</th>
                             <th>Losses</th>
-                            <th>Expectancy</th>
-                            <th>Profit Factor</th>
-                            <th>Sharpe</th>
-                            <th>Sortino</th>
-                            <th>Max Drawdown</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sqn')">SQN</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('cagr')">Cagr</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('calmar')">Calmar</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('expectancy')">Expectancy</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('profit_factor')">Profit Factor</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sharpe')">Sharpe</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sortino')">Sortino</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -371,11 +396,14 @@
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td>{{ item.expectancy }}</td>
-                            <td>{{ item.profit_factor }}</td>
-                            <td>{{ item.sharpe || '-100' }}</td>
-                            <td>{{ item.sortino || '-100' }}</td>
-                            <td>{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -387,9 +415,17 @@
                       <h4 class="bt-table-title">Results Mixed Tag</h4>
                       <div class="bt-table-shown">
                         <span>Shown metrics:</span>
-                        <select class="bt-table-select">
-                          <option>Profit Factor, Expectancy</option>
-                        </select>
+                        <a-select
+                          v-model:value="mixTagVisibleMetrics"
+                          mode="multiple"
+                          class="bt-table-select"
+                          placeholder="Select metrics"
+                          :style="{ minWidth: '200px' }"
+                        >
+                          <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                          </a-select-option>
+                        </a-select>
                       </div>
                     </div>
                     <div class="bt-table-container">
@@ -405,11 +441,14 @@
                             <th>Wins</th>
                             <th>Draws</th>
                             <th>Losses</th>
-                            <th>Expectancy</th>
-                            <th>Profit Factor</th>
-                            <th>Sharpe</th>
-                            <th>Sortino</th>
-                            <th>Max Drawdown</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sqn')">SQN</th>
+                            <th v-if="mixTagVisibleMetrics.includes('cagr')">Cagr</th>
+                            <th v-if="mixTagVisibleMetrics.includes('calmar')">Calmar</th>
+                            <th v-if="mixTagVisibleMetrics.includes('expectancy')">Expectancy</th>
+                            <th v-if="mixTagVisibleMetrics.includes('profit_factor')">Profit Factor</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sharpe')">Sharpe</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sortino')">Sortino</th>
+                            <th v-if="mixTagVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -424,11 +463,14 @@
                               <td>{{ item.wins }}</td>
                               <td>{{ item.draws }}</td>
                               <td>{{ item.losses }}</td>
-                              <td>{{ item.expectancy }}</td>
-                              <td>{{ item.profit_factor }}</td>
-                              <td>{{ item.sharpe || '-100' }}</td>
-                              <td>{{ item.sortino || '-100' }}</td>
-                              <td>{{ item.max_drawdown || '0.00%' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
                             <!-- </tr> -->
                           </tr>
                         </tbody>
@@ -441,9 +483,17 @@
                       <h4 class="bt-table-title">Results per pair</h4>
                       <div class="bt-table-shown">
                         <span>Shown metrics:</span>
-                        <select class="bt-table-select">
-                          <option>Profit Factor, Expectancy</option>
-                        </select>
+                        <a-select
+                          v-model:value="pairVisibleMetrics"
+                          mode="multiple"
+                          class="bt-table-select"
+                          placeholder="Select metrics"
+                          :style="{ minWidth: '200px' }"
+                        >
+                          <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                          </a-select-option>
+                        </a-select>
                       </div>
                     </div>
                     <div class="bt-table-container">
@@ -458,11 +508,14 @@
                             <th>Wins</th>
                             <th>Draws</th>
                             <th>Losses</th>
-                            <th>Expectancy</th>
-                            <th>Profit Factor</th>
-                            <th>Sharpe</th>
-                            <th>Sortino</th>
-                            <th>Max Drawdown</th>
+                            <th v-if="pairVisibleMetrics.includes('sqn')">SQN</th>
+                            <th v-if="pairVisibleMetrics.includes('cagr')">Cagr</th>
+                            <th v-if="pairVisibleMetrics.includes('calmar')">Calmar</th>
+                            <th v-if="pairVisibleMetrics.includes('expectancy')">Expectancy</th>
+                            <th v-if="pairVisibleMetrics.includes('profit_factor')">Profit Factor</th>
+                            <th v-if="pairVisibleMetrics.includes('sharpe')">Sharpe</th>
+                            <th v-if="pairVisibleMetrics.includes('sortino')">Sortino</th>
+                            <th v-if="pairVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -475,11 +528,14 @@
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td>{{ item.expectancy }}</td>
-                            <td>{{ item.profit_factor }}</td>
-                            <td>{{ item.sharpe || '-100' }}</td>
-                            <td>{{ item.sortino || '-100' }}</td>
-                            <td>{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
+                            <td v-if="pairVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -758,6 +814,22 @@ const periodicTabs = ref([
 const activePeriodicTab = ref('month');
 const currentPage = ref(1);
 const pageSize = ref(20);
+
+const metricOptions = [
+  { value: 'sqn', label: 'SQN' },
+  { value: 'cagr', label: 'Cagr' },
+  { value: 'calmar', label: 'Calmar' },
+  { value: 'expectancy', label: 'Expectancy' },
+  { value: 'profit_factor', label: 'Profit Factor' },
+  { value: 'sharpe', label: 'Sharpe' },
+  { value: 'sortino', label: 'Sortino' },
+  { value: 'max_drawdown', label: 'Max Drawdown' }
+];
+
+const enterTagVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
+const exitReasonVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
+const mixTagVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
+const pairVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
 
 const paginatedTrades = computed(() => {
   const trades = currentResult.value?.trades || [];
@@ -2692,6 +2764,7 @@ const handleBacktest = async () => {
 }
 
 .bt-table-select {
+  min-width: 200px;
   padding: 4px 8px;
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
@@ -2699,6 +2772,10 @@ const handleBacktest = async () => {
   color: #e8e9ed;
   font-size: 11px;
   cursor: pointer;
+}
+
+:deep(.bt-table-select .ant-select-selector) {
+  min-width: 200px;
 }
 
 .bt-table-container {
