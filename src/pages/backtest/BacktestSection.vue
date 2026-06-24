@@ -306,6 +306,9 @@
                             <th>Losses</th>
                             <th>Expectancy</th>
                             <th>Profit Factor</th>
+                            <th>Sharpe</th>
+                            <th>Sortino</th>
+                            <th>Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -320,6 +323,9 @@
                             <td>{{ item.losses }}</td>
                             <td>{{ item.expectancy }}</td>
                             <td>{{ item.profit_factor }}</td>
+                            <td>{{ item.sharpe || '-100' }}</td>
+                            <td>{{ item.sortino || '-100' }}</td>
+                            <td>{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -350,6 +356,9 @@
                             <th>Losses</th>
                             <th>Expectancy</th>
                             <th>Profit Factor</th>
+                            <th>Sharpe</th>
+                            <th>Sortino</th>
+                            <th>Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -364,6 +373,9 @@
                             <td>{{ item.losses }}</td>
                             <td>{{ item.expectancy }}</td>
                             <td>{{ item.profit_factor }}</td>
+                            <td>{{ item.sharpe || '-100' }}</td>
+                            <td>{{ item.sortino || '-100' }}</td>
+                            <td>{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -395,6 +407,9 @@
                             <th>Losses</th>
                             <th>Expectancy</th>
                             <th>Profit Factor</th>
+                            <th>Sharpe</th>
+                            <th>Sortino</th>
+                            <th>Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -411,6 +426,9 @@
                               <td>{{ item.losses }}</td>
                               <td>{{ item.expectancy }}</td>
                               <td>{{ item.profit_factor }}</td>
+                              <td>{{ item.sharpe || '-100' }}</td>
+                              <td>{{ item.sortino || '-100' }}</td>
+                              <td>{{ item.max_drawdown || '0.00%' }}</td>
                             <!-- </tr> -->
                           </tr>
                         </tbody>
@@ -442,6 +460,9 @@
                             <th>Losses</th>
                             <th>Expectancy</th>
                             <th>Profit Factor</th>
+                            <th>Sharpe</th>
+                            <th>Sortino</th>
+                            <th>Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -456,6 +477,9 @@
                             <td>{{ item.losses }}</td>
                             <td>{{ item.expectancy }}</td>
                             <td>{{ item.profit_factor }}</td>
+                            <td>{{ item.sharpe || '-100' }}</td>
+                            <td>{{ item.sortino || '-100' }}</td>
+                            <td>{{ item.max_drawdown || '0.00%' }}</td>
                           </tr>
                         </tbody>
                       </table>
