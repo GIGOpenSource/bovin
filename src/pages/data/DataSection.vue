@@ -1518,7 +1518,7 @@ onMounted(() => {
     window.removeEventListener("bovin-panel-auth", onPanelAuthed);
     pairWrap?.removeEventListener("click", onPairClick);
     tfWrap?.removeEventListener("click", onTfClick);
-    modeWrap?.removeEventListener("click", onModeClick);
+    // modeWrap?.removeEventListener("click", onModeClick);
     klineStatus?.removeEventListener("click", onRetryClick);
     klineHintDemo?.removeEventListener("click", onRetryClick);
     if (historyEmptyTimer != null) {

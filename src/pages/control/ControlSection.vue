@@ -22,7 +22,7 @@
                   <div class="sc-kpi">
                     <div>
                       <em data-i18n="control.pnl24h">24h 盈亏</em>
-                      <strong id="controlHeroPnl">+$14,204.42</strong>
+                      <strong id="controlHeroPnl">—</strong>
                     </div>
                     <RiseOutlined aria-hidden="true" />
                   </div>

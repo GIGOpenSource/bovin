@@ -109,7 +109,7 @@ export function computeEstimatedAnnualReturn(profit, dailyPayload, health) {
 
 function formatAnnualReturnLabel(annual) {
   if (!Number.isFinite(annual)) return { text: t("monitor.cagr.na"), cls: "" };
-  const pct = annual * 100;
+  const pct = annual ;
   const text = `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
   const cls = pct < 0 ? "negative" : "positive";
   return { text, cls };
@@ -941,17 +941,18 @@ export function renderControlHeroAndCards(
   }
 
   const hero = $("controlHeroPnl");
-  if (hero && !state.mockMode) {
+  if (hero) {
     const dayRows = dailyPayload?.data || [];
-    const last = dayRows.length ? dayRows[dayRows.length - 1] : null;
+    const last = dayRows.length ? dayRows[0] : null;
     const v = Number(last?.abs_profit ?? 0);
-    hero.textContent = `${v >= 0 ? "+" : "-"}$${Math.abs(v).toFixed(2)}`;
-    hero.classList.remove("positive", "negative");
-    hero.classList.add(v >= 0 ? "positive" : "negative");
-  } else if (hero && state.mockMode) {
-    hero.textContent = "+$14,204.42";
-    hero.classList.remove("negative");
-    hero.classList.add("positive");
+    if (last != null) {
+      hero.textContent = `${v >= 0 ? "+" : "-"}$${Math.abs(v).toFixed(2)}`;
+      hero.classList.remove("positive", "negative");
+      hero.classList.add(v >= 0 ? "positive" : "negative");
+    } else {
+      hero.textContent = "—";
+      hero.classList.remove("positive", "negative");
+    }
   }
   const cfg = showConfig && typeof showConfig === "object" ? showConfig : {};
   renderControlStrategyCards(

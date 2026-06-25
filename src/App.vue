@@ -1,6 +1,6 @@
 <template>
   <a-config-provider :theme="antdTheme">
-    <router-view />
+    <router-view :key="$route.fullPath" />
   </a-config-provider>
 </template>
 

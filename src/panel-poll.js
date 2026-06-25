@@ -585,6 +585,10 @@ export function applyTopbarDecor(pingOk, latencyMs) {
 
   const sys = $("topbarSystemText");
   if (sys) sys.textContent = ok ? t("topbar.systemOnline") : t("topbar.systemOffline");
+  const sysBadge = document.querySelector(".topbar .system-online-badge");
+  if (sysBadge) {
+    sysBadge.classList.toggle("offline", !ok);
+  }
 
   const rpc = $("rpcLiveBadge");
   if (rpc) {

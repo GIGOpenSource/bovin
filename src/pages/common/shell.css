@@ -460,9 +460,18 @@ body {
   color: #4edea3;
 }
 
+.topbar .system-online-badge.offline {
+  color: #f87171;
+}
+
 .topbar .system-online-badge .dot {
   background: #22c55e;
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+}
+
+.topbar .system-online-badge.offline .dot {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
 }
 
 .rpc-live-badge--poll {

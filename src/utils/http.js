@@ -4,6 +4,25 @@
 import { apiUrlBases, rememberSuccessfulApiBase } from "../api/config.js";
 import { state } from "../store/state-core.js";
 
+const networkListeners = new Set();
+
+export function onNetworkStatusChange(cb) {
+  networkListeners.add(cb);
+  return () => networkListeners.delete(cb);
+}
+
+function notifyNetworkOk() {
+  for (const cb of networkListeners) {
+    try { cb(true); } catch {}
+  }
+}
+
+function notifyNetworkFail() {
+  for (const cb of networkListeners) {
+    try { cb(false); } catch {}
+  }
+}
+
 export class HttpError extends Error {
   /**
    * @param {string} message
@@ -87,15 +106,23 @@ export async function requestAtBase(baseUrl, path, options = {}) {
     body = JSON.stringify(json);
   }
 
-  const res = await fetch(url, { ...rest, method, headers, body, signal });
+  let res;
+  try {
+    res = await fetch(url, { ...rest, method, headers, body, signal });
+  } catch (e) {
+    notifyNetworkFail();
+    throw e;
+  }
 
   const data = await parseResponseBody(res);
 
   if (res.ok) {
     rememberSuccessfulApiBase(base);
+    notifyNetworkOk();
     return data;
   }
 
+  notifyNetworkFail();
   throw new HttpError(res.statusText || `HTTP ${res.status}`, {
     status: res.status,
     url,
