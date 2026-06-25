@@ -826,6 +826,7 @@ const metricOptions = [
   { value: 'max_drawdown', label: 'Max Drawdown' }
 ];
 
+const name = ref('')
 const enterTagVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
 const exitReasonVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
 const mixTagVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
@@ -1478,7 +1479,7 @@ const getFieldValue = (data, fieldName) => {
 const loadBacktestResult = async () => {
   isLoadingResult.value = true;
   try {
-    const strategyName = selectedStrategy.value || 'DOUStrategy';
+    const strategyName = name.value || 'DOUStrategy';
     
     if (savedBacktestResult.value) {
       console.log('使用保存的回测结果数据:', savedBacktestResult.value);
@@ -1633,9 +1634,15 @@ const loadHistoryResult = async (item) => {
     if (result) {
       savedBacktestResult.value = result;
       currentResult.value = result;
-    }
-    message.success('分析成功');
+      name.value = item.strategy
+       const result1 =  getStrategyDetail(item.strategy)
+   if(result1){
+       message.success('分析成功');
     hasAnalysisData.value = true
+   }
+    }
+  
+  
   } catch (error) {
     console.error('加载回测结果失败:', error);
     message.error('分析失败');
