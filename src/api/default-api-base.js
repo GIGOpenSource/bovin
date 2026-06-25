@@ -1,10 +1,10 @@
 /** 线上服务器地址 */
-const PROD_REST_ORIGIN = "http://101.32.179.223:8680";
-const PROD_DOWNLOAD_REST_ORIGIN = "http://101.32.179.223:8681";
+const PROD_REST_ORIGIN = "https://www.prbgame.com";
+const PROD_DOWNLOAD_REST_ORIGIN = "https://www.prbgame.com";
 
 /** 本地服务器地址 */
-const LOCAL_REST_ORIGIN = "http://127.0.0.1:8680";
-const LOCAL_DOWNLOAD_REST_ORIGIN = "http://127.0.0.1:8681";
+const LOCAL_REST_ORIGIN = "https://www.prbgame.com";
+const LOCAL_DOWNLOAD_REST_ORIGIN = "https://www.prbgame.com";
 
 /** 判断是否为本地环境（localhost、127.0.0.1、局域网 IP） */
 function isLocalEnv() {
