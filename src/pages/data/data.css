@@ -288,8 +288,7 @@
   min-width: 0;
 }
 
-.da-chart,
-.da-history {
+.da-chart {
   background: var(--ft-panel-surface);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
   border-radius: var(--ft-panel-radius);
@@ -298,17 +297,6 @@
 }
 
 .da-chart-head {
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
-  background: rgba(34, 42, 61, 0.5);
-}
-
-.da-history-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
   padding: 12px 14px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   background: rgba(34, 42, 61, 0.5);
@@ -371,8 +359,7 @@
   flex-shrink: 0;
 }
 
-.da-chart-head h3,
-.da-history-head h3 {
+.da-chart-head h3 {
   margin: 0;
   font-size: 12px;
   text-transform: uppercase;
@@ -545,8 +532,7 @@
   pointer-events: none;
 }
 
-.da-chart #pairData,
-.da-history #availablePairs {
+.da-chart #pairData {
   margin: 0;
   min-height: 220px;
   background: transparent;
@@ -556,9 +542,6 @@
   max-height: none;
   padding: 12px;
   min-width: 0;
-}
-
-.da-chart #pairData {
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -802,18 +785,6 @@
   font-size: 12px;
 }
 
-.da-history-table {
-  margin-top: 12px;
-}
-
-.da-history-table tbody tr:nth-child(even) {
-  background: var(--ft-panel-head-bg-soft);
-}
-
-.da-history-table tbody tr:hover {
-  background: rgba(34, 42, 61, 0.7);
-}
-
 .da-tag {
   display: inline-block;
   padding: 2px 8px;
@@ -863,14 +834,6 @@
   background: linear-gradient(90deg, #ffe08a 0%, #ffd866 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   z-index: 10000;
-}
-
-.da-history-pager {
-  margin-top: 10px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
 }
 
 @media (max-width: 1200px) {

@@ -77,30 +77,7 @@
 
 
 
-                <div class="da-history">
-                  <div class="da-history-head">
-                    <h3 data-i18n="data.histLogs">历史日志</h3>
-                    <button type="button" class="ghost" id="exportHistoryCsv" data-i18n="data.exportCsv">导出 CSV</button>
-                  </div>
-                  <div id="availablePairs" class="log">
-                    <div id="daHistoryEmpty" class="da-history-empty">
-                      <div class="da-history-empty-meta">
-                        <span class="da-history-pill">长度 0</span>
-                        <span class="da-history-pill">交易对数 0</span>
-                        <span class="da-history-pill">行数 0</span>
-                      </div>
-                      <div class="da-history-empty-text">暂无历史日志数据</div>
-                    </div>
-                  </div>
-                </div>
               </div>
-            </div>
-
-            <div class="hidden-control">
-              <input id="historyStrategy" name="historyStrategy" value="SampleStrategy" autocomplete="off" />
-              <input id="historyPair" name="historyPair" value="BTC/USDT" autocomplete="off" />
-              <input id="historyTf" name="historyTf" value="5m" autocomplete="off" />
-              <input id="historyRange" name="historyRange" value="20260324-20260327" autocomplete="off" />
             </div>
           </div>
         </section>
@@ -301,8 +278,7 @@
   min-width: 0;
 }
 
-.da-chart,
-.da-history {
+.da-chart {
   background: var(--ft-panel-surface);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.22);
   border-radius: var(--ft-panel-radius);
@@ -310,19 +286,10 @@
   min-width: 0;
 }
 
-.da-chart-head,
-.da-history-head {
+.da-chart-head {
   padding: 12px 14px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   background: rgba(34, 42, 61, 0.5);
-}
-
-.da-history-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 /** 第一行：标题+价格、交易对、周期、K 线模式同一行（窄屏横向滚动） */
@@ -384,8 +351,7 @@
   flex-shrink: 0;
 }
 
-.da-chart-head h3,
-.da-history-head h3 {
+.da-chart-head h3 {
   margin: 0;
   font-size: 12px;
   text-transform: uppercase;
@@ -558,8 +524,7 @@
   pointer-events: none;
 }
 
-.da-chart #pairData,
-.da-history #availablePairs {
+.da-chart #pairData {
   margin: 0;
   min-height: 220px;
   background: transparent;
@@ -569,9 +534,6 @@
   max-height: none;
   padding: 12px;
   min-width: 0;
-}
-
-.da-chart #pairData {
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -775,50 +737,7 @@
   font-size: 12px;
 }
 
-.da-history-table {
-  margin-top: 12px;
-}
 
-.da-history-table tbody tr:nth-child(even) {
-  background: var(--ft-panel-head-bg-soft);
-}
-
-.da-history-table tbody tr:hover {
-  background: rgba(34, 42, 61, 0.7);
-}
-
-.da-history-empty {
-  min-height: 180px;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-}
-
-.da-history-empty-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.da-history-pill {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.35);
-  background: rgba(20, 30, 52, 0.55);
-  color: #9fb0d8;
-  font-size: 11px;
-}
-
-.da-history-empty-text {
-  margin-top: 14px;
-  text-align: center;
-  color: #8fa2d0;
-  font-size: 13px;
-}
 
 .da-tag {
   display: inline-block;
@@ -871,13 +790,7 @@
   z-index: 10000;
 }
 
-.da-history-pager {
-  margin-top: 10px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-}
+
 
 @media (max-width: 1200px) {
   .ft-page-hero__title { font-size: 34px; }
@@ -1161,7 +1074,6 @@ import {
 } from "./panel-kline-canvas.js";
 
 let disposePairTf = null;
-let historyEmptyTimer = null;
 
 onMounted(() => {
   const dataRoot = document.getElementById("data");
@@ -1173,8 +1085,6 @@ onMounted(() => {
   const klineStatus = dataRoot.querySelector("#daKlineStatus");
   const maLayerDemo = dataRoot.querySelector("#daMaLayerDemo");
   const klineHintDemo = dataRoot.querySelector("#daKlineHintDemo");
-  const historyRoot = dataRoot.querySelector("#availablePairs");
-  const historyEmpty = dataRoot.querySelector("#daHistoryEmpty");
   const pairData = dataRoot.querySelector("#pairData");
   const daDataSource = dataRoot.querySelector("#daDataSource");
   const whitelistContainer = dataRoot.querySelector("#daWhitelistPairs .da-pair-list-inline");
@@ -1479,33 +1389,12 @@ onMounted(() => {
   const onPanelAuthed = () => tryRefreshKlinesIfAuthed();
   window.addEventListener("bovin-panel-auth", onPanelAuthed);
 
-  const syncHistoryEmptyState = () => {
-    if (!historyRoot || !historyEmpty) return;
-    const rows = Array.from(historyRoot.querySelectorAll(".da-history-table tbody tr"));
-    let hasData = false;
-    for (const tr of rows) {
-      const tds = Array.from(tr.querySelectorAll("td"));
-      if (!tds.length) continue;
-      const anyReal = tds.some((td) => {
-        const txt = String(td.textContent || "").trim();
-        return txt && txt !== "-" && txt !== "—";
-      });
-      if (anyReal) {
-        hasData = true;
-        break;
-      }
-    }
-    historyEmpty.classList.toggle("hidden", hasData);
-  };
-
   pairWrap?.addEventListener("click", onPairClick);
   tfWrap?.addEventListener("click", onTfClick);
   klineStatus?.addEventListener("click", onRetryClick);
   klineHintDemo?.addEventListener("click", onRetryClick);
   syncTicker();
   clearKlineError();
-  syncHistoryEmptyState();
-  historyEmptyTimer = window.setInterval(syncHistoryEmptyState, 1000);
   tryRefreshKlinesIfAuthed();
 
   disposePairTf = () => {
@@ -1521,10 +1410,6 @@ onMounted(() => {
     // modeWrap?.removeEventListener("click", onModeClick);
     klineStatus?.removeEventListener("click", onRetryClick);
     klineHintDemo?.removeEventListener("click", onRetryClick);
-    if (historyEmptyTimer != null) {
-      window.clearInterval(historyEmptyTimer);
-      historyEmptyTimer = null;
-    }
     abortCtl?.abort();
     abortCtl = null;
     disposeLwc();

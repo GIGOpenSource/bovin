@@ -133,8 +133,7 @@ html[data-theme="light"] .sc-list.black .item strong {
 
 html[data-theme="light"] .da-strategy-card,
 html[data-theme="light"] .da-volume,
-html[data-theme="light"] .da-chart,
-html[data-theme="light"] .da-history {
+html[data-theme="light"] .da-chart {
   background: var(--ft-panel-surface);
   border-color: var(--outline);
 }
@@ -367,8 +366,7 @@ html[data-theme="light"] .da-market-board {
   border-bottom-color: var(--outline);
 }
 
-html[data-theme="light"] .da-chart-head,
-html[data-theme="light"] .da-history-head {
+html[data-theme="light"] .da-chart-head {
   background: var(--surface-highest);
   border-bottom-color: var(--outline);
 }
@@ -734,14 +732,6 @@ html[data-theme="light"] .da-mini-table td {
 html[data-theme="light"] .da-mini-table th {
   background: var(--surface-highest);
   color: var(--text-dim);
-}
-
-html[data-theme="light"] .da-history-table tbody tr:nth-child(even) {
-  background: rgba(var(--ft-panel-edge-rgb), 0.04);
-}
-
-html[data-theme="light"] .da-history-table tbody tr:hover {
-  background: rgba(var(--ft-accent-rgb), 0.06);
 }
 
 html[data-theme="light"] .da-tag.neutral {
