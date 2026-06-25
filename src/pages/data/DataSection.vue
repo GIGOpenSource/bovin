@@ -13,14 +13,14 @@
                   <span id="daDataSource" class="da-source-badge">数据源：Bovin</span>
                 </div>
               </div>
-              <div class="ft-page-hero__aside da-actions">
+              <div>
                 <div id="daWhitelistPairs" class="da-pair-selector-inline">
                   <!-- <span class="da-pair-selector-label">交易对:</span> -->
                   <div class="da-pair-list-inline" id="daWhitelistPairsList"></div>
                 </div>
-                <button type="button" id="loadPairs" class="primary"><UnorderedListOutlined /><span data-i18n="btn.loadAvailablePairs">加载 available_pairs</span></button>
-                <button type="button" id="loadPairHistory" class="ghost"><HistoryOutlined /><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
-                <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><FilterOutlined /></button>
+                <button type="button" id="loadPairs" class="primary"><span style="font-weight: 500;font-size: 15px;" @click="$router.push('/download')">下载交易对数据</span></button>
+                <!-- <button type="button" id="loadPairHistory" class="ghost"><HistoryOutlined /><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
+                <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><FilterOutlined /></button> -->
               </div>
             </header>
 

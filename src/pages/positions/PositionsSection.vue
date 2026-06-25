@@ -105,7 +105,7 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">一对 *</label>
+                  <label style="display: block; margin-bottom: 5px;">交易对 *</label>
                   <input
                     type="text"
                     v-model="increasePositionPair"
@@ -179,7 +179,7 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3 data-i18n="positions.botComparison">机器人对比</h3>
+                <h3 data-i18n="positions.botComparison">当前业绩</h3>
               </div>
               <div class="positions-table-shell">
                 <table class="positions-table">
@@ -200,7 +200,7 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3 data-i18n="positions.uncompletedTrades">未完成交易</h3>
+                <h3 data-i18n="positions.uncompletedTrades">持仓订单</h3>
                 <span data-i18n="positions.liveFeed">实时推送</span>
               </div>
               <div class="positions-table-shell">
@@ -209,7 +209,7 @@
                     <tr>
                       <th data-i18n="th.bot">机器人</th>
                       <th data-i18n="th.id">ID</th>
-                      <th data-i18n="th.pair">一对</th>
+                      <th data-i18n="th.pair">交易对</th>
                       <th class="t-right" data-i18n="th.quantity">数量</th>
                       <th class="t-right" data-i18n="th.investment">投注金额</th>
                       <th class="t-right" data-i18n="th.openRate">开盈率</th>
@@ -231,14 +231,14 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3 data-i18n="positions.closedTrades">已平仓交易</h3>
+                <h3 data-i18n="positions.closedTrades">已平仓订单</h3>
               </div>
               <div class="positions-table-shell">
                 <table class="positions-table">
                   <thead>
                     <tr>
                       <th data-i18n="th.id">ID</th>
-                      <th data-i18n="th.pair">一对</th>
+                      <th data-i18n="th.pair">交易对</th>
                       <th class="t-right" data-i18n="th.quantity">数量</th>
                       <th class="t-right" data-i18n="th.totalInvestment">总投注金额</th>
                       <th class="t-right" data-i18n="th.openRate">开盈率</th>

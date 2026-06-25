@@ -1153,20 +1153,26 @@ onMounted(async () => {
     }
   });
 
-  const current = String(panelRouter.currentRoute.value.name || "").trim();
-  if (current && panelRouter.hasRoute(current)) {
-    const currentSection = document.querySelector(".section.active")?.id;
-    if (currentSection !== current) {
-      document.querySelectorAll(".nav-btn").forEach((btn) => {
-        btn.classList.remove("active");
-      });
-      document.querySelector(`[data-section="${current}"]`)?.classList.add("active");
-      document.querySelectorAll("section.section").forEach((sec) => {
-        sec.classList.remove("active");
-      });
-      document.getElementById(current)?.classList.add("active");
-    }
-  }
+  watch(
+    () => panelRouter.currentRoute.value.name,
+    (newName) => {
+      if (newName && newName !== "login") {
+        void nextTick(() => {
+          document.querySelectorAll(".nav-btn").forEach((btn) => {
+            const sec = btn.getAttribute("data-section");
+            if (sec === newName) btn.classList.add("active");
+            else btn.classList.remove("active");
+          });
+          try {
+            localStorage.setItem("ft_active_section", newName);
+          } catch {
+            /* ignore */
+          }
+        });
+      }
+    },
+    { immediate: true }
+  );
 });
 
 onUnmounted(() => {

@@ -229,35 +229,10 @@ export function apiUrlBasesCandidates() {
     bases = [...new Set(bases)];
   } else {
     const same = sameOriginApiV1Base();
-    bases = [];
-    if (same) bases.push(same);
-    if (!same || httpNeedsDevProxyFallback()) {
-      if (!bases.includes(devFallback)) bases.push(devFallback);
+    bases = [devFallback];
+    if (same && same !== devFallback && httpNeedsDevProxyFallback()) {
+      if (!bases.includes(same)) bases.push(same);
     }
-    if (!bases.length) bases = [devFallback];
-    try {
-      if (
-        location.protocol === "http:" &&
-        httpNeedsDevProxyFallback() &&
-        same &&
-        devFallback !== same &&
-        bases.includes(devFallback) &&
-        bases.includes(same)
-      ) {
-        bases = [devFallback, ...bases.filter((b) => b !== devFallback)];
-      }
-    } catch {
-      // ignore
-    }
-  }
-  const same = sameOriginApiV1Base();
-  try {
-    if (typeof location !== "undefined" && location.protocol === "https:" && same && !override) {
-      const rest = bases.filter((b) => b !== same);
-      bases = [same, ...rest];
-    }
-  } catch {
-    // ignore
   }
   return prependSameOriginInViteDev(bases);
 }

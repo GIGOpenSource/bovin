@@ -29,8 +29,20 @@ panelRouter.beforeEach((to, from, next) => {
   }
 });
 
-panelRouter.afterEach(() => {
+panelRouter.afterEach((to) => {
   stripSensitiveQueryParamsFromUrl();
+  if (to.name && to.name !== "login") {
+    document.querySelectorAll(".nav-btn").forEach((btn) => {
+      const sec = btn.getAttribute("data-section");
+      if (sec === to.name) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+    try {
+      localStorage.setItem("ft_active_section", to.name);
+    } catch {
+      /* ignore */
+    }
+  }
 });
 
 export default panelRouter;
