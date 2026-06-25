@@ -283,9 +283,10 @@ function normalizePositionsAndOrders(statusRaw) {
   return { positions, orders };
 }
 
-function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance = null) {
-  const botComparisonTable = $("botComparisonTable");
-  const openTradesTable = $("openTradesTable");
+function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance = null, sectionId = null) {
+  const root = sectionId ? document.getElementById(sectionId) : document;
+  const botComparisonTable = root.querySelector("#botComparisonTable");
+  const openTradesTable = root.querySelector("#openTradesTable");
   if (!botComparisonTable && !openTradesTable) return;
 
   const { positions, orders } = normalizePositionsAndOrders(statusRaw);
@@ -361,13 +362,13 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
           <td>7</td>
           <td>${idText}</td>
           <td>${pair}</td>
-          <td class="t-right">${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-right">${stakeDisplay}</td>
-          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-          <td class="t-right">${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-          <td class="t-right"><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
-          <td class="t-right">${openDate || "—"}</td>
-          <td class="t-center">
+          <td>${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td>${stakeDisplay}</td>
+          <td>${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td>${currentRate == null ? "—" : currentRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
+          <td>${openDate || "—"}</td>
+          <td>
             <div class="action-dropdown">
               <button type="button" class="action-icon-btn"${canExit ? "" : " disabled"}><span class="action-icon-dots">⋮</span></button>
               <div class="action-dropdown-menu">
@@ -407,26 +408,27 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
     const s = pickFirstNumber(row, ["stake_amount", "stakeAmount", "amount", "size"]) ?? 0;
     return sum + Math.abs(s);
   }, 0);
-  const totalPnlEl = $("posTotalPnl");
+  const totalPnlEl = root.querySelector("#posTotalPnl");
   if (totalPnlEl) {
     const pnlAbs = Math.abs(totalPnl).toLocaleString(undefined, { maximumFractionDigits: 4 });
     totalPnlEl.textContent = totalPnl >= 0 ? `+$${pnlAbs}` : `-$${pnlAbs}`;
   }
-  const exposureEl = $("posExposure");
+  const exposureEl = root.querySelector("#posExposure");
   if (exposureEl) exposureEl.textContent = `$${exposure.toLocaleString(undefined, { maximumFractionDigits: 4 })}`;
 
-  const openInfo = $("openPageInfo");
+  const openInfo = root.querySelector("#openPageInfo");
   if (openInfo) openInfo.textContent = "1 / 1";
-  const openPrev = $("openPrev");
+  const openPrev = root.querySelector("#openPrev");
   if (openPrev) openPrev.disabled = true;
-  const openNext = $("openNext");
+  const openNext = root.querySelector("#openNext");
   if (openNext) openNext.disabled = true;
   
   setTimeout(setupActionDropdowns, 0);
 }
 
-function renderClosedTradesFromApi(tradesRaw) {
-  const closedTradesTable = $("closedTradesTable");
+function renderClosedTradesFromApi(tradesRaw, sectionId = null) {
+  const root = sectionId ? document.getElementById(sectionId) : document;
+  const closedTradesTable = root.querySelector("#closedTradesTable");
   if (!closedTradesTable) return;
 
   const trades = Array.isArray(tradesRaw?.trades) ? tradesRaw.trades : [];
@@ -457,13 +459,13 @@ function renderClosedTradesFromApi(tradesRaw) {
         <tr>
           <td>${idText}</td>
           <td>${pair}</td>
-          <td class="t-right">${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
-          <td class="t-right">${stakeDisplay}</td>
-          <td class="t-right">${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-          <td class="t-right">${closeRate == null ? "—" : closeRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-          <td class="t-right"><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
-          <td class="t-right">${openDate || "—"}</td>
-          <td class="t-right">${closeDate || "—"}</td>
+          <td>${amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}</td>
+          <td>${stakeDisplay}</td>
+          <td>${openRate == null ? "—" : openRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td>${closeRate == null ? "—" : closeRate.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+          <td><span class="pnl-box ${pnlPct >= 0 ? "positive" : "negative"}">${pnlDisplay}</span></td>
+          <td>${openDate || "—"}</td>
+          <td>${closeDate || "—"}</td>
           <td>${exitReasonText}</td>
         </tr>
       `;
@@ -478,11 +480,11 @@ function renderClosedTradesFromApi(tradesRaw) {
       </tr>`;
   }
 
-  const closedInfo = $("closedPageInfo");
+  const closedInfo = root.querySelector("#closedPageInfo");
   if (closedInfo) closedInfo.textContent = "1 / 1";
-  const closedPrev = $("closedPrev");
+  const closedPrev = root.querySelector("#closedPrev");
   if (closedPrev) closedPrev.disabled = true;
-  const closedNext = $("closedNext");
+  const closedNext = root.querySelector("#closedNext");
   if (closedNext) closedNext.disabled = true;
 }
 
@@ -807,6 +809,14 @@ async function panelTick() {
         getProfitAll()
       );
       sectionRequestNames = ["balance", "tradesFeed", "closedTrades", "profitAll"];
+    } else if (currentSection === "data") {
+      sectionRequests.push(
+        getBalance(),
+        getTradesFeed(getNormalizedControlTradesFeedLimit()),
+        getClosedTrades(),
+        getProfitAll()
+      );
+      sectionRequestNames = ["balance", "tradesFeed", "closedTrades", "profitAll"];
     }
 
     const settled = await Promise.allSettled([...globalRequests, ...sectionRequests]);
@@ -1019,13 +1029,31 @@ async function panelTick() {
         const st = await getStatus();
         statusLeverageForRisk = extractLeverageFromStatusPayload(st);
         uiState.lastStForRisk = Array.isArray(st) ? st : [];
-        renderPositionsSectionFromStatus(st, profitAll, balance);
+        renderPositionsSectionFromStatus(st, profitAll, balance, "positions");
       } catch {
         statusLeverageForRisk = null;
       }
       try {
         if (closedTradesR && closedTradesR.status === "fulfilled" && closedTradesR.value != null) {
-          renderClosedTradesFromApi(closedTradesR.value);
+          renderClosedTradesFromApi(closedTradesR.value, "positions");
+        }
+      } catch {}
+    } else if (currentSection === "data") {
+      const balanceR = settled[5];
+      const closedTradesR = settled[7];
+      const profitAllR = settled[8];
+      
+      const balance = balanceR && balanceR.status === "fulfilled" && balanceR.value != null ? balanceR.value : null;
+      const profitAll = profitAllR && profitAllR.status === "fulfilled" && profitAllR.value != null ? profitAllR.value : null;
+      
+      try {
+        const st = await getStatus();
+        uiState.lastStForRisk = Array.isArray(st) ? st : [];
+        renderPositionsSectionFromStatus(st, profitAll, balance, "data");
+      } catch {}
+      try {
+        if (closedTradesR && closedTradesR.status === "fulfilled" && closedTradesR.value != null) {
+          renderClosedTradesFromApi(closedTradesR.value, "data");
         }
       } catch {}
     }

@@ -92,19 +92,138 @@
                       <th data-i18n="th.bot">机器人</th>
                       <th data-i18n="th.id">ID</th>
                       <th data-i18n="th.pair">交易对</th>
-                      <th class="t-right" data-i18n="th.quantity">数量</th>
-                      <th class="t-right" data-i18n="th.investment">投注金额</th>
-                      <th class="t-right" data-i18n="th.openRate">开盈率</th>
-                      <th class="t-right" data-i18n="th.currentRate">当前利率</th>
-                      <th class="t-right" data-i18n="th.currentPnl">当前利润率</th>
-                      <th class="t-right" data-i18n="th.openDate">开放日期</th>
-                      <th class="t-center" data-i18n="th.actions">操作</th>
+                      <th data-i18n="th.quantity">数量</th>
+                      <th data-i18n="th.investment">投注金额</th>
+                      <th data-i18n="th.openRate">开盈率</th>
+                      <th data-i18n="th.currentRate">当前利率</th>
+                      <th data-i18n="th.currentPnl">当前利润率</th>
+                      <th data-i18n="th.openDate">开放日期</th>
+                      <th data-i18n="th.actions">操作</th>
                     </tr>
                   </thead>
                   <tbody id="openTradesTable"></tbody>
                 </table>
               </div>
             </section>
+
+            <a-modal
+              v-model:open="forceExitModalVisible"
+              title="强制退出交易"
+              :ok-text="'出口仓位'"
+              :cancel-text="'取消'"
+              @ok="handleForceExitOk"
+            >
+              <div style="padding: 10px;">
+                <p style="margin-bottom: 10px;">配置并确认强制退出交易</p>
+                
+                <p style="margin-bottom: 10px; font-weight: bold;">平仓交易 #{{ forceExitTradeId }} {{ forceExitPair }}</p>
+                <p style="margin-bottom: 10px;">目前持有 {{ forceExitCurrentAmount }} {{ forceExitBaseCurrency }}</p>
+                
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                  <p style="margin-bottom: 5px;">以 {{ forceExitBaseCurrency }} 为单位的金额（可选）</p>
+                  <p style="margin-bottom: 0; color: #8c90a2; font-size: 12px;">约 {{ forceExitEstimatedUsdt }} USDT（估价）</p>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">数量</label>
+                  <input
+                    type="number"
+                    v-model="forceExitAmount"
+                    min="0.01"
+                    max="1"
+                    step="0.01"
+                    style="width: 100%; padding: 8px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
+                  />
+                  <p style="margin-top: 5px; color: #8c90a2; font-size: 12px;">当前值: {{ forceExitAmount }} {{ forceExitBaseCurrency }}</p>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">价格（仅限限价订单，可选）</label>
+                  <input
+                    type="number"
+                    v-model="forceExitPrice"
+                    step="0.0001"
+                    placeholder="输入价格"
+                    style="width: 100%; padding: 8px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
+                  />
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">订单类型</label>
+                  <a-space>
+                    <a-button
+                      :type="forceExitOrderType === 'market' ? 'primary' : 'default'"
+                      @click="forceExitOrderType = 'market'"
+                    >市场</a-button>
+                    <a-button
+                      :type="forceExitOrderType === 'limit' ? 'primary' : 'default'"
+                      @click="forceExitOrderType = 'limit'"
+                    >限制</a-button>
+                  </a-space>
+                </div>
+              </div>
+            </a-modal>
+
+            <a-modal
+              v-model:open="increasePositionModalVisible"
+              :title="`增持${increasePositionPair}`"
+              :ok-text="'进入位置'"
+              :cancel-text="'取消'"
+              @ok="handleIncreasePositionOk"
+              width="500px"
+            >
+              <div style="padding: 15px;">
+                <p style="margin-bottom: 15px; color: #8c90a2; font-size: 12px;">增加现有职位</p>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 8px;">订单方向（做多或做空）</label>
+                  <a-space>
+                    <a-button
+                      :type="increasePositionDirection === 'long' ? 'primary' : 'default'"
+                      @click="increasePositionDirection = 'long'"
+                    >Long</a-button>
+                    <a-button
+                      :type="increasePositionDirection === 'short' ? 'primary' : 'default'"
+                      @click="increasePositionDirection = 'short'"
+                    >Short</a-button>
+                  </a-space>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">交易对 *</label>
+                  <input
+                    type="text"
+                    v-model="increasePositionPair"
+                    readonly
+                    style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
+                  />
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">价格（可选）</label>
+                  <input
+                    type="number"
+                    v-model="increasePositionPrice"
+                    step="0.0001"
+                    min="0.01"
+                    placeholder="价格"
+                    style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
+                  />
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px;">质押金额（USDT）[可选]</label>
+                  <input
+                    type="number"
+                    v-model="increasePositionMargin"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="质押金额"
+                    style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
+                  />
+                </div>
+              </div>
+            </a-modal>
           
         </section>
         
@@ -117,6 +236,8 @@
   border-radius: var(--ft-panel-radius);
   padding: 12px 14px;
   margin-bottom: 16px;
+  position: relative;
+  margin-top: 16px;
 }
 
 .positions-block:last-child {
@@ -143,6 +264,143 @@
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
   border-radius: 999px;
   padding: 4px 8px;
+}
+
+.positions-table-scroll {
+  border-radius: var(--ft-panel-radius);
+  overflow-x: auto;
+  overflow-y: auto;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+  max-height: 420px;
+}
+
+.positions-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.positions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--ft-panel-surface-inset);
+}
+
+.positions-table th,
+.positions-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.positions-table th {
+  background: rgba(34, 42, 61, 0.6);
+  color: #8c90a2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+}
+
+.positions-table tr:last-child td {
+  border-bottom: none;
+}
+
+.positions-table tr:hover td {
+  background: rgba(78, 222, 163, 0.05);
+}
+
+.pnl-box {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pnl-box.positive {
+  color: #4edea3;
+  background: rgba(78, 222, 163, 0.12);
+}
+
+.pnl-box.negative {
+  color: #ffb4ab;
+  background: rgba(255, 180, 171, 0.12);
+}
+
+.action-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.action-icon-btn {
+  background: transparent;
+  border: none;
+  color: #aeb9db;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-btn:hover:not(:disabled) {
+  background: rgba(180, 197, 255, 0.1);
+  color: #b4c5ff;
+}
+
+.action-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.action-icon-dots {
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.action-dropdown-menu {
+  position: fixed;
+  margin-top: 4px;
+  background: #1e2336;
+  border: 1px solid rgba(180, 197, 255, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  min-width: 190px;
+  display: none;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #dae2fd;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: rgba(180, 197, 255, 0.1);
+}
+
+.dropdown-icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
 }
 /* Data panel */
 .da-wrap {
@@ -1106,7 +1364,7 @@
 </style>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import {
   FilterOutlined,
   HistoryOutlined,
@@ -1117,6 +1375,130 @@ import { getPanelBinanceBoard, getPairCandles } from "../../api/data.js";
 import { getWhitelist } from "../../api/positions.js";
 import { HttpError } from "../../utils/http.js";
 import { state, uiState } from "../../store/state-core.js";
+import { message } from "ant-design-vue";
+import { http } from "../../utils/http.js";
+
+const forceExitModalVisible = ref(false);
+const forceExitTradeId = ref("");
+const forceExitAmount = ref(0.04);
+const forceExitPrice = ref(null);
+const forceExitOrderType = ref("market");
+const forceExitPair = ref("");
+const forceExitCurrentAmount = ref("0.04");
+const forceExitBaseCurrency = ref("ETH");
+const forceExitEstimatedUsdt = ref("0.00");
+
+const increasePositionModalVisible = ref(false);
+const increasePositionTradeId = ref("");
+const increasePositionAmount = ref(0.04);
+const increasePositionPrice = ref(null);
+const increasePositionOrderType = ref("market");
+const increasePositionPair = ref("");
+const increasePositionDirection = ref("long");
+const increasePositionMargin = ref(null);
+const increasePositionLeverage = ref(null);
+const increasePositionCustomTag = ref("force_entry");
+
+const openForceExitModal = (tradeId, pair = "", currentAmount = "0.04", baseCurrency = "ETH", currentRate = 0) => {
+  forceExitTradeId.value = tradeId;
+  forceExitAmount.value = parseFloat(currentAmount) || 0.04;
+  forceExitPrice.value = null;
+  forceExitOrderType.value = "market";
+  forceExitPair.value = pair;
+  forceExitCurrentAmount.value = currentAmount;
+  forceExitBaseCurrency.value = baseCurrency;
+  
+  const amount = parseFloat(currentAmount) || 0;
+  const rate = parseFloat(currentRate) || 0;
+  forceExitEstimatedUsdt.value = (amount * rate).toFixed(2);
+  
+  forceExitModalVisible.value = true;
+};
+
+const handleForceExitOk = async () => {
+  const amountVal = parseFloat(forceExitAmount.value);
+  const priceVal = forceExitPrice.value ? parseFloat(forceExitPrice.value) : null;
+  
+  if (isNaN(amountVal) || amountVal < 0.01) {
+    message.error("请输入有效的数量（大于等于0.01）");
+    return;
+  }
+  
+  try {
+    const body = {
+      ordertype: forceExitOrderType.value,
+      tradeid: Number(forceExitTradeId.value),
+      amount: amountVal
+    };
+    
+    if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
+      body.price = priceVal;
+    }
+    
+    await http.post("/forcesell", body);
+    message.success("强制退出成功");
+    window.runPanelTickOnce?.();
+    forceExitModalVisible.value = false;
+  } catch (e) {
+    message.error("强制退出失败");
+  }
+};
+
+const openIncreasePositionModal = (tradeId, pair = "") => {
+  increasePositionTradeId.value = tradeId;
+  increasePositionAmount.value = 0.04;
+  increasePositionPrice.value = null;
+  increasePositionOrderType.value = "market";
+  increasePositionPair.value = pair;
+  increasePositionDirection.value = "long";
+  increasePositionMargin.value = null;
+  increasePositionLeverage.value = null;
+  increasePositionCustomTag.value = "force_entry";
+  increasePositionModalVisible.value = true;
+};
+
+const handleIncreasePositionOk = async () => {
+  const amountVal = parseFloat(increasePositionAmount.value);
+  
+  if (isNaN(amountVal) || amountVal < 0.01) {
+    message.error("请输入有效的数量（大于等于0.01）");
+    return;
+  }
+  
+  try {
+    const body = {
+      ordertype: increasePositionOrderType.value,
+      pair: increasePositionPair.value,
+      side: increasePositionDirection.value,
+      stakeamount: amountVal
+    };
+    
+    const priceVal = increasePositionPrice.value ? parseFloat(increasePositionPrice.value) : null;
+    if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
+      body.price = priceVal;
+    }
+    
+    const leverageVal = increasePositionLeverage.value ? parseFloat(increasePositionLeverage.value) : null;
+    if (leverageVal !== null && !isNaN(leverageVal) && leverageVal >= 1) {
+      body.leverage = leverageVal;
+    }
+    
+    if (increasePositionCustomTag.value) {
+      body.entry_tag = increasePositionCustomTag.value;
+    }
+    
+    await http.post("/forcebuy", body);
+    message.success("提升仓位成功");
+    window.runPanelTickOnce?.();
+    increasePositionModalVisible.value = false;
+  } catch (e) {
+    message.error("提升仓位失败");
+  }
+};
+
+window.openForceExitModal = openForceExitModal;
+window.openIncreasePositionModal = openIncreasePositionModal;
+
 import {
   pairForBinanceKlinesRequest,
   parseBinanceKlinesRows,
