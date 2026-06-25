@@ -93,7 +93,7 @@ export function sameOriginApiV1Base() {
   try {
     const { protocol, origin } = window.location;
     if (protocol === "http:" || protocol === "https:") {
-      return `${String(origin || "").replace(/\/$/, "")}/api/v1`;
+      return `${String(origin || "").replace(/\/$/, "")}/api-trade/v1`;
     }
   } catch {
     // ignore

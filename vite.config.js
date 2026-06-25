@@ -32,14 +32,14 @@ export default defineConfig({
     port: 9999,
     host: true,
     proxy: {
-      "/api": {
+      "/api-trade": {
         target: DEV_API_UPSTREAM,
         changeOrigin: true
       },
       "/api-web": {
         target: DOWNLOAD_API_UPSTREAM,
-        changeOrigin: true,
-      },
+        changeOrigin: true
+      }
     }
   }
 });
