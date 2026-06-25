@@ -50,7 +50,13 @@
             <div class="sr-only" id="pageSubtitle"></div>
           </div>
           <div class="api-config">
-            <div class="system-online-badge"><span class="dot"></span><span id="topbarSystemText"></span></div>
+            <div 
+              class="system-online-badge" 
+              :class="{ offline: !isSystemOnline }"
+            >
+              <span class="dot"></span>
+              <span>{{ isSystemOnline ? '系统在线' : '系统离线' }}</span>
+            </div>
             <!-- <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span> -->
             <!-- <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button> -->
             <button type="button" class="icon-btn" id="topbarThemeBtn" data-i18n-aria="aria.theme" aria-label="主题">
@@ -575,7 +581,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, nextTick, ref, watch } from "vue";
+import { onMounted, onUnmounted, nextTick, ref, watch, computed } from "vue";
 import { BellOutlined, BulbOutlined, BulbFilled, UserOutlined } from "@ant-design/icons-vue";
 import {
   startPanelApp,
@@ -591,6 +597,18 @@ import {
   persistProfileToLocalStorage,
   normalizeStrategySlots
 } from "../store/state-core.js";
+
+const isSystemOnline = ref(uiState.lastPingOk);
+
+function updateSystemOnline() {
+  isSystemOnline.value = uiState.lastPingOk;
+}
+
+watch(() => uiState.lastPingOk, () => {
+  isSystemOnline.value = uiState.lastPingOk;
+});
+
+window.__updateSystemOnline = updateSystemOnline;
 import {
   getPanelStrategySlotDetail,
   getPanelStrategySlots,

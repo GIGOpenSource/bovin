@@ -583,11 +583,8 @@ export function applyTopbarDecor(pingOk, latencyMs) {
     }
   }
 
-  const sys = $("topbarSystemText");
-  if (sys) sys.textContent = ok ? t("topbar.systemOnline") : t("topbar.systemOffline");
-  const sysBadge = document.querySelector(".topbar .system-online-badge");
-  if (sysBadge) {
-    sysBadge.classList.toggle("offline", !ok);
+  if (typeof window.__updateSystemOnline === "function") {
+    window.__updateSystemOnline();
   }
 
   const rpc = $("rpcLiveBadge");
@@ -769,8 +766,8 @@ async function panelTick() {
     const pingStarted = performance.now();
     let pingOk = false;
     try {
-      const p = await getPing();
-      pingOk = p?.status === "pong";
+      await getPing();
+      pingOk = true;
     } catch {
       pingOk = false;
     }

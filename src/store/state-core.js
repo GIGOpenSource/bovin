@@ -855,7 +855,7 @@ export const uiState = {
   openOrderFlat: [],
   mockTradesPayload: null,
   lastPingLatencyMs: 0,
-  lastPingOk: true,
+  lastPingOk: false,
   lastPing: null,
   lastShowConfig: null,
   lastProfit: null,
