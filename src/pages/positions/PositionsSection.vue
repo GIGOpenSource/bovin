@@ -181,7 +181,7 @@
               <div class="positions-block-head">
                 <h3 data-i18n="positions.botComparison">当前业绩</h3>
               </div>
-              <div class="positions-table-shell">
+              <div class="positions-table-scroll">
                 <table class="positions-table">
                   <thead>
                     <tr>
@@ -203,7 +203,7 @@
                 <h3 data-i18n="positions.uncompletedTrades">持仓订单</h3>
                 <span data-i18n="positions.liveFeed">实时推送</span>
               </div>
-              <div class="positions-table-shell">
+              <div class="positions-table-scroll">
                 <table class="positions-table">
                   <thead>
                     <tr>
@@ -222,18 +222,13 @@
                   <tbody id="openTradesTable"></tbody>
                 </table>
               </div>
-              <div class="positions-pager">
-                <button type="button" id="openPrev" class="ghost" data-i18n="btn.prevPage">上一页</button>
-                <span id="openPageInfo" class="pager-info">1 / 1</span>
-                <button type="button" id="openNext" class="ghost" data-i18n="btn.nextPage">下一页</button>
-              </div>
             </section>
 
             <section class="positions-block">
               <div class="positions-block-head">
                 <h3 data-i18n="positions.closedTrades">已平仓订单</h3>
               </div>
-              <div class="positions-table-shell">
+              <div class="positions-table-scroll">
                 <table class="positions-table">
                   <thead>
                     <tr>
@@ -251,11 +246,6 @@
                   </thead>
                   <tbody id="closedTradesTable"></tbody>
                 </table>
-              </div>
-              <div class="positions-pager">
-                <button type="button" id="closedPrev" class="ghost" data-i18n="btn.prevPage">上一页</button>
-                <span id="closedPageInfo" class="pager-info">1 / 1</span>
-                <button type="button" id="closedNext" class="ghost" data-i18n="btn.nextPage">下一页</button>
               </div>
             </section>
           </div>
@@ -308,10 +298,18 @@
   padding: 4px 8px;
 }
 
-.positions-table-shell {
+.positions-table-scroll {
   border-radius: var(--ft-panel-radius);
   overflow: hidden;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.positions-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .positions-table {
@@ -405,14 +403,6 @@
 .pnl-box.negative {
   background: rgba(255, 107, 107, 0.15);
   color: #ff6b6b;
-}
-
-.positions-pager {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 4px 2px;
 }
 
 :deep(.empty-row-cell) {
