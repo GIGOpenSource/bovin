@@ -401,29 +401,40 @@ function bindLoginOnce() {
 function bindLogoutOnce() {
   if (logoutBound) return;
   logoutBound = true;
-  $("logoutBtn")?.addEventListener("click", () => {
-    stopPanelPolling();
-    try {
-      localStorage.removeItem("ft_panel_auth");
-    } catch {
-      /* ignore */
-    }
-    uiState.authed = false;
-    uiState.panelPrefsSyncedFromDb = false;
-    uiState.panelPrefsBindingsLoadedFromDb = false;
-    uiState.panelPrefsLoadErrorDetail = "";
-    
-    if (panelRouter) {
-      panelRouter.push({ name: "login" }).then(() => {
-        console.log("[Logout] Redirected to login page");
-      }).catch(err => {
-        console.error("[Logout] Navigation error:", err);
-        location.href = `${location.origin}${location.pathname}#/login`;
+  
+  const bindLogout = () => {
+    const logoutBtn = $("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        stopPanelPolling();
+        try {
+          localStorage.removeItem("ft_panel_auth");
+        } catch {
+          /* ignore */
+        }
+        uiState.authed = false;
+        uiState.panelPrefsSyncedFromDb = false;
+        uiState.panelPrefsBindingsLoadedFromDb = false;
+        uiState.panelPrefsLoadErrorDetail = "";
+        state.password = "";
+        
+        if (panelRouter) {
+          panelRouter.push({ name: "login" }).then(() => {
+            console.log("[Logout] Redirected to login page");
+          }).catch(err => {
+            console.error("[Logout] Navigation error:", err);
+            location.href = `${location.origin}${location.pathname}#/login`;
+          });
+        } else {
+          location.href = `${location.origin}${location.pathname}#/login`;
+        }
       });
     } else {
-      location.href = `${location.origin}${location.pathname}#/login`;
+      setTimeout(bindLogout, 100);
     }
-  });
+  };
+  
+  bindLogout();
 }
 
 export async function startPanelApp() {

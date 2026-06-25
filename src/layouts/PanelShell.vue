@@ -65,7 +65,7 @@
             </select>
             <button id="toggleMock" type="button" class="ghost toggle-mock hidden-control" aria-pressed="false">模拟数据: OFF</button>
             <button id="openSettings" type="button" class="ghost hidden-control" data-i18n="btn.openSettings">设置</button>
-            <button id="logoutBtn" type="button" class="ghost" data-i18n="btn.logout">退出</button>
+            <button id="logoutBtn" type="button" class="ghost" data-i18n="btn.logout" @click="handleLogout">退出</button>
           </div>
         </div>
 
@@ -610,6 +610,7 @@ import {
 import { panelRouter } from "../router/index.js";
 import { createSectionRouteNavigator } from "../router/bridge.js";
 import PanelSections from "./components/PanelSections.vue";
+import { stopPanelPolling } from "../panel-poll.js";
 
 registerSectionRouteNavigator(createSectionRouteNavigator(panelRouter));
 
@@ -1107,6 +1108,31 @@ function onStrategySlotNames(ev) {
   mergeStrategySlotOptionsFromNames(names);
 }
 
+function handleLogout() {
+  stopPanelPolling();
+  try {
+    localStorage.removeItem("ft_panel_auth");
+  } catch {
+    /* ignore */
+  }
+  uiState.authed = false;
+  uiState.panelPrefsSyncedFromDb = false;
+  uiState.panelPrefsBindingsLoadedFromDb = false;
+  uiState.panelPrefsLoadErrorDetail = "";
+  state.password = "";
+  
+  if (panelRouter) {
+    panelRouter.push({ name: "login" }).then(() => {
+      console.log("[Logout] Redirected to login page");
+    }).catch(err => {
+      console.error("[Logout] Navigation error:", err);
+      location.href = `${location.origin}${location.pathname}#/login`;
+    });
+  } else {
+    location.href = `${location.origin}${location.pathname}#/login`;
+  }
+}
+
 onMounted(async () => {
   window.addEventListener("bovin-form-patch", onFormFieldPatch);
   window.addEventListener("bovin-strategy-slot-names", onStrategySlotNames);
@@ -1162,6 +1188,10 @@ onMounted(async () => {
             const sec = btn.getAttribute("data-section");
             if (sec === newName) btn.classList.add("active");
             else btn.classList.remove("active");
+          });
+          document.querySelectorAll("section.section").forEach((sec) => {
+            if (sec.id === newName) sec.classList.add("active");
+            else sec.classList.remove("active");
           });
           try {
             localStorage.setItem("ft_active_section", newName);
