@@ -4,6 +4,8 @@
  */
 import { i18n } from "./i18n/index.js";
 import { postPanelAuthLogin, getPanelPreferences } from "./api/settings.js";
+import { postDryRunConfig, postReloadConfig, getShowConfig } from "./api/overview.js";
+import { Modal } from "ant-design-vue";
 import {
   state,
   uiState,
@@ -303,8 +305,21 @@ function bindPanelChromeOnce() {
   function syncMockPillUi() {
     const badge = $("dataSourceBadge");
     const label = badge?.querySelector(".status-pill-label");
-    const mock = state.mockMode;
-    if (badge) badge.setAttribute("aria-pressed", mock ? "true" : "false");
+    const showCfg =
+      uiState.lastShowConfig && typeof uiState.lastShowConfig === "object"
+        ? uiState.lastShowConfig
+        : null;
+    const fromServer = showCfg ? showCfg.dry_run === true : null;
+    const mock = fromServer !== null ? fromServer : state.mockMode;
+    state.mockMode = mock;
+    if (badge) {
+      badge.setAttribute("aria-pressed", mock ? "true" : "false");
+      if (mock) {
+        badge.classList.add("is-mock");
+      } else {
+        badge.classList.remove("is-mock");
+      }
+    }
     if (label) {
       const liveLabel = state.lang === "en" ? "Live" : "实时";
       label.textContent = `${t("data.sourceLabel")}: ${mock ? t("data.sourcePill.mock") : liveLabel}`;
@@ -318,15 +333,45 @@ function bindPanelChromeOnce() {
   }
 
   syncMockPillUi();
+  window.__syncMockPillUi = syncMockPillUi;
 
-  const toggleMockMode = () => {
-    state.mockMode = !state.mockMode;
-    try {
-      localStorage.setItem("ft_mock_mode", state.mockMode ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-    syncMockPillUi();
+  const toggleMockMode = async () => {
+    const newDryRun = !state.mockMode;
+    const isMock = newDryRun;
+    Modal.confirm({
+      title: isMock ? "切换到模拟模式" : "切换到实时模式",
+      content: isMock ? "确定要切换到模拟模式吗？" : "确定要切换到实时模式吗？",
+      okText: "确定",
+      cancelText: "取消",
+      centered: true,
+      async onOk() {
+        try {
+          await postDryRunConfig(newDryRun);
+          try {
+            await postReloadConfig();
+          } catch {
+            /* ignore reload error */
+          }
+          try {
+            const fresh = await getShowConfig();
+            if (fresh && typeof fresh === "object") {
+              uiState.lastShowConfig = fresh;
+            }
+          } catch {
+            /* ignore refresh error */
+          }
+          state.mockMode = newDryRun;
+          try {
+            localStorage.setItem("ft_mock_mode", state.mockMode ? "1" : "0");
+          } catch {
+            /* ignore */
+          }
+        } catch {
+          /* ignore error */
+        }
+        syncMockPillUi();
+      }
+    });
   };
 
   /* 用文档级委托，避免路由切换/重挂载后按钮节点替换导致“看得到但点不了”。 */

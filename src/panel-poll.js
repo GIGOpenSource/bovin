@@ -829,7 +829,12 @@ async function panelTick() {
     if (sectionRequestNames.includes("blacklist")) blR = settled[idx++];
     if (sectionRequestNames.includes("tradesFeed")) tradesFeedR = settled[idx++];
 
-    if (sc.status === "fulfilled") uiState.lastShowConfig = sc.value;
+    if (sc.status === "fulfilled") {
+      uiState.lastShowConfig = sc.value;
+      if (typeof window.__syncMockPillUi === "function") {
+        window.__syncMockPillUi();
+      }
+    }
     if (health.status === "fulfilled") uiState.lastHealth = health.value;
     if (count.status === "fulfilled") uiState.lastCount = count.value;
     if (profit.status === "fulfilled") uiState.lastProfit = profit.value;

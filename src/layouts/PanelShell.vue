@@ -27,11 +27,12 @@
             type="button"
             class="status-pill status-pill-toggle"
             id="dataSourceBadge"
-            aria-pressed="false"
+            :aria-pressed="state.mockMode ? 'true' : 'false'"
+            :class="{ 'is-mock': state.mockMode }"
             data-i18n-aria="aria.dataSourceToggle"
             aria-label="切换模拟数据与实时数据"
           >
-            <span class="status-pill-label">数据源: 实时</span>
+            <span class="status-pill-label">{{ state.mockMode ? '数据源: 模拟' : '数据源: 实时' }}</span>
             <span class="status-pill-switch" aria-hidden="true"><span class="status-pill-knob"></span></span>
           </button>
           <div id="appVersionLabel" class="sidebar-version" aria-label="Panel version"></div>

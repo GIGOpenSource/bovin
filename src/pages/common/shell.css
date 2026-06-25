@@ -393,6 +393,15 @@ body {
   background: #f2fff8;
 }
 
+.status-pill-toggle.is-mock .status-pill-switch {
+  background: rgba(78, 222, 163, 0.42);
+}
+
+.status-pill-toggle.is-mock .status-pill-knob {
+  transform: translateX(16px);
+  background: #f2fff8;
+}
+
 .main {
   padding: var(--main-pad-top) var(--main-pad-x) 26px;
   padding-top: calc(

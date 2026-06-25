@@ -69,3 +69,11 @@ export const getLogs = (q) => {
   const qs = q?.limit != null ? `?limit=${encodeURIComponent(String(q.limit))}` : "";
   return http.get(`/logs${qs}`);
 };
+
+export const postDryRunConfig = (dryRun) =>
+  http.post("/api/c1/config/dry_run", {
+    dry_run: dryRun,
+    dry_run_wallet: 1000
+  });
+
+export const postReloadConfig = () => http.post("/reload_config");
