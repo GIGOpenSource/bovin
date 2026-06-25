@@ -5,7 +5,7 @@
 import { i18n } from "./i18n/index.js";
 import { postPanelAuthLogin, getPanelPreferences } from "./api/settings.js";
 import { postDryRunConfig, postReloadConfig, getShowConfig } from "./api/overview.js";
-import { Modal } from "ant-design-vue";
+import { Modal, Spin } from "ant-design-vue";
 import {
   state,
   uiState,
@@ -349,6 +349,9 @@ function bindPanelChromeOnce() {
           await postDryRunConfig(newDryRun);
           try {
             await postReloadConfig();
+            if (window.__showReloadConfigModal) {
+              window.__showReloadConfigModal();
+            }
           } catch {
             /* ignore reload error */
           }

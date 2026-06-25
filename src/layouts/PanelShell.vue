@@ -78,6 +78,24 @@
 
         <PanelSections />
 
+        <a-modal
+          v-model:visible="reloadConfigVisible"
+          title="配置重新加载"
+          :closable="false"
+          :mask-closable="false"
+          :centered="true"
+        >
+          <div style="text-align: center; padding: 20px 0;">
+            <a-spin v-if="reloadConfigLoading" :size="32" style="margin-bottom: 16px;" />
+            <div>{{ reloadConfigLoading ? '机器人正在重新加载配置，请等待10s...' : '配置已重新加载完成' }}</div>
+          </div>
+          <template #footer>
+            <a-button type="primary" :loading="reloadConfigLoading" @click="handleReloadConfigOk">
+              确定
+            </a-button>
+          </template>
+        </a-modal>
+
         <div id="apiBindingModal" class="modal hidden" role="presentation">
           <div class="modal-mask" aria-hidden="true"></div>
           <div class="modal-card modal-card--binding modal-card--api-binding" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -600,9 +618,23 @@ import {
 } from "../store/state-core.js";
 
 const isSystemOnline = ref(uiState.lastPingOk);
+const reloadConfigVisible = ref(false);
+const reloadConfigLoading = ref(true);
 
 function updateSystemOnline() {
   isSystemOnline.value = uiState.lastPingOk;
+}
+
+function showReloadConfigModal() {
+  reloadConfigVisible.value = true;
+  reloadConfigLoading.value = true;
+  setTimeout(() => {
+    reloadConfigLoading.value = false;
+  }, 10000);
+}
+
+function handleReloadConfigOk() {
+  reloadConfigVisible.value = false;
 }
 
 watch(() => uiState.lastPingOk, () => {
@@ -610,6 +642,7 @@ watch(() => uiState.lastPingOk, () => {
 });
 
 window.__updateSystemOnline = updateSystemOnline;
+window.__showReloadConfigModal = showReloadConfigModal;
 import {
   getPanelStrategySlotDetail,
   getPanelStrategySlots,
