@@ -1,17 +1,10 @@
-/** 线上服务器地址 */
-const PROD_REST_ORIGIN = "https://www.prbgame.com";
-const PROD_DOWNLOAD_REST_ORIGIN = "https://www.prbgame.com";
-
-/** 本地服务器地址 */
-const LOCAL_REST_ORIGIN = "https://www.prbgame.com";
-const LOCAL_DOWNLOAD_REST_ORIGIN = "https://www.prbgame.com";
-
-/** 判断是否为本地环境（localhost、127.0.0.1、局域网 IP） */
-function isLocalEnv() {
+/** 判断是否为开发环境 */
+function isDevEnv() {
   try {
     if (typeof location === "undefined") return false;
     const host = String(location.hostname || "").toLowerCase();
     if (host === "localhost" || host === "127.0.0.1" || host === "[::1]") return true;
+    if (location.port === "9999") return true;
     if (isPrivateOrLoopbackLanIPv4(host)) return true;
   } catch {
     /* ignore */
@@ -34,14 +27,10 @@ function isPrivateOrLoopbackLanIPv4(hostname) {
   return false;
 }
 
-/** 根据当前页面所在环境自动选择本地或线上服务器地址 */
-function pickOrigin(localOrigin, prodOrigin) {
-  return isLocalEnv() ? localOrigin : prodOrigin;
-}
+const PROD_ORIGIN = "https://www.prbgame.com";
 
-export const DEFAULT_REST_ORIGIN = pickOrigin(LOCAL_REST_ORIGIN, PROD_REST_ORIGIN);
-export const DEFAULT_REST_API_V1_BASE = `${DEFAULT_REST_ORIGIN}/api-trade/v1`;
+export const DEFAULT_REST_ORIGIN = PROD_ORIGIN;
+export const DEFAULT_REST_API_V1_BASE = isDevEnv() ? "/api-trade/v1" : `${PROD_ORIGIN}/api-trade/v1`;
 
-/** 下载数据专用的 API 端口 */
-export const DOWNLOAD_DATA_REST_ORIGIN = pickOrigin(LOCAL_DOWNLOAD_REST_ORIGIN, PROD_DOWNLOAD_REST_ORIGIN);
-export const DOWNLOAD_DATA_API_V1_BASE = `${DOWNLOAD_DATA_REST_ORIGIN}/api-web/v1`;
+export const DOWNLOAD_DATA_REST_ORIGIN = PROD_ORIGIN;
+export const DOWNLOAD_DATA_API_V1_BASE = isDevEnv() ? "/api-web/v1" : `${PROD_ORIGIN}/api-web/v1`;
