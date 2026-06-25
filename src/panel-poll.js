@@ -1141,8 +1141,10 @@ function toggleDropdown(e) {
       activeDropdownBtn = null;
     } else {
       activeDropdownBtn = this;
-      updateDropdownPosition();
+      dropdown.style.visibility = "hidden";
       dropdown.style.display = "block";
+      updateDropdownPosition();
+      dropdown.style.visibility = "visible";
       window.addEventListener("scroll", updateDropdownPosition);
     }
   }
@@ -1154,7 +1156,8 @@ function updateDropdownPosition() {
   if (dropdown) {
     const rect = activeDropdownBtn.getBoundingClientRect();
     dropdown.style.left = `${rect.right - 190}px`;
-    dropdown.style.top = `${rect.bottom + 4}px`;
+    const menuHeight = dropdown.offsetHeight || 200;
+    dropdown.style.top = `${rect.top - menuHeight - 4}px`;
   }
 }
 

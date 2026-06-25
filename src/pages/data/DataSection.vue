@@ -91,7 +91,7 @@
                     <tr>
                       <th data-i18n="th.bot">机器人</th>
                       <th data-i18n="th.id">ID</th>
-                      <th data-i18n="th.pair">交易对</th>
+                      <th>交易对</th>
                       <th data-i18n="th.quantity">数量</th>
                       <th data-i18n="th.investment">投注金额</th>
                       <th data-i18n="th.openRate">开盈率</th>
