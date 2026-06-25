@@ -80,10 +80,70 @@
               </div>
             </div>
           </div>
+             <section class="positions-block">
+              <div class="positions-block-head">
+                <h3>持仓订单</h3>
+                <span data-i18n="positions.liveFeed">实时推送</span>
+              </div>
+              <div class="positions-table-scroll">
+                <table class="positions-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="th.bot">机器人</th>
+                      <th data-i18n="th.id">ID</th>
+                      <th data-i18n="th.pair">交易对</th>
+                      <th class="t-right" data-i18n="th.quantity">数量</th>
+                      <th class="t-right" data-i18n="th.investment">投注金额</th>
+                      <th class="t-right" data-i18n="th.openRate">开盈率</th>
+                      <th class="t-right" data-i18n="th.currentRate">当前利率</th>
+                      <th class="t-right" data-i18n="th.currentPnl">当前利润率</th>
+                      <th class="t-right" data-i18n="th.openDate">开放日期</th>
+                      <th class="t-center" data-i18n="th.actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="openTradesTable"></tbody>
+                </table>
+              </div>
+            </section>
+          
         </section>
+        
 </template>
 
 <style scoped>
+.positions-block {
+  background: var(--ft-panel-surface);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
+  border-radius: var(--ft-panel-radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.positions-block:last-child {
+  margin-bottom: 0;
+}
+
+.positions-block-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.positions-block-head h3 {
+  margin: 0;
+  font-family: var(--ft-font-display);
+}
+
+.positions-block-head span {
+  font-size: 12px;
+  color: #aeb9db;
+  background: #2d3449;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.25);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
 /* Data panel */
 .da-wrap {
   width: 100%;
