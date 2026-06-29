@@ -60,7 +60,7 @@
             </div>
             <!-- <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span> -->
             <!-- <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button> -->
-            <button type="button" class="icon-btn" id="topbarThemeBtn" data-i18n-aria="aria.theme" aria-label="主题">
+            <button type="button" class="icon-btn" id="topbarThemeBtn" :class="{ 'is-active': isLightMode }" data-i18n-aria="aria.theme" aria-label="主题">
               <BulbOutlined class="theme-icon theme-icon-off" />
               <BulbFilled class="theme-icon theme-icon-on" />
             </button>
@@ -620,6 +620,13 @@ import {
 const isSystemOnline = ref(uiState.lastPingOk);
 const reloadConfigVisible = ref(false);
 const reloadConfigLoading = ref(true);
+
+const isLightMode = computed(() => {
+  const theme = String(uiState.theme || "dark").trim().toLowerCase();
+  if (theme === "light") return true;
+  if (theme === "dark") return false;
+  return window.matchMedia?.("(prefers-color-scheme: light)").matches || false;
+});
 
 function updateSystemOnline() {
   isSystemOnline.value = uiState.lastPingOk;
