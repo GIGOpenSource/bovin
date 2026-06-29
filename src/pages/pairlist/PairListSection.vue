@@ -386,6 +386,7 @@ const removeSelectedPairs = async () => {
     okText: "确定",
     cancelText: "取消",
     okType: "danger",
+    maskClosable: true,
     async onOk() {
       try {
         await deleteBlacklistPairs([...selectedPairs.value]);
@@ -413,6 +414,7 @@ const clearBlacklist = async () => {
     okText: "确定",
     cancelText: "取消",
     okType: "danger",
+    maskClosable: true,
     async onOk() {
       try {
         await deleteBlacklistPairs([...blacklist.value]);

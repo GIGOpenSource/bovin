@@ -812,3 +812,21 @@ html[data-theme="light"] .action-icon-btn:hover:not(:disabled) {
   background: rgba(var(--ft-panel-edge-rgb), 0.08);
   color: var(--text);
 }
+
+/* 浅色：周期分析图表 tooltip */
+html[data-theme="light"] .pb-chart-tooltip {
+  background: var(--surface-high);
+  border-color: rgba(var(--ft-accent-rgb), 0.35);
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(24, 30, 48, 0.12);
+}
+
+html[data-theme="light"] .pb-chart-tooltip .tt-date {
+  color: var(--text-dim);
+}
+
+/* 浅色：周期分析图例成交数圆点 */
+html[data-theme="light"] .pb-legend-dot--trade {
+  background: rgba(60, 72, 110, 0.6);
+  box-shadow: 0 0 0 3px rgba(60, 72, 110, 0.2);
+}

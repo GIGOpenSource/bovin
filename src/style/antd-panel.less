@@ -137,3 +137,39 @@ html[data-theme="light"] .modal-card--binding .bovin-select-full .ant-select-sel
   transform: none !important;
   transition: none !important;
 }
+
+/* 浅色模式：确认弹窗 */
+html[data-theme="light"] .ant-modal-confirm {
+  // background: var(--surface-high) !important;
+  border-color: var(--outline) !important;
+}
+
+html[data-theme="light"] .ant-modal-confirm .ant-modal-title {
+  color: var(--text) !important;
+}
+
+html[data-theme="light"] .ant-modal-confirm .ant-modal-body {
+  color: var(--text) !important;
+}
+
+html[data-theme="light"] .ant-modal-confirm .ant-btn-default,
+html[data-theme="light"] .ant-modal-confirm .ant-btn-default:hover,
+html[data-theme="light"] .ant-modal-confirm .ant-btn-default:focus,
+html[data-theme="light"] .ant-modal-confirm .ant-btn-default:focus-visible {
+  color: var(--text) !important;
+  border-color: var(--outline) !important;
+  background: var(--surface-high) !important;
+}
+
+html[data-theme="light"] .ant-modal-confirm .ant-btn-default:hover {
+  background: var(--surface-low) !important;
+  border-color: rgba(var(--ft-accent-rgb), 0.4) !important;
+}
+
+html[data-theme="light"] .ant-modal-confirm .ant-btn-dangerous,
+html[data-theme="light"] .ant-modal-confirm .ant-btn-dangerous:hover,
+html[data-theme="light"] .ant-modal-confirm .ant-btn-dangerous:focus {
+  color: #fff !important;
+  background: #dc2626 !important;
+  // border-color: #dc2626 !important;
+}

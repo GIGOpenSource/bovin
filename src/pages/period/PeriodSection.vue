@@ -154,8 +154,8 @@
 }
 
 .pb-legend-dot--trade {
-  background: rgba(var(--ft-panel-edge-rgb), 0.4);
-  box-shadow: 0 0 0 3px rgba(var(--ft-panel-edge-rgb), 0.15);
+  background: rgba(180, 197, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(180, 197, 255, 0.25);
 }
 
 .pb-chart-card,
@@ -442,8 +442,12 @@ const drawChart = (data, mode = "abs") => {
   const w = rect.width;
   const h = rect.height;
 
-  // 网格
-  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const gridColor = isLight ? "rgba(60, 72, 110, 0.08)" : "rgba(255,255,255,0.05)";
+  const nodeBorderColor = isLight ? "#eef1f8" : "#0c111d";
+  const barColor = isLight ? "rgba(60, 72, 110, 0.15)" : "rgba(255, 255, 255, 0.15)";
+
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
   for (let i = 0; i <= 6; i++) {
     const y = (h / 6) * i;
@@ -458,17 +462,13 @@ const drawChart = (data, mode = "abs") => {
     return;
   }
 
-  // 按日期升序排列，旧日期在左侧，新日期在右侧
   const chartData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
-  // mode: 'abs' => abs_profit, 'rel' => rel_profit(%)
   const valueKey = mode === "rel" ? "profitPct" : "profit";
 
-  // 计算数据范围（支持负数）
   const allValues = chartData.map((d) => d[valueKey] || 0);
   const minVal = Math.min(...allValues);
   const maxVal = Math.max(...allValues);
   
-  // 计算对称范围，确保0点在图表中间
   const absMax = Math.max(Math.abs(minVal), Math.abs(maxVal), 0.5);
   const yMin = -absMax;
   const yMax = absMax;
@@ -478,7 +478,6 @@ const drawChart = (data, mode = "abs") => {
 
   const stepX = w / Math.max(1, chartData.length - 1);
 
-  // 折线
   ctx.beginPath();
   chartData.forEach((d, i) => {
     const x = i * stepX;
@@ -494,7 +493,6 @@ const drawChart = (data, mode = "abs") => {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // 节点：根据正负值显示不同颜色
   chartData.forEach((d, i) => {
     const x = i * stepX;
     const val = d[valueKey] || 0;
@@ -504,17 +502,16 @@ const drawChart = (data, mode = "abs") => {
     ctx.arc(x, y, 3, 0, Math.PI * 2);
     ctx.fillStyle = val >= 0 ? "#4edea3" : "#ff5b6b";
     ctx.fill();
-    ctx.strokeStyle = "#0c111d";
+    ctx.strokeStyle = nodeBorderColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
   });
 
-  // 柱（交易数）— 白色雾蒙蒙
   chartData.forEach((d, i) => {
     if (!d.trades) return;
     const x = i * stepX - 6;
     const y = h - (d.trades / maxTrades) * h;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+    ctx.fillStyle = barColor;
     ctx.fillRect(x, y, 12, h - y);
   });
 
@@ -633,6 +630,13 @@ onMounted(async () => {
   const onMove = (e) => showTooltip(e, canvas, currentData, currentMode);
   const onLeave = () => tooltip?.classList.add("hidden");
   const onResize = () => drawChart(currentData, currentMode);
+  const onThemeChange = () => drawChart(currentData, currentMode);
+
+  const themeObserver = new MutationObserver(onThemeChange);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"]
+  });
 
   tabs?.addEventListener("click", onTabClick);
   modeSwitch?.addEventListener("click", onModeClick);
@@ -641,6 +645,7 @@ onMounted(async () => {
   window.addEventListener("resize", onResize);
 
   disposePeriod = () => {
+    themeObserver.disconnect();
     tabs?.removeEventListener("click", onTabClick);
     modeSwitch?.removeEventListener("click", onModeClick);
     canvas?.removeEventListener("mousemove", onMove);
