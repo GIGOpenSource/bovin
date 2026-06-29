@@ -100,7 +100,7 @@
   padding: 6px 16px;
   border: none;
   background: transparent;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   font-size: 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -129,7 +129,7 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #c2c8d8;
+  color: var(--text-dim, #c2c8d8);
 }
 
 .pb-legend-dot {
@@ -154,8 +154,8 @@
 }
 
 .pb-legend-dot--trade {
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+  background: rgba(var(--ft-panel-edge-rgb), 0.4);
+  box-shadow: 0 0 0 3px rgba(var(--ft-panel-edge-rgb), 0.15);
 }
 
 .pb-chart-card,
@@ -188,7 +188,7 @@
 .pb-mode-btn {
   border: none;
   background: transparent;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
@@ -232,7 +232,7 @@
   flex-direction: column;
   justify-content: space-between;
   font-size: 10px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
   pointer-events: none;
 }
 
@@ -260,7 +260,7 @@
   flex-direction: row;
   justify-content: space-between;
   font-size: 10px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .pb-chart-axis-label {
@@ -269,7 +269,7 @@
   transform: translateY(-50%) rotate(-90deg);
   transform-origin: center;
   font-size: 11px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   letter-spacing: 0.06em;
   pointer-events: none;
 }
@@ -291,7 +291,7 @@
   position: absolute;
   background: rgba(18, 22, 32, 0.95);
   border: 1px solid rgba(78, 222, 163, 0.35);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 11px;
   padding: 6px 10px;
   border-radius: 6px;
@@ -306,7 +306,7 @@
 }
 
 .pb-chart-tooltip .tt-date {
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   margin-bottom: 4px;
 }
 
@@ -335,7 +335,7 @@
   padding: 12px 14px;
   font-size: 11px;
   font-weight: 600;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
@@ -348,17 +348,17 @@
 .pb-table td {
   padding: 12px 14px;
   font-size: 12px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
 }
 
 .pb-table td.positive {
-  color: #4edea3;
+  color: #0d8f5c;
   font-weight: 600;
 }
 
 .pb-table td.negative {
-  color: #ffb4ab;
+  color: #c53b30;
   font-weight: 600;
 }
 

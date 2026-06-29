@@ -379,7 +379,7 @@ const handleDownload = async () => {
   margin: 0 0 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .dl-input-list {
@@ -399,7 +399,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   box-sizing: border-box;
 }
@@ -410,7 +410,7 @@ const handleDownload = async () => {
 }
 
 .dl-input::placeholder {
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .dl-remove-btn,
@@ -420,7 +420,7 @@ const handleDownload = async () => {
   padding: 0;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -458,7 +458,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   font-size: 12px;
   cursor: pointer;
   text-align: left;
@@ -472,7 +472,7 @@ const handleDownload = async () => {
 
 .dl-template-btn-secondary {
   background: rgba(var(--ft-panel-edge-rgb), 0.15);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .dl-time-section {
@@ -495,7 +495,7 @@ const handleDownload = async () => {
   gap: 8px;
   cursor: pointer;
   font-size: 12px;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
 }
 
 .dl-checkbox-label input[type="checkbox"] {
@@ -512,7 +512,7 @@ const handleDownload = async () => {
 
 .dl-time-label {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .dl-time-control {
@@ -527,7 +527,7 @@ const handleDownload = async () => {
   padding: 0;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -546,7 +546,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   text-align: center;
 }
@@ -572,7 +572,7 @@ const handleDownload = async () => {
 
 .dl-date-label {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .dl-date-input-wrap {
@@ -586,7 +586,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   min-width: 140px;
 }
@@ -603,15 +603,15 @@ const handleDownload = async () => {
 }
 
 .dl-date-picker :deep(.ant-picker-input > input) {
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .dl-date-picker :deep(.ant-picker-placeholder) {
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .dl-date-picker :deep(.ant-picker-suffix) {
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .dl-date-picker :deep(.ant-picker-panel) {
@@ -692,7 +692,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   cursor: pointer;
   margin-bottom: 8px;
@@ -705,7 +705,7 @@ const handleDownload = async () => {
 
 .dl-select-hint {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .dl-custom-exchange {
@@ -729,7 +729,7 @@ const handleDownload = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   min-width: 200px;
 }

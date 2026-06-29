@@ -1718,7 +1718,7 @@ const handleBacktest = async () => {
   padding: 8px 16px;
   border: none;
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -1727,7 +1727,7 @@ const handleBacktest = async () => {
 }
 
 .bt-tab:hover {
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
 }
 
@@ -1767,7 +1767,7 @@ const handleBacktest = async () => {
   margin: 0 0 14px;
   font-size: 14px;
   font-weight: 600;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-history-list {
@@ -1800,12 +1800,12 @@ const handleBacktest = async () => {
 .bt-history-name {
   font-size: 13px;
   font-weight: 500;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-history-time {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-history-stats {
@@ -1842,7 +1842,7 @@ const handleBacktest = async () => {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-empty-state p {
@@ -1866,13 +1866,13 @@ const handleBacktest = async () => {
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
   border: none;
   border-radius: 6px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .bt-refresh-btn:hover {
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
 }
 
@@ -1905,7 +1905,7 @@ const handleBacktest = async () => {
   text-align: left;
   padding: 10px 14px;
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1914,7 +1914,7 @@ const handleBacktest = async () => {
 .bt-table tbody td {
   padding: 12px 14px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-table tbody tr:hover {
@@ -2000,10 +2000,10 @@ const handleBacktest = async () => {
 .bt-input {
   flex: 1;
   padding: 10px 12px;
-  background: #000000;
+  background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   box-sizing: border-box;
 }
@@ -2014,12 +2014,12 @@ const handleBacktest = async () => {
 }
 
 .bt-input::placeholder {
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-input-label {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   min-width: 120px;
 }
 
@@ -2030,7 +2030,7 @@ const handleBacktest = async () => {
   padding: 0;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -2072,7 +2072,7 @@ const handleBacktest = async () => {
   gap: 8px;
   cursor: pointer;
   font-size: 12px;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
 }
 
 .bt-checkbox-label input[type="checkbox"] {
@@ -2089,7 +2089,7 @@ const handleBacktest = async () => {
 
 .bt-time-label {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-time-control {
@@ -2104,7 +2104,7 @@ const handleBacktest = async () => {
   padding: 0;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -2123,7 +2123,7 @@ const handleBacktest = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   text-align: center;
 }
@@ -2148,7 +2148,7 @@ const handleBacktest = async () => {
 
 .bt-date-label {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-date-input {
@@ -2156,7 +2156,7 @@ const handleBacktest = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
 }
 
@@ -2270,7 +2270,7 @@ const handleBacktest = async () => {
 
 .bt-form-label {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   min-width: 120px;
 }
 
@@ -2282,7 +2282,7 @@ const handleBacktest = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   cursor: pointer;
 }
@@ -2293,8 +2293,8 @@ const handleBacktest = async () => {
 }
 
 .bt-select option {
-  background: #0c111d;
-  color: #e8e9ed;
+  background: var(--ft-panel-surface);
+  color: var(--text, #e8e9ed);
 }
 
 .bt-use-default-btn {
@@ -2302,7 +2302,7 @@ const handleBacktest = async () => {
   background: transparent;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 4px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2310,7 +2310,7 @@ const handleBacktest = async () => {
 
 .bt-use-default-btn:hover {
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-date-section {
@@ -2335,7 +2335,7 @@ const handleBacktest = async () => {
 
 .bt-date-input-wrap .bt-date-label {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-date-label-wrap {
@@ -2352,7 +2352,7 @@ const handleBacktest = async () => {
 
 .bt-timeframe-label {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-input-small {
@@ -2361,7 +2361,7 @@ const handleBacktest = async () => {
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 6px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
 }
 
@@ -2405,7 +2405,7 @@ const handleBacktest = async () => {
 
 .bt-btn-secondary {
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
 }
 
@@ -2454,7 +2454,7 @@ const handleBacktest = async () => {
 .bt-analysis-value {
   font-size: 20px;
   font-weight: 700;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   margin-bottom: 4px;
 }
 
@@ -2464,7 +2464,7 @@ const handleBacktest = async () => {
 
 .bt-analysis-label {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-analysis-section {
@@ -2476,7 +2476,7 @@ const handleBacktest = async () => {
 .bt-analysis-subtitle {
   font-size: 13px;
   font-weight: 600;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   margin: 0 0 12px;
 }
 
@@ -2511,17 +2511,17 @@ const handleBacktest = async () => {
 }
 
 .bt-trade-pair {
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-trade-time {
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-trade-direction {
   font-size: 12px;
   font-weight: 600;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-trade-profit {
@@ -2560,7 +2560,7 @@ const handleBacktest = async () => {
   justify-content: space-between;
   padding: 8px 0;
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-bar-chart {
@@ -2597,7 +2597,7 @@ const handleBacktest = async () => {
 
 .bt-bar-item span {
   font-size: 12px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-metrics-grid {
@@ -2640,12 +2640,12 @@ const handleBacktest = async () => {
 .bt-metric-value {
   font-size: 18px;
   font-weight: 700;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-metric-label {
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-analysis-grid {
@@ -2669,7 +2669,7 @@ const handleBacktest = async () => {
 .bt-analysis-section-title {
   font-size: 12px;
   font-weight: 600;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   padding: 12px 14px;
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
   margin: 0;
@@ -2689,7 +2689,7 @@ const handleBacktest = async () => {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
 }
 
@@ -2701,7 +2701,7 @@ const handleBacktest = async () => {
 .bt-settings-value,
 .bt-metrics-value {
   text-align: right;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-settings-row,
@@ -2724,12 +2724,12 @@ const handleBacktest = async () => {
 
 .bt-settings-row .bt-settings-label,
 .bt-metrics-row .bt-metrics-label {
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
 }
 
 .bt-settings-row .bt-settings-value,
 .bt-metrics-row .bt-metrics-value {
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-weight: 500;
 }
 
@@ -2758,7 +2758,7 @@ const handleBacktest = async () => {
 .bt-table-title {
   font-size: 12px;
   font-weight: 600;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   margin: 0;
 }
 
@@ -2767,7 +2767,7 @@ const handleBacktest = async () => {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .bt-table-select {
@@ -2776,7 +2776,7 @@ const handleBacktest = async () => {
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 4px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 11px;
   cursor: pointer;
 }
@@ -2799,7 +2799,7 @@ const handleBacktest = async () => {
   text-align: right;
   padding: 8px 12px;
   background: rgba(var(--ft-panel-edge-rgb), 0.05);
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -2815,13 +2815,13 @@ const handleBacktest = async () => {
   text-align: right;
   padding: 7px 12px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.05);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   white-space: nowrap;
 }
 
 .bt-data-table tbody td:first-child {
   text-align: left;
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
 }
 
 .bt-data-table tbody tr:hover {
@@ -2850,7 +2850,7 @@ const handleBacktest = async () => {
   background: transparent;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   border-radius: 4px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2858,7 +2858,7 @@ const handleBacktest = async () => {
 
 .bt-periodic-tab:hover {
   background: rgba(var(--ft-panel-edge-rgb), 0.1);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-periodic-tab.active {
@@ -2877,7 +2877,7 @@ const handleBacktest = async () => {
   text-align: left;
   padding: 8px 10px;
   background: rgba(var(--ft-panel-edge-rgb), 0.05);
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -2889,7 +2889,7 @@ const handleBacktest = async () => {
   text-align: left;
   padding: 6px 10px;
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.05);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   white-space: nowrap;
 }
 
@@ -2931,7 +2931,7 @@ const handleBacktest = async () => {
   background: rgba(var(--ft-panel-edge-rgb), 0.2);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 4px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2939,7 +2939,7 @@ const handleBacktest = async () => {
 
 .bt-pagination-btn:hover:not(:disabled) {
   background: rgba(var(--ft-panel-edge-rgb), 0.3);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .bt-pagination-btn:disabled {
@@ -2948,13 +2948,13 @@ const handleBacktest = async () => {
 }
 
 .bt-pagination-info {
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-size: 11px;
 }
 
 .bt-pagination-dots {
   padding: 4px 8px;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   font-size: 12px;
 }
 </style>

@@ -112,16 +112,23 @@ function bindThemeToggleOnce() {
     if (uiState.theme === "system") applyThemeToDom("system");
   });
 
-  $("topbarThemeBtn")?.addEventListener("click", () => {
-    const next = resolveThemeMode(uiState.theme) === "light" ? "dark" : "light";
-    uiState.theme = next;
-    try {
-      localStorage.setItem("ft_theme", next);
-    } catch {
-      /* ignore */
-    }
-    applyThemeToDom(next);
-  });
+  if (!uiState.themeToggleDelegationBound) {
+    uiState.themeToggleDelegationBound = true;
+    document.addEventListener("click", (ev) => {
+      const el = ev.target instanceof Element ? ev.target.closest("#topbarThemeBtn") : null;
+      if (!el) return;
+      if (el instanceof HTMLButtonElement && el.disabled) return;
+      ev.preventDefault();
+      const next = resolveThemeMode(uiState.theme) === "light" ? "dark" : "light";
+      uiState.theme = next;
+      try {
+        localStorage.setItem("ft_theme", next);
+      } catch {
+        /* ignore */
+      }
+      applyThemeToDom(next);
+    });
+  }
 }
 
 function syncLoginShell() {

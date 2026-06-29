@@ -108,7 +108,7 @@
   margin: 0 0 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .pl-card-header .pl-card-title {
@@ -125,7 +125,7 @@
   height: 28px;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -150,7 +150,7 @@
   padding: 8px 16px;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   font-size: 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -177,7 +177,7 @@
 .pl-pair-tag {
   padding: 6px 12px;
   background: rgba(var(--ft-panel-edge-rgb), 0.15);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -253,7 +253,7 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .pl-modal-close {
@@ -261,7 +261,7 @@
   height: 28px;
   border: none;
   background: transparent;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -272,7 +272,7 @@
 
 .pl-modal-close:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
 }
 
 .pl-modal-body {
@@ -285,7 +285,7 @@
   background: var(--ft-panel-surface-inset);
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 8px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   font-size: 13px;
   box-sizing: border-box;
   transition: border-color 0.2s ease;
@@ -297,13 +297,13 @@
 }
 
 .pl-input::placeholder {
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .pl-hint {
   margin: 8px 0 0;
   font-size: 11px;
-  color: #6e7591;
+  color: var(--text-dim, #6e7591);
 }
 
 .pl-modal-footer {
@@ -326,7 +326,7 @@
 
 .pl-modal-btn--cancel {
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
 }
 
 .pl-modal-btn--cancel:hover {

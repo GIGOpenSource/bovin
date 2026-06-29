@@ -81,7 +81,7 @@
   padding: 6px 14px;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
   background: var(--ft-panel-surface-inset);
-  color: #dae2fd;
+  color: var(--text, #dae2fd);
   font-size: 11px;
   border-radius: 8px;
   cursor: pointer;
@@ -112,7 +112,7 @@
   padding: 8px 0;
   font-size: 11px;
   font-weight: 600;
-  color: #8c90a2;
+  color: var(--text-dim, #8c90a2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -120,16 +120,16 @@
 .pf-performance-table td {
   padding: 10px 0;
   font-size: 12px;
-  color: #e8e9ed;
+  color: var(--text, #e8e9ed);
   border-bottom: 1px solid rgba(var(--ft-panel-edge-rgb), 0.1);
 }
 
 .pf-performance-table td.positive {
-  color: #4edea3;
+  color: #0d8f5c;
 }
 
 .pf-performance-table td.negative {
-  color: #ffb4ab;
+  color: #c53b30;
 }
 </style>
 

@@ -850,6 +850,7 @@ export const uiState = {
   editingStrategyEntryId: null,
   theme: "system",
   themeMediaBound: false,
+  themeToggleDelegationBound: false,
   topbarChromeBound: false,
   lastLogsSnapshot: [],
   openOrderFlat: [],
