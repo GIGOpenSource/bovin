@@ -3,9 +3,9 @@
     <div class="ft-page dl-wrap">
       <header class="ft-page-hero ft-page-hero--data">
         <div class="ft-page-hero__intro">
-          <span class="ft-page-hero__kicker ft-kicker-accent">数据下载</span>
-          <h1 class="ft-page-hero__title">下载数据</h1>
-          <p class="ft-page-hero__desc">下载交易对历史数据</p>
+          <span class="ft-page-hero__kicker ft-kicker-accent" data-i18n="page.kicker.download">数据下载</span>
+          <h1 class="ft-page-hero__title" data-i18n="page.title.download">下载数据</h1>
+          <p class="ft-page-hero__desc" data-i18n="page.desc.download">下载交易对历史数据</p>
         </div>
       </header>
 
@@ -13,10 +13,10 @@
         <div class="dl-card">
           <div class="dl-grid">
             <div class="dl-column">
-              <h3 class="dl-section-title">选择交易对</h3>
+              <h3 class="dl-section-title" data-i18n="download.selectPair">选择交易对</h3>
               <div class="dl-input-list">
                 <div v-for="(pair, index) in pairs" :key="index" class="dl-input-row">
-                  <input type="text" v-model="pairs[index]" class="dl-input" :placeholder="'交易对'" />
+                  <input type="text" v-model="pairs[index]" class="dl-input" :placeholder="t('download.pairPlaceholder')" />
                   <button type="button" class="dl-remove-btn" @click="removePair(index)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -32,20 +32,20 @@
             </div>
 
             <div class="dl-column">
-              <h3 class="dl-section-title">从模板导入交易对</h3>
+              <h3 class="dl-section-title" data-i18n="download.importFromTemplate">从模板导入交易对</h3>
               <div class="dl-template-buttons">
-                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT')">所有 USDT 交易对</button>
-                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT:USDT')">所有 USDT 期货交易对</button>
+                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT')" data-i18n="download.allUsdtPairs">所有 USDT 交易对</button>
+                <button type="button" class="dl-template-btn" @click="addTemplatePair('.*/USDT:USDT')" data-i18n="download.allUsdtFutures">所有 USDT 期货交易对</button>
                 <!-- <button type="button" class="dl-template-btn">所有 USDT 期货合约</button>
                 <button type="button" class="dl-template-btn dl-template-btn-secondary">使用交易对列表配置</button> -->
               </div>
             </div>
 
             <div class="dl-column">
-              <h3 class="dl-section-title">选择时间周期</h3>
+              <h3 class="dl-section-title" data-i18n="download.selectTimeframe">选择时间周期</h3>
               <div class="dl-input-list">
                 <div v-for="(tf, index) in timeframes" :key="index" class="dl-input-row">
-                  <input type="text" v-model="timeframes[index]" class="dl-input" :placeholder="'时间周期'" />
+                  <input type="text" v-model="timeframes[index]" class="dl-input" :placeholder="t('download.timeframePlaceholder')" />
                   <button type="button" class="dl-remove-btn" @click="removeTimeframe(index)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -63,15 +63,15 @@
 
           <div class="dl-time-section">
             <div class="dl-time-header">
-              <h3 class="dl-section-title">时间选择</h3>
+              <h3 class="dl-section-title" data-i18n="download.timeSelection">时间选择</h3>
               <label class="dl-checkbox-label">
                 <input type="checkbox" v-model="useCustomTimerange" />
-                <span>使用自定义时间范围</span>
+                <span data-i18n="download.useCustomTimerange">使用自定义时间范围</span>
               </label>
             </div>
             
             <div v-show="!useCustomTimerange" class="dl-time-input-wrap">
-              <span class="dl-time-label">下载天数:</span>
+              <span class="dl-time-label" data-i18n="download.downloadDays">下载天数:</span>
               <div class="dl-time-control">
                 <button type="button" class="dl-time-btn" @click="decreaseDays">-</button>
                 <input type="number" v-model="downloadDays" class="dl-time-input" />
@@ -81,7 +81,7 @@
             
             <div v-show="useCustomTimerange" class="dl-date-range-wrap">
               <div class="dl-date-input-group">
-                <span class="dl-date-label">开始日期</span>
+                <span class="dl-date-label" data-i18n="download.startDate">开始日期</span>
                 <a-date-picker
                   v-model="startDate"
                   class="dl-date-picker"
@@ -91,7 +91,7 @@
                 />
               </div>
               <div class="dl-date-input-group">
-                <span class="dl-date-label">结束日期</span>
+                <span class="dl-date-label" data-i18n="download.endDate">结束日期</span>
                 <a-date-picker
                   v-model="endDate"
                   class="dl-date-picker"
@@ -105,28 +105,28 @@
 
           <div class="dl-advanced-section" :class="{ 'dl-advanced-section--expanded': advancedExpanded }">
             <button type="button" class="dl-advanced-header" @click="toggleAdvanced">
-              <h3 class="dl-section-title">高级选项</h3>
+              <h3 class="dl-section-title" data-i18n="download.advancedOptions">高级选项</h3>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                    :class="{ 'dl-rotate': advancedExpanded }">
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
             <div v-show="advancedExpanded" class="dl-advanced-content">
-              <div class="dl-advanced-hint">
+              <div class="dl-advanced-hint" data-i18n="download.advancedHint">
                 高级选项（删除数据、下载交易数据和自定义交易所设置）仅在展开此部分时生效。
               </div>
               <div class="dl-checkbox-list">
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.eraseExisting" />
-                  <span>删除现有数据</span>
+                  <span data-i18n="download.eraseExisting">删除现有数据</span>
                 </label>
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.prependData" />
-                  <span>下载时前置数据</span>
+                  <span data-i18n="download.prependData">下载时前置数据</span>
                 </label>
                 <label class="dl-checkbox-label">
                   <input type="checkbox" v-model="advancedOptions.downloadTrades" />
-                  <span>下载交易数据而非 OHLCV 数据</span>
+                  <span data-i18n="download.downloadTrades">下载交易数据而非 OHLCV 数据</span>
                 </label>
               </div>
               <div class="dl-select-wrap">
@@ -135,20 +135,20 @@
                   @change="handleChange"
                   mode="multiple"
                   class="dl-select"
-                  placeholder="选择蜡烛类型"
+                  :placeholder="t('download.selectCandleType')"
                 >
-                  <a-select-option value="spot">现货</a-select-option>
-                  <a-select-option value="futures">期货</a-select-option>
-                  <a-select-option value="funding_rate">资金费率</a-select-option>
-                  <a-select-option value="mark">标记价格</a-select-option>
-                  <a-select-option value="index">指数</a-select-option>
-                  <a-select-option value="premium_index">溢价指数</a-select-option>
+                  <a-select-option value="spot" data-i18n="download.spot">现货</a-select-option>
+                  <a-select-option value="futures" data-i18n="download.futures">期货</a-select-option>
+                  <a-select-option value="funding_rate" data-i18n="download.fundingRate">资金费率</a-select-option>
+                  <a-select-option value="mark" data-i18n="download.markPrice">标记价格</a-select-option>
+                  <a-select-option value="index" data-i18n="download.index">指数</a-select-option>
+                  <a-select-option value="premium_index" data-i18n="download.premiumIndex">溢价指数</a-select-option>
                 </a-select>
-                <span class="dl-select-hint">当未选择蜡烛类型时，freqtrade 将自动下载常规操作所需的蜡烛类型。</span>
+                <span class="dl-select-hint" data-i18n="download.candleTypeHint">当未选择蜡烛类型时，freqtrade 将自动下载常规操作所需的蜡烛类型。</span>
               </div>
               <label class="dl-checkbox-label">
                 <input type="checkbox" v-model="advancedOptions.customExchange" />
-                <span>自定义交易所</span>
+                <span data-i18n="download.customExchange">自定义交易所</span>
               </label>
 
               <div v-if="advancedOptions.customExchange" class="dl-custom-exchange">
@@ -161,7 +161,7 @@
                 </div>
                 <div class="dl-exchange-row">
                   <div class="dl-static-value">
-                    <span>现金</span>
+                    <span data-i18n="download.cash">现金</span>
                   </div>
                 </div>
               </div>
@@ -173,7 +173,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
-              <span>{{ isDownloading ? '下载中...' : '开始下载' }}</span>
+              <span :data-i18n="isDownloading ? 'download.downloading' : 'download.startDownload'">开始下载</span>
             </button>
           </div>
         </div>
@@ -186,6 +186,13 @@
 import { ref, reactive } from 'vue';
 import { message } from 'ant-design-vue';
 import { downloadData, getBackgroundStatus } from '../../api/download.js';
+import { i18n } from '../../i18n/index.js';
+import { state } from '../../store/state-core.js';
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const pairs = ref(['BTC/USDT', 'ETH/USDT']);
 const timeframes = ref(['5m', '1h']);
@@ -266,12 +273,12 @@ const pollBackgroundStatus = async (jobId) => {
     const result = await getBackgroundStatus(jobId);
     
     if (result.status === 'failed') {
-      message.error(result.error || '下载失败');
+      message.error(result.error || t('download.failed'));
       return;
     }
     
     if (!result.running) {
-      message.success('下载成功');
+      message.success(t('download.success'));
       return;
     }
     
@@ -303,11 +310,11 @@ const handleDownload = async () => {
       const endVal = endDate.value instanceof Date ? endDate.value : (endDate.value?.$d || endDate.value);
       
       if (!startVal) {
-        message.error('请选择开始日期');
+        message.error(t('download.pleaseSelectStartDate'));
         return;
       }
       if (!endVal) {
-        message.error('请选择结束日期');
+        message.error(t('download.pleaseSelectEndDate'));
         return;
       }
       const start = formatDate(startVal);
@@ -326,11 +333,11 @@ const handleDownload = async () => {
     if (downloadResult && downloadResult.job_id) {
       await pollBackgroundStatus(downloadResult.job_id);
     } else {
-      message.success('下载成功');
+      message.success(t('download.success'));
     }
   } catch (error) {
-    console.error('下载失败:', error);
-    message.error('下载失败');
+    console.error(t('download.failed'), error);
+    message.error(t('download.failed'));
   } finally {
     isDownloading.value = false;
   }

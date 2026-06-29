@@ -3,9 +3,9 @@
     <div class="ft-page bt-wrap">
       <header class="ft-page-hero ft-page-hero--data">
         <div class="ft-page-hero__intro">
-          <span class="ft-page-hero__kicker ft-kicker-accent">回测管理</span>
-          <h1 class="ft-page-hero__title">回测管理</h1>
-          <p class="ft-page-hero__desc">运行和管理策略回测</p>
+          <span class="ft-page-hero__kicker ft-kicker-accent" data-i18n="page.kicker.backtest">回测管理</span>
+          <h1 class="ft-page-hero__title" data-i18n="page.title.backtest">回测管理</h1>
+          <p class="ft-page-hero__desc" data-i18n="page.desc.backtest">运行和管理策略回测</p>
         </div>
       </header>
 

@@ -396,7 +396,7 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
     openTradesTable.innerHTML =
       openTradesRows ||
       `<tr>
-        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">暂无数据</td>
+        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">${t("common.noData")}</td>
       </tr>`;
   }
 
@@ -476,7 +476,7 @@ function renderClosedTradesFromApi(tradesRaw, sectionId = null) {
     closedTradesTable.innerHTML =
       closedTradesRows ||
       `<tr>
-        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">暂无数据</td>
+        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">${t("common.noData")}</td>
       </tr>`;
   }
 
@@ -598,15 +598,28 @@ export function applyTopbarDecor(pingOk, latencyMs) {
   /* 数据面板页眉：与 /ping 轮询同源（见 panelTick → applyTopbarDecor） */
   const daNode = $("daNodeLine");
   if (daNode) {
-    const label = ok ? t("data.nodeOnline") : t("data.nodeOffline");
-    daNode.innerHTML = `<i class="${ok ? "dot ok" : "dot"}"></i>${escapeHtml(label)}`;
+    const dotIcon = daNode.querySelector("i") || document.createElement("i");
+    dotIcon.className = ok ? "dot ok" : "dot";
+    const labelSpan = daNode.querySelector("span") || document.createElement("span");
+    labelSpan.setAttribute("data-i18n", ok ? "data.nodeOnline" : "data.nodeOffline");
+    labelSpan.textContent = ok ? t("data.nodeOnline") : t("data.nodeOffline");
+    daNode.innerHTML = "";
+    daNode.appendChild(dotIcon);
+    daNode.appendChild(labelSpan);
   }
   const daLat = $("daLatencyLine");
   if (daLat) {
-    daLat.innerHTML = `<i class="${ok ? "dot ok" : "dot"}"></i>${escapeHtml(tReplace("data.latencyLine", { ms }))}`;
+    const dotIcon = daLat.querySelector("i") || document.createElement("i");
+    dotIcon.className = ok ? "dot ok" : "dot";
+    const labelSpan = daLat.querySelector("span") || document.createElement("span");
+    labelSpan.textContent = tReplace("data.latencyLine", { ms });
+    daLat.innerHTML = "";
+    daLat.appendChild(dotIcon);
+    daLat.appendChild(labelSpan);
   }
   const daNet = $("daNetStatus");
   if (daNet) {
+    daNet.setAttribute("data-i18n", ok ? "data.netOk" : "data.netFail");
     daNet.textContent = ok ? t("data.netOk") : t("data.netFail");
     daNet.classList.toggle("live", ok);
     daNet.classList.toggle("fallback", !ok);

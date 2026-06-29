@@ -42,7 +42,7 @@
                   <td>{{ item.count != null ? item.count : "-" }}</td>
                 </tr>
                 <tr v-if="tableData.length === 0">
-                  <td colspan="4" style="text-align: center; color: #8c90a2;">暂无数据</td>
+                  <td colspan="4" data-i18n="common.noData" style="text-align: center; color: #8c90a2;">暂无数据</td>
                 </tr>
               </tbody>
             </table>

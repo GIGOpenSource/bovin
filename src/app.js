@@ -48,6 +48,8 @@ function t(key) {
   return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
 }
 
+window.t = t;
+
 export function applyDomI18n(root = document) {
   root.querySelectorAll("[data-i18n]").forEach((el) => {
     const k = el.getAttribute("data-i18n");
@@ -273,6 +275,30 @@ function bindPanelChromeOnce() {
   const verEl = $("appVersionLabel");
   if (verEl && metaV) verEl.textContent = `v${metaV}`;
 
+  if (!uiState.langDelegatedBound) {
+    uiState.langDelegatedBound = true;
+    document.addEventListener("click", (ev) => {
+      const el = ev.target instanceof Element ? ev.target.closest("#langQuickToggle") : null;
+      if (!el) return;
+      if (el instanceof HTMLButtonElement && el.disabled) return;
+      ev.preventDefault();
+      
+      state.lang = state.lang === "en" ? "zh-CN" : "en";
+      try {
+        localStorage.setItem("ft_lang", state.lang);
+      } catch {
+        /* ignore */
+      }
+      const langSel = $("langSwitch");
+      if (langSel instanceof HTMLSelectElement) langSel.value = state.lang === "en" ? "en" : "zh-CN";
+      applyDomI18n(document);
+      const shell = $("appRoot");
+      if (shell) applyDomI18n(shell);
+      syncMockPillUi();
+      applyTopbarDecor(uiState.lastPingOk, uiState.lastPingLatencyMs);
+    });
+  }
+  
   const langSel = $("langSwitch");
   if (langSel instanceof HTMLSelectElement) {
     langSel.value = state.lang === "en" ? "en" : "zh-CN";
@@ -283,24 +309,6 @@ function bindPanelChromeOnce() {
       } catch {
         /* ignore */
       }
-      applyDomI18n(document);
-      const shell = $("appRoot");
-      if (shell) applyDomI18n(shell);
-      syncMockPillUi();
-      applyTopbarDecor(uiState.lastPingOk, uiState.lastPingLatencyMs);
-    });
-  }
-
-  const langQuick = $("langQuickToggle");
-  if (langQuick) {
-    langQuick.addEventListener("click", () => {
-      state.lang = state.lang === "en" ? "zh-CN" : "en";
-      try {
-        localStorage.setItem("ft_lang", state.lang);
-      } catch {
-        /* ignore */
-      }
-      if (langSel instanceof HTMLSelectElement) langSel.value = state.lang === "en" ? "en" : "zh-CN";
       applyDomI18n(document);
       const shell = $("appRoot");
       if (shell) applyDomI18n(shell);

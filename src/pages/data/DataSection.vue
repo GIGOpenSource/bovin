@@ -7,10 +7,10 @@
                 <h1 class="ft-page-hero__title" data-i18n="page.title.data"></h1>
                 <p class="ft-page-hero__desc" data-i18n="page.desc.data"></p>
                 <div class="ft-page-hero__meta da-metrics">
-                  <span id="daNodeLine"><i class="dot ok"></i>节点离线</span>
-                  <span id="daLatencyLine"><i class="dot"></i>延迟 15ms</span>
-                  <span id="daNetStatus" class="da-net-badge live">网络正常</span>
-                  <span id="daDataSource" class="da-source-badge">数据源：Bovin</span>
+                  <span id="daNodeLine"><i class="dot ok"></i><span data-i18n="data.nodeOffline">节点离线</span></span>
+                  <span id="daLatencyLine"><i class="dot"></i><span data-i18n="data.latencyMock">延迟 15ms</span></span>
+                  <span id="daNetStatus" class="da-net-badge live"></span>
+                  <span id="daDataSource" class="da-source-badge"><span data-i18n="data.sourceLabel">数据源</span>：<span id="daDataSourceValue">Bovin</span></span>
                 </div>
               </div>
               <div>
@@ -18,7 +18,7 @@
                   <!-- <span class="da-pair-selector-label">交易对:</span> -->
                   <div class="da-pair-list-inline" id="daWhitelistPairsList"></div>
                 </div>
-                <button type="button" id="loadPairs" class="primary"><span style="font-weight: 500;font-size: 15px;" @click="$router.push('/download')">下载交易对数据</span></button>
+                <button type="button" id="loadPairs" class="primary"><span style="font-weight: 500;font-size: 15px;" @click="$router.push('/download')" data-i18n="btn.loadPairs">下载交易对数据</span></button>
                 <!-- <button type="button" id="loadPairHistory" class="ghost"><HistoryOutlined /><span data-i18n="btn.loadPairHistory">加载 pair_history</span></button>
                 <button type="button" class="ghost icon-only" id="daTuneBtn" data-i18n-aria="aria.chartTune" aria-label="图表调节"><FilterOutlined /></button> -->
               </div>
@@ -82,7 +82,7 @@
           </div>
              <section class="positions-block">
               <div class="positions-block-head">
-                <h3>持仓订单</h3>
+                <h3 data-i18n="positions.uncompletedTrades">持仓订单</h3>
                 <span data-i18n="positions.liveFeed">实时推送</span>
               </div>
               <div class="positions-table-scroll">
@@ -91,7 +91,7 @@
                     <tr>
                       <th data-i18n="th.bot">机器人</th>
                       <th data-i18n="th.id">ID</th>
-                      <th>交易对</th>
+                      <th data-i18n="th.tradingPair">交易对</th>
                       <th data-i18n="th.quantity">数量</th>
                       <th data-i18n="th.investment">投注金额</th>
                       <th data-i18n="th.openRate">开盈率</th>
@@ -190,7 +190,7 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">交易对 *</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.pair">交易对 *</label>
                   <input
                     type="text"
                     v-model="increasePositionPair"
@@ -1377,6 +1377,12 @@ import { HttpError } from "../../utils/http.js";
 import { state, uiState } from "../../store/state-core.js";
 import { message } from "ant-design-vue";
 import { http } from "../../utils/http.js";
+import { i18n } from "../../i18n/index.js";
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const forceExitModalVisible = ref(false);
 const forceExitTradeId = ref("");
@@ -1638,7 +1644,8 @@ onMounted(() => {
       klineStatus.innerHTML = `<span>${msg}</span><span class="da-kline-status-actions"><button type="button" class="ghost tiny" id="daKlineRetryBtn">立即重试</button></span>`;
     }
     klineHintDemo?.classList.remove("hidden");
-    if (daDataSource) daDataSource.textContent = "数据源：—";
+    const daDataSourceValue = pairData.querySelector("#daDataSourceValue");
+      if (daDataSourceValue) daDataSourceValue.textContent = "—";
   };
 
   const ensureShell = (pair, tf) => {
@@ -1774,7 +1781,8 @@ onMounted(() => {
       updateHeaderFromRows(rows);
       applyRowsToRenderer(rows);
       clearKlineError();
-      if (daDataSource) daDataSource.textContent = "数据源：BOVIN_BINANCE";
+      const daDataSourceValue = pairData.querySelector("#daDataSourceValue");
+      if (daDataSourceValue) daDataSourceValue.textContent = "BOVIN_BINANCE";
     } catch (e) {
       if (e?.name === "AbortError") return;
       if (myGen !== loadGen) return;

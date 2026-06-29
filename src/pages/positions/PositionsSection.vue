@@ -23,24 +23,24 @@
 
             <a-modal
               v-model:open="forceExitModalVisible"
-              title="强制退出交易"
-              :ok-text="'出口仓位'"
-              :cancel-text="'取消'"
+              :title="t('positions.forceExitTitle')"
+              :ok-text="t('positions.closeTrade')"
+              :cancel-text="t('btn.cancel')"
               @ok="handleForceExitOk"
             >
               <div style="padding: 10px;">
-                <p style="margin-bottom: 10px;">配置并确认强制退出交易</p>
+                <p style="margin-bottom: 10px;" data-i18n="positions.forceExitConfirm">配置并确认强制退出交易</p>
                 
-                <p style="margin-bottom: 10px; font-weight: bold;">平仓交易 #{{ forceExitTradeId }} {{ forceExitPair }}</p>
-                <p style="margin-bottom: 10px;">目前持有 {{ forceExitCurrentAmount }} {{ forceExitBaseCurrency }}</p>
+                <p style="margin-bottom: 10px; font-weight: bold;">{{ t('positions.closeTrade') }} #{{ forceExitTradeId }} {{ forceExitPair }}</p>
+                <p style="margin-bottom: 10px;" data-i18n="positions.currentlyHolding">目前持有</p>
                 
                 <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px;">
-                  <p style="margin-bottom: 5px;">以 {{ forceExitBaseCurrency }} 为单位的金额（可选）</p>
-                  <p style="margin-bottom: 0; color: #8c90a2; font-size: 12px;">约 {{ forceExitEstimatedUsdt }} USDT（估价）</p>
+                  <p style="margin-bottom: 5px;">{{ t('positions.amountInBase') }} {{ forceExitBaseCurrency }} {{ t('positions.optional') }}</p>
+                  <p style="margin-bottom: 0; color: #8c90a2; font-size: 12px;">{{ t('positions.estimatedUsdt') }} {{ forceExitEstimatedUsdt }} {{ t('positions.usdtValue') }}</p>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">数量</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.quantity">数量</label>
                   <input
                     type="number"
                     v-model="forceExitAmount"
@@ -49,31 +49,31 @@
                     step="0.01"
                     style="width: 100%; padding: 8px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
                   />
-                  <p style="margin-top: 5px; color: #8c90a2; font-size: 12px;">当前值: {{ forceExitAmount }} {{ forceExitBaseCurrency }}</p>
+                  <p style="margin-top: 5px; color: #8c90a2; font-size: 12px;">{{ t('positions.currentValue') }}: {{ forceExitAmount }} {{ forceExitBaseCurrency }}</p>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">价格（仅限限价订单，可选）</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.priceLimitOrder">价格（仅限限价订单，可选）</label>
                   <input
                     type="number"
                     v-model="forceExitPrice"
                     step="0.0001"
-                    placeholder="输入价格"
+                    :placeholder="t('positions.enterPrice')"
                     style="width: 100%; padding: 8px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
                   />
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">订单类型</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.orderType">订单类型</label>
                   <a-space>
                     <a-button
                       :type="forceExitOrderType === 'market' ? 'primary' : 'default'"
                       @click="forceExitOrderType = 'market'"
-                    >市场</a-button>
+                    ><span data-i18n="positions.market">市场</span></a-button>
                     <a-button
                       :type="forceExitOrderType === 'limit' ? 'primary' : 'default'"
                       @click="forceExitOrderType = 'limit'"
-                    >限制</a-button>
+                    ><span data-i18n="positions.limit">限制</span></a-button>
                   </a-space>
                 </div>
               </div>
@@ -81,17 +81,17 @@
 
             <a-modal
               v-model:open="increasePositionModalVisible"
-              :title="`增持${increasePositionPair}`"
-              :ok-text="'进入位置'"
-              :cancel-text="'取消'"
+              :title="`${t('positions.increasePositionTitle')}${increasePositionPair}`"
+              :ok-text="t('positions.increasePosition')"
+              :cancel-text="t('btn.cancel')"
               @ok="handleIncreasePositionOk"
               width="500px"
             >
               <div style="padding: 15px;">
-                <p style="margin-bottom: 15px; color: #8c90a2; font-size: 12px;">增加现有职位</p>
+                <p style="margin-bottom: 15px; color: #8c90a2; font-size: 12px;" data-i18n="positions.addToExisting">增加现有职位</p>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 8px;">订单方向（做多或做空）</label>
+                  <label style="display: block; margin-bottom: 8px;" data-i18n="positions.orderDirection">订单方向（做多或做空）</label>
                   <a-space>
                     <a-button
                       :type="increasePositionDirection === 'long' ? 'primary' : 'default'"
@@ -105,7 +105,7 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">交易对 *</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.pair">交易对 *</label>
                   <input
                     type="text"
                     v-model="increasePositionPair"
@@ -115,58 +115,58 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">价格（可选）</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.priceLimitOrder">价格（可选）</label>
                   <input
                     type="number"
                     v-model="increasePositionPrice"
                     step="0.0001"
                     min="0.01"
-                    placeholder="价格"
+                    :placeholder="t('positions.enterPrice')"
                     style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
                   />
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">质押金额（USDT）[可选]</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.marginAmount">质押金额（USDT）[可选]</label>
                   <input
                     type="number"
                     v-model="increasePositionMargin"
                     step="0.01"
                     min="0.01"
-                    placeholder="质押金额"
+                    :placeholder="t('positions.marginAmount')"
                     style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
                   />
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px;">利用 [可选]</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.leverage">利用 [可选]</label>
                   <input
                     type="number"
                     v-model="increasePositionLeverage"
                     min="1"
                     max="100"
                     step="1"
-                    placeholder="利用"
+                    :placeholder="t('positions.leverage')"
                     style="width: 100%; padding: 10px; border: 1px solid #3d4354; border-radius: 6px; background: #1a1e2e; color: #fff;"
                   />
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 8px;">订单类型</label>
+                  <label style="display: block; margin-bottom: 8px;" data-i18n="positions.orderType">订单类型</label>
                   <a-space>
                     <a-button
                       :type="increasePositionOrderType === 'market' ? 'primary' : 'default'"
                       @click="increasePositionOrderType = 'market'"
-                    >市场</a-button>
+                    ><span data-i18n="positions.market">市场</span></a-button>
                     <a-button
                       :type="increasePositionOrderType === 'limit' ? 'primary' : 'default'"
                       @click="increasePositionOrderType = 'limit'"
-                    >限制</a-button>
+                    ><span data-i18n="positions.limit">限制</span></a-button>
                   </a-space>
                 </div>
                 
                 <div style="margin-bottom: 10px;">
-                  <label style="display: block; margin-bottom: 5px;">* 自定义条目标签（可选）</label>
+                  <label style="display: block; margin-bottom: 5px;" data-i18n="positions.customEntryTag">* 自定义条目标签（可选）</label>
                   <input
                     type="text"
                     v-model="increasePositionCustomTag"
@@ -179,7 +179,7 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3>当前业绩</h3>
+                <h3 data-i18n="positions.botComparison">当前业绩</h3>
               </div>
               <div class="positions-table-scroll">
                 <table class="positions-table">
@@ -200,7 +200,7 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3>持仓订单</h3>
+                <h3 data-i18n="positions.uncompletedTrades">持仓订单</h3>
                 <span data-i18n="positions.liveFeed">实时推送</span>
               </div>
               <div class="positions-table-scroll">
@@ -209,7 +209,7 @@
                     <tr>
                       <th data-i18n="th.bot">机器人</th>
                       <th data-i18n="th.id">ID</th>
-                      <th>交易对</th>
+                      <th data-i18n="th.tradingPair">交易对</th>
                       <th data-i18n="th.quantity">数量</th>
                       <th data-i18n="th.investment">投注金额</th>
                       <th data-i18n="th.openRate">开盈率</th>
@@ -226,14 +226,14 @@
 
             <section class="positions-block">
               <div class="positions-block-head">
-                <h3>已平仓订单</h3>
+                <h3 data-i18n="positions.closedTrades">已平仓订单</h3>
               </div>
               <div class="positions-table-scroll">
                 <table class="positions-table">
                   <thead>
                     <tr>
                       <th data-i18n="th.id">ID</th>
-                      <th>交易对</th>
+                      <th data-i18n="th.tradingPair">交易对</th>
                       <th data-i18n="th.quantity">数量</th>
                       <th data-i18n="th.totalInvestment">总投注金额</th>
                       <th data-i18n="th.openRate">开盈率</th>
@@ -449,6 +449,13 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { postForceSell } from "../../api/positions.js";
 import { message, InputNumber } from "ant-design-vue";
 import { http } from "../../utils/http.js";
+import { i18n } from "../../i18n/index.js";
+import { state } from "../../store/state-core.js";
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const forceExitModalVisible = ref(false);
 const forceExitTradeId = ref("");
@@ -523,30 +530,30 @@ const handleForceExitOk = async () => {
   const priceVal = forceExitPrice.value ? parseFloat(forceExitPrice.value) : null;
   
   if (isNaN(amountVal) || amountVal < 0.01) {
-    message.error("请输入有效的数量（大于等于0.01）");
-    return;
-  }
-  
-  try {
-    const body = {
-      ordertype: forceExitOrderType.value,
-      tradeid: Number(forceExitTradeId.value),
-      amount: amountVal
-    };
-    
-    if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
-      body.price = priceVal;
+      message.error(t('positions.pleaseEnterValidQuantity'));
+      return;
     }
     
-    console.log("Force sell request body:", body);
-    await http.post("/forcesell", body);
-    message.success("强制退出成功");
-    window.runPanelTickOnce?.();
-    forceExitModalVisible.value = false;
-  } catch (e) {
-    console.error("Force sell error:", e);
-    message.error("强制退出失败");
-  }
+    try {
+      const body = {
+        ordertype: forceExitOrderType.value,
+        tradeid: Number(forceExitTradeId.value),
+        amount: amountVal
+      };
+      
+      if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
+        body.price = priceVal;
+      }
+      
+      console.log("Force sell request body:", body);
+      await http.post("/forcesell", body);
+      message.success(t('positions.forceExitSuccess'));
+      window.runPanelTickOnce?.();
+      forceExitModalVisible.value = false;
+    } catch (e) {
+      console.error("Force sell error:", e);
+      message.error(t('positions.forceExitFail'));
+    }
 };
 
 const openIncreasePositionModal = (tradeId, pair = "") => {
@@ -566,41 +573,41 @@ const handleIncreasePositionOk = async () => {
   const amountVal = parseFloat(increasePositionAmount.value);
   
   if (isNaN(amountVal) || amountVal < 0.01) {
-    message.error("请输入有效的数量（大于等于0.01）");
-    return;
-  }
-  
-  try {
-    const body = {
-      ordertype: increasePositionOrderType.value,
-      pair: increasePositionPair.value,
-      side: increasePositionDirection.value,
-      stakeamount: amountVal
-    };
-    
-    const priceVal = increasePositionPrice.value ? parseFloat(increasePositionPrice.value) : null;
-    if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
-      body.price = priceVal;
+      message.error(t('positions.pleaseEnterValidQuantity'));
+      return;
     }
     
-    const leverageVal = increasePositionLeverage.value ? parseFloat(increasePositionLeverage.value) : null;
-    if (leverageVal !== null && !isNaN(leverageVal) && leverageVal >= 1) {
-      body.leverage = leverageVal;
+    try {
+      const body = {
+        ordertype: increasePositionOrderType.value,
+        pair: increasePositionPair.value,
+        side: increasePositionDirection.value,
+        stakeamount: amountVal
+      };
+      
+      const priceVal = increasePositionPrice.value ? parseFloat(increasePositionPrice.value) : null;
+      if (priceVal !== null && !isNaN(priceVal) && priceVal > 0) {
+        body.price = priceVal;
+      }
+      
+      const leverageVal = increasePositionLeverage.value ? parseFloat(increasePositionLeverage.value) : null;
+      if (leverageVal !== null && !isNaN(leverageVal) && leverageVal >= 1) {
+        body.leverage = leverageVal;
+      }
+      
+      if (increasePositionCustomTag.value) {
+        body.entry_tag = increasePositionCustomTag.value;
+      }
+      
+      console.log("Force buy request body:", body);
+      await http.post("/forcebuy", body);
+      message.success(t('positions.increaseSuccess'));
+      window.runPanelTickOnce?.();
+      increasePositionModalVisible.value = false;
+    } catch (e) {
+      console.error("Increase position error:", e);
+      message.error(t('positions.increaseFail'));
     }
-    
-    if (increasePositionCustomTag.value) {
-      body.entry_tag = increasePositionCustomTag.value;
-    }
-    
-    console.log("Force buy request body:", body);
-    await http.post("/forcebuy", body);
-    message.success("提升仓位成功");
-    window.runPanelTickOnce?.();
-    increasePositionModalVisible.value = false;
-  } catch (e) {
-    console.error("Increase position error:", e);
-    message.error("提升仓位失败");
-  }
 };
 
 window.openForceExitModal = openForceExitModal;
