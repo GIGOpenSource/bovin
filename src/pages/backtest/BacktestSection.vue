@@ -27,7 +27,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path :d="tab.icon" />
               </svg>
-              <span>{{ tab.label }}</span>
+              <span :data-i18n="`backtest.tab.${tab.key}`">{{ tab.label }}</span>
             </button>
           </div>
 
@@ -35,7 +35,7 @@
             <div v-show="activeTab === 'load'" class="bt-tab-panel">
               <div class="bt-section">
                 <div class="bt-section-header">
-                  <h3 class="bt-section-title">加载历史回测结果</h3>
+                  <h3 class="bt-section-title" data-i18n="backtest.loadHistory">加载历史回测结果</h3>
                   <!-- <button type="button" class="bt-refresh-btn" @click="loadHistory">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 8l3.26-3.26A9.75 9.75 0 0 1 12 3a9 9 0 0 1 9 9Z"/>
@@ -59,11 +59,11 @@
                   <table class="bt-table">
                     <thead>
                       <tr>
-                        <th>战略</th>
-                        <th>详情</th>
-                        <th>回测时间</th>
-                        <th>文件名</th>
-                        <th>操作</th>
+                        <th data-i18n="backtest.th.strategy">战略</th>
+                        <th data-i18n="backtest.th.detail">详情</th>
+                        <th data-i18n="backtest.th.backtestTime">回测时间</th>
+                        <th data-i18n="backtest.th.fileName">文件名</th>
+                        <th data-i18n="backtest.th.actions">操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -96,21 +96,21 @@
 
             <div v-show="activeTab === 'run'" class="bt-tab-panel">
               <div class="bt-section">
-                <h3 class="bt-section-title">Strategy</h3>
+                <h3 class="bt-section-title" data-i18n="backtest.strategy">Strategy</h3>
                 <div class="bt-form-row">
-                  <a-select v-model:value="selectedStrategy" class="bovin-select-full" placeholder="Select strategy">
+                  <a-select v-model:value="selectedStrategy" class="bovin-select-full" :placeholder="t('backtest.selectStrategy')">
                     <a-select-option v-for="opt in strategyList" :key="opt.value" :value="opt.value">
                       {{ opt.label }}
                     </a-select-option>
                   </a-select>
-                  <button type="button" class="bt-use-default-btn">Use strategy default</button>
+                  <!-- <button type="button" class="bt-use-default-btn" data-i18n="backtest.useStrategyDefault">Use strategy default</button> -->
                 </div>
               </div>
 
               <div class="bt-section">
-                <h3 class="bt-section-title">Backtesting parameters</h3>
+                <h3 class="bt-section-title" data-i18n="backtest.params">Backtesting parameters</h3>
                 <div class="bt-form-row">
-                  <span class="bt-form-label">Timerange:</span>
+                  <span class="bt-form-label" data-i18n="backtest.timerange">Timerange:</span>
                   <a-select v-model:value="backtestParams.timerange" class="bovin-select-full">
                     <a-select-option v-for="opt in timeframeOptions" :key="opt.value" :value="opt.value">
                       {{ opt.label }}
@@ -118,7 +118,7 @@
                   </a-select>
                 </div>
                 <div class="bt-form-row">
-                  <span class="bt-form-label">Detail Timeframe:</span>
+                  <span class="bt-form-label" data-i18n="backtest.detailTimeframe">Detail Timeframe:</span>
                   <a-select v-model:value="backtestParams.timerange2" class="bovin-select-full">
                     <a-select-option v-for="opt in timeframeOptions" :key="opt.value" :value="opt.value">
                       {{ opt.label }}
@@ -126,51 +126,51 @@
                   </a-select>
                 </div>
                 <div class="bt-form-row">
-                  <span class="bt-form-label">Max open trades:</span>
+                  <span class="bt-form-label" data-i18n="backtest.maxOpenTrades">Max open trades:</span>
                   <input type="number" v-model="backtestParams.maxOpenTrades" class="bt-input" />
-                  <button type="button" class="bt-use-default-btn">Use strategy default</button>
+                  <!-- <button type="button" class="bt-use-default-btn" data-i18n="backtest.useStrategyDefault">Use strategy default</button> -->
                 </div>
                 <div class="bt-form-row">
-                  <span class="bt-form-label">Starting capital:</span>
+                  <span class="bt-form-label" data-i18n="backtest.startingCapital">Starting capital:</span>
                   <input type="number" v-model="backtestParams.startingCapital" class="bt-input" />
-                  <button type="button" class="bt-use-default-btn">Use strategy default</button>
+                  <!-- <button type="button" class="bt-use-default-btn" data-i18n="backtest.useStrategyDefault">Use strategy default</button> -->
                 </div>
                 <div class="bt-form-row">
-                  <span class="bt-form-label">Stake amount:</span>
+                  <span class="bt-form-label" data-i18n="backtest.stakeAmount">Stake amount:</span>
                   <label class="bt-checkbox-label">
                     <input type="checkbox" v-model="backtestParams.unlimitedStake" />
-                    <span>Unlimited stake</span>
+                    <span data-i18n="backtest.unlimitedStake">Unlimited stake</span>
                   </label>
                 </div>
               </div>
 
               <div class="bt-section">
-                <h3 class="bt-section-title">Timerange parameters</h3>
+                <h3 class="bt-section-title" data-i18n="backtest.timerangeParams">Timerange parameters</h3>
                 <div class="bt-form-row">
                   <label class="bt-checkbox-label">
                     <input type="checkbox" v-model="timerangeParams.enableProtections" />
-                    <span>Enable Protections</span>
+                    <span data-i18n="backtest.enableProtections">Enable Protections</span>
                   </label>
                 </div>
                 <div class="bt-form-row">
                   <label class="bt-checkbox-label">
                     <input type="checkbox" v-model="timerangeParams.cacheBacktestResults" checked />
-                    <span>Cache Backtest results</span>
+                    <span data-i18n="backtest.cacheBacktest">Cache Backtest results</span>
                   </label>
                 </div>
                 <div class="bt-form-row">
                   <label class="bt-checkbox-label">
                     <input type="checkbox" v-model="timerangeParams.enableFreqAI" />
-                    <span>Enable FreqAI</span>
+                    <span data-i18n="backtest.enableFreqAI">Enable FreqAI</span>
                   </label>
                 </div>
                 <div v-show="timerangeParams.enableFreqAI" class="bt-form-row">
-                  <span class="bt-form-label">FreqAI identifier:</span>
+                  <span class="bt-form-label" data-i18n="backtest.freqaiIdentifier">FreqAI identifier:</span>
                   <input type="text" v-model="timerangeParams.freqaiIdentifier" class="bt-input" />
                 </div>
                 <div v-show="timerangeParams.enableFreqAI" class="bt-form-row">
-                  <span class="bt-form-label">FreqAI Mode:</span>
-                  <a-select v-model:value="timerangeParams.freqaiMode" class="bovin-select-full" placeholder="Select FreqAI Mode">
+                  <span class="bt-form-label" data-i18n="backtest.freqaiMode">FreqAI Mode:</span>
+                  <a-select v-model:value="timerangeParams.freqaiMode" class="bovin-select-full" :placeholder="t('backtest.selectFreqaiMode')">
                     <a-select-option v-for="model in freqaiModels" :key="model.value" :value="model.value">
                       {{ model.label }}
                     </a-select-option>
@@ -179,24 +179,24 @@
               </div>
 
               <div class="bt-date-section">
-                <h3 class="bt-section-title">Start Date</h3>
+                <h3 class="bt-section-title" data-i18n="backtest.startDate">Start Date</h3>
                 <div class="bt-date-range-row">
                   <div class="bt-date-input-wrap">
                     <a-date-picker
                       v-model:value="dateRange.startDate"
                       format="YYYY-MM-DD"
-                      placeholder="Start Date"
+                      :placeholder="t('backtest.startDate')"
                       class="bovin-select-full"
                     />
                   </div>
                   <div class="bt-date-label-wrap">
-                    <span class="bt-date-label">End Date</span>
+                    <span class="bt-date-label" data-i18n="backtest.endDate">End Date</span>
                   </div>
                   <div class="bt-date-input-wrap">
                     <a-date-picker
                       v-model:value="dateRange.endDate"
                       format="YYYY-MM-DD"
-                      placeholder="End Date"
+                      :placeholder="t('backtest.endDate')"
                       class="bovin-select-full"
                     />
                   </div>
@@ -204,25 +204,25 @@
               </div>
 
               <div class="bt-summary-section">
-                <h3 class="bt-section-title">Backtesting summary</h3>
+                <h3 class="bt-section-title" data-i18n="backtest.summary">Backtesting summary</h3>
                 <div class="bt-summary-actions">
                   <button type="button" class="bt-btn bt-btn-primary" :disabled="isRunning || !selectedStrategy" @click="handleBacktest">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M12 19V5M8 9l4-4 4 4"/>
                     </svg> -->
-                    <span>{{ isRunning ? 'Backtesting...' : 'Start backtest' }}</span>
+                    <span>{{ isRunning ? t('backtest.running') : t('backtest.start') }}</span>
                   </button>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="isRunning || isLoadingResult" @click="loadBacktestResult">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                     </svg> -->
-                    <span>{{ isLoadingResult ? 'Loading...' : 'Load backtest result' }}</span>
+                    <span>{{ isLoadingResult ? t('backtest.loading') : t('backtest.load') }}</span>
                   </button>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="!isRunning" @click="stopBacktest">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M6 4h12M6 20h12"/>
                     </svg> -->
-                    <span>Stop Backtest</span>
+                    <span data-i18n="backtest.stop">Stop Backtest</span>
                   </button>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="isRunning" @click="resetBacktest">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -230,7 +230,7 @@
                       <path d="M16 3h5v5"/>
                       <path d="M21 16v5h-5"/>
                     </svg> -->
-                    <span>Reset Backtest</span>
+                    <span data-i18n="backtest.reset">Reset Backtest</span>
                   </button>
                 </div>
               </div>
@@ -239,7 +239,7 @@
             <div v-show="activeTab === 'analyze'" class="bt-tab-panel">
               <div v-if="currentResult" class="bt-analysis">
                 <div class="bt-analysis-header">
-                  <h3 class="bt-section-title">回测结果分析</h3>
+                  <h3 class="bt-section-title" data-i18n="backtest.analyzeResult">回测结果分析</h3>
                   <div class="bt-analysis-strategy">{{ currentResult.strategy }}</div>
                 </div>
                 
@@ -799,6 +799,13 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { Modal, message, Select, DatePicker } from 'ant-design-vue';
 import dayjs from 'dayjs';
 import { getBacktestHistory, getBacktestHistoryResult, deleteBacktestHistory, getStrategyDetail, runBacktest, getStrategies, getBacktest, deleteBacktest, getFreqaiModels, abortBacktest, getStrategy } from '../../api/backtest.js';
+import { i18n } from "../../i18n/index.js";
+import { state } from "../../store/state-core.js";
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const strategyList = ref([]);
 const freqaiModels = ref([]);
@@ -919,8 +926,8 @@ const handleTabClick = async (tabKey) => {
 };
 
 const timeframeOptions = [
-  { value: '', label: 'Select timeframe' },
-  { value: 'use_strategy', label: 'Use strategy default' },
+  // { value: '', label: 'Select timeframe' },
+  // { value: 'use_strategy', label: 'Use strategy default' },
   { value: '1m', label: '1m' },
   { value: '3m', label: '3m' },
   { value: '5m', label: '5m' },
@@ -940,12 +947,19 @@ const timeframeOptions = [
   { value: '1y', label: '1y' }
 ];
 
-const tabs = [
-  { key: 'load', label: '加载结果', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
-  { key: 'run', label: '运行回测', icon: 'M12 19V5M8 9l4-4 4 4' },
-  { key: 'analyze', label: '分析结果', icon: 'M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z' },
-  // { key: 'visualize', label: '可视化结果', icon: 'M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' }
-];
+const tabs = ref([
+  { key: 'load', label: t('backtest.tab.load'), icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
+  { key: 'run', label: t('backtest.tab.run'), icon: 'M12 19V5M8 9l4-4 4 4' },
+  { key: 'analyze', label: t('backtest.tab.analyze'), icon: 'M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z' },
+]);
+
+function updateTabs() {
+  tabs.value = [
+    { key: 'load', label: t('backtest.tab.load'), icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
+    { key: 'run', label: t('backtest.tab.run'), icon: 'M12 19V5M8 9l4-4 4 4' },
+    { key: 'analyze', label: t('backtest.tab.analyze'), icon: 'M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z' },
+  ];
+}
 
 const activeTab = ref('run');
 
@@ -1012,10 +1026,10 @@ const loadHistory = async () => {
 
 const deleteHistoryItem = (item) => {
   Modal.confirm({
-    title: '确认删除',
-    content: '确定要删除这条回测记录吗？',
-    okText: '确定',
-    cancelText: '取消',
+    title: t('backtest.confirmDelete'),
+    content: t('backtest.deleteConfirm'),
+    okText: t('backtest.ok'),
+    cancelText: t('backtest.cancel'),
     async onOk() {
       try {
         await deleteBacktestHistory(item.filename);
@@ -1528,11 +1542,11 @@ const loadBacktestResult = async () => {
       };
       console.log('加载的回测结果:', currentResult.value);
       
-      message.success('回测结果已加载');
+      message.success(t('backtest.loaded'));
     }
   } catch (error) {
     console.error('加载回测结果失败:', error);
-    message.error('加载回测结果失败');
+    message.error(t('backtest.loadFailed'));
     
     currentResult.value = {
       strategy: 'DOUStrategy',
@@ -1637,7 +1651,7 @@ const loadHistoryResult = async (item) => {
       name.value = item.strategy
        const result1 =  getStrategyDetail(item.strategy)
    if(result1){
-       message.success('分析成功');
+       message.success(t('backtest.analyzeSuccess'));
     hasAnalysisData.value = true
    }
     }
@@ -1645,7 +1659,7 @@ const loadHistoryResult = async (item) => {
   
   } catch (error) {
     console.error('加载回测结果失败:', error);
-    message.error('分析失败');
+    message.error(t('backtest.analyzeFailed'));
   } finally {
     isLoadingResult.value = false;
   }
