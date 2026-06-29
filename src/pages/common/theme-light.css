@@ -788,3 +788,27 @@ html[data-theme="light"] .modal-body::-webkit-scrollbar-thumb:hover {
 html[data-theme="light"] .log-row {
   border-bottom-color: rgba(var(--ft-panel-edge-rgb), 0.16);
 }
+
+/* 浅色：持仓订单操作下拉菜单 */
+html[data-theme="light"] .action-dropdown-menu {
+  background: var(--surface-high);
+  border-color: var(--outline);
+  box-shadow: 0 8px 24px rgba(24, 30, 48, 0.12);
+}
+
+html[data-theme="light"] .dropdown-item {
+  color: var(--text);
+}
+
+html[data-theme="light"] .dropdown-item:hover {
+  background: rgba(var(--ft-accent-rgb), 0.1);
+}
+
+html[data-theme="light"] .action-icon-btn {
+  color: var(--text-dim);
+}
+
+html[data-theme="light"] .action-icon-btn:hover:not(:disabled) {
+  background: rgba(var(--ft-panel-edge-rgb), 0.08);
+  color: var(--text);
+}
