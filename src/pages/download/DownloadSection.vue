@@ -131,6 +131,7 @@
               </div>
               <div class="dl-select-wrap">
                 <a-select
+                  :key="selectKey"
                   v-model="candleTypes"
                   @change="handleChange"
                   mode="multiple"
@@ -180,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, h } from 'vue';
+import { ref, reactive, h, onMounted, onUnmounted } from 'vue';
 import { message } from 'ant-design-vue';
 import { downloadData, getBackgroundStatus } from '../../api/download.js';
 import { i18n } from '../../i18n/index.js';
@@ -202,6 +203,7 @@ const isDownloading = ref(false);
 const candleTypes = ref([]);
 const customExchangeValue = ref('binance');
 const candleTypePlaceholder = ref(t('download.selectCandleType'));
+const selectKey = ref(0);
 const candleTypeOptions = ref([
   { value: 'spot', label: t('download.spot') },
   { value: 'futures', label: t('download.futures') },
@@ -359,6 +361,7 @@ function renderCustomTag(props) {
 }
 
 function handleLangChange() {
+  console.log('handleLangChange fired', state.lang);
   candleTypePlaceholder.value = t('download.selectCandleType');
   candleTypeOptions.value = [
     { value: 'spot', label: t('download.spot') },
@@ -368,9 +371,17 @@ function handleLangChange() {
     { value: 'index', label: t('download.index') },
     { value: 'premium_index', label: t('download.premiumIndex') }
   ];
+  candleTypes.value = [];
+  selectKey.value++;
 }
 
-window.addEventListener("bovin-lang-changed", handleLangChange);
+onMounted(() => {
+  window.addEventListener("bovin-lang-changed", handleLangChange);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("bovin-lang-changed", handleLangChange);
+});
 </script>
 
 <style scoped>
