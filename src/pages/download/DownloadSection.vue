@@ -135,15 +135,12 @@
                   @change="handleChange"
                   mode="multiple"
                   class="dl-select"
-                  :placeholder="t('download.selectCandleType')"
-                >
-                  <a-select-option value="spot" data-i18n="download.spot">现货</a-select-option>
-                  <a-select-option value="futures" data-i18n="download.futures">期货</a-select-option>
-                  <a-select-option value="funding_rate" data-i18n="download.fundingRate">资金费率</a-select-option>
-                  <a-select-option value="mark" data-i18n="download.markPrice">标记价格</a-select-option>
-                  <a-select-option value="index" data-i18n="download.index">指数</a-select-option>
-                  <a-select-option value="premium_index" data-i18n="download.premiumIndex">溢价指数</a-select-option>
-                </a-select>
+                  :placeholder="candleTypePlaceholder"
+                  :show-arrow="false"
+                  :options="candleTypeOptions"
+                  :option-label-prop="'label'"
+                  :custom-tag-render="renderCustomTag"
+                ></a-select>
                 <span class="dl-select-hint" data-i18n="download.candleTypeHint">当未选择蜡烛类型时，freqtrade 将自动下载常规操作所需的蜡烛类型。</span>
               </div>
               <label class="dl-checkbox-label">
@@ -153,7 +150,7 @@
 
               <div v-if="advancedOptions.customExchange" class="dl-custom-exchange">
                 <div class="dl-exchange-row">
-                  <a-select v-model="customExchangeValue" :default-value="customExchangeValue" class="dl-select">
+                  <a-select v-model="customExchangeValue" :default-value="customExchangeValue" class="dl-select" :show-arrow="false">
                     <a-select-option value="binance">Binance</a-select-option>
                     <a-select-option value="binance_us">Binance US</a-select-option>
                     <a-select-option value="binance_usdm">Binance USDⓈ-M</a-select-option>
@@ -183,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, h } from 'vue';
 import { message } from 'ant-design-vue';
 import { downloadData, getBackgroundStatus } from '../../api/download.js';
 import { i18n } from '../../i18n/index.js';
@@ -204,6 +201,15 @@ const endDate = ref('');
 const isDownloading = ref(false);
 const candleTypes = ref([]);
 const customExchangeValue = ref('binance');
+const candleTypePlaceholder = ref(t('download.selectCandleType'));
+const candleTypeOptions = ref([
+  { value: 'spot', label: t('download.spot') },
+  { value: 'futures', label: t('download.futures') },
+  { value: 'funding_rate', label: t('download.fundingRate') },
+  { value: 'mark', label: t('download.markPrice') },
+  { value: 'index', label: t('download.index') },
+  { value: 'premium_index', label: t('download.premiumIndex') }
+]);
 
 const advancedOptions = reactive({
   eraseExisting: false,
@@ -264,6 +270,7 @@ const formatDate = (date) => {
   return '';
 };
 const handleChange = (val) => {
+  console.log(val,'val')
   candleTypes.value = val
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -342,6 +349,28 @@ const handleDownload = async () => {
     isDownloading.value = false;
   }
 };
+
+function renderCustomTag(props) {
+  const option = candleTypeOptions.value.find(opt => opt.value === props.value);
+  const label = option ? option.label : props.value;
+  return {
+    tag: () => h('span', null, label)
+  };
+}
+
+function handleLangChange() {
+  candleTypePlaceholder.value = t('download.selectCandleType');
+  candleTypeOptions.value = [
+    { value: 'spot', label: t('download.spot') },
+    { value: 'futures', label: t('download.futures') },
+    { value: 'funding_rate', label: t('download.fundingRate') },
+    { value: 'mark', label: t('download.markPrice') },
+    { value: 'index', label: t('download.index') },
+    { value: 'premium_index', label: t('download.premiumIndex') }
+  ];
+}
+
+window.addEventListener("bovin-lang-changed", handleLangChange);
 </script>
 
 <style scoped>
@@ -708,6 +737,45 @@ const handleDownload = async () => {
 .dl-select:focus {
   outline: none;
   border-color: #4edea3;
+}
+
+.dl-select .ant-select-selector {
+  background: var(--ft-panel-surface-inset) !important;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3) !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+}
+
+.dl-select .ant-select-selector:hover {
+  border-color: rgba(var(--ft-accent-rgb), 0.5) !important;
+}
+
+.dl-select .ant-select-selector:focus {
+  border-color: #4edea3 !important;
+  box-shadow: 0 0 0 2px rgba(78, 222, 163, 0.2) !important;
+}
+
+.dl-select .ant-select-selection-item {
+  background: rgba(var(--ft-accent-rgb), 0.15) !important;
+  border: 1px solid rgba(var(--ft-accent-rgb), 0.35) !important;
+  border-radius: 4px !important;
+  color: var(--primary) !important;
+  font-size: 12px !important;
+  padding: 2px 8px !important;
+}
+
+.dl-select .ant-select-selection-item-remove {
+  color: var(--primary) !important;
+  margin-left: 6px !important;
+}
+
+.dl-select .ant-select-selection-item-remove:hover {
+  color: #ffb3ad !important;
+}
+
+.dl-select .ant-select-selection-placeholder {
+  color: var(--text-dim) !important;
+  font-size: 12px !important;
 }
 
 .dl-select-hint {

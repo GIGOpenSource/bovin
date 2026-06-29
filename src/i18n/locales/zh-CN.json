@@ -850,6 +850,7 @@
   "pb.title": "周期分析",
   "pb.desc": "按日 / 周 / 月查看收益与成交分布",
   "pb.legend.profit": "绝对收益",
+  "pb.legend.profitRel": "收益率",
   "pb.legend.trade": "成交数",
   "pb.tab.days": "日",
   "pb.tab.weeks": "周",

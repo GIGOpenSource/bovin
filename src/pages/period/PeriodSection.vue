@@ -370,8 +370,15 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
 import { getDaily, getWeekly, getMonthly } from "../../api/period.js";
+import { i18n } from "../../i18n/index.js";
+import { state } from "../../store/state-core.js";
 
 let disposePeriod = null;
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const apiMap = {
   days: getDaily,
@@ -563,9 +570,9 @@ const showTooltip = (e, canvas, data, mode = "abs") => {
   const usd = row.usd.toFixed ? row.usd.toFixed(2) : row.usd;
   tooltip.innerHTML = `
     <div class="tt-date">${fmtDate(row.date)}</div>
-    <div class="tt-row"><span data-i18n="pb.tooltip.profit">收益</span><span>${usd}</span></div>
-    <div class="tt-row"><span data-i18n="pb.tooltip.profitPct">收益率</span><span>${row.profitPct.toFixed(2)}%</span></div>
-    <div class="tt-row"><span data-i18n="pb.tooltip.trades">成交数</span><span>${row.trades}</span></div>
+    <div class="tt-row"><span>${t('pb.tooltip.profit')}</span><span>${usd}</span></div>
+    <div class="tt-row"><span>${t('pb.tooltip.profitPct')}</span><span>${row.profitPct.toFixed(2)}%</span></div>
+    <div class="tt-row"><span>${t('pb.tooltip.trades')}</span><span>${row.trades}</span></div>
   `;
   tooltip.classList.remove("hidden");
   const left = Math.min(rect.width - 140, Math.max(0, x + 12));
@@ -621,7 +628,7 @@ onMounted(async () => {
     b.classList.add("active");
     currentMode = b.getAttribute("data-mode");
     if (legendProfit) {
-      legendProfit.textContent = currentMode === "rel" ? "Profit %" : "Absolute profit";
+      legendProfit.textContent = currentMode === "rel" ? t('pb.legend.profitRel') : t('pb.legend.profit');
     }
     tooltip?.classList.add("hidden");
     drawChart(currentData, currentMode);
@@ -643,6 +650,13 @@ onMounted(async () => {
   canvas?.addEventListener("mousemove", onMove);
   canvas?.addEventListener("mouseleave", onLeave);
   window.addEventListener("resize", onResize);
+  window.addEventListener("bovin-lang-changed", onLangChange);
+
+  function onLangChange() {
+    if (legendProfit) {
+      legendProfit.textContent = currentMode === "rel" ? t('pb.legend.profitRel') : t('pb.legend.profit');
+    }
+  }
 
   disposePeriod = () => {
     themeObserver.disconnect();
@@ -651,6 +665,7 @@ onMounted(async () => {
     canvas?.removeEventListener("mousemove", onMove);
     canvas?.removeEventListener("mouseleave", onLeave);
     window.removeEventListener("resize", onResize);
+    window.removeEventListener("bovin-lang-changed", onLangChange);
   };
 });
 

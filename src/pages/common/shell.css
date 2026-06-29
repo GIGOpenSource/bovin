@@ -2371,6 +2371,37 @@ button.ghost:active:not(:disabled) {
   box-shadow: 0 0 0 1px rgba(78, 222, 163, 0.35);
 }
 
+.ant-picker-cell-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center !important;
+}
+
+.ant-picker-calendar-date-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.ant-picker-cell-selected .ant-picker-cell-inner,
+.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-range-end .ant-picker-cell-inner,
+.ant-picker-cell-in-range .ant-picker-cell-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.ant-picker-calendar-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .rpc-live-badge::before {
   content: "";
   width: 6px;

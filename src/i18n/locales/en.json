@@ -849,6 +849,7 @@
   "pb.title": "Period Breakdown",
   "pb.desc": "View profit and trade distribution by day/week/month",
   "pb.legend.profit": "Absolute profit",
+  "pb.legend.profitRel": "Profit %",
   "pb.legend.trade": "Trade Count",
   "pb.tab.days": "Days",
   "pb.tab.weeks": "Weeks",
