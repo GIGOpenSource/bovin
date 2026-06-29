@@ -210,13 +210,13 @@
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M12 19V5M8 9l4-4 4 4"/>
                     </svg> -->
-                    <span>{{ isRunning ? t('backtest.running') : t('backtest.start') }}</span>
+                    <span :data-i18n="isRunning ? 'backtest.running' : 'backtest.start'">{{ isRunning ? t('backtest.running') : t('backtest.start') }}</span>
                   </button>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="isRunning || isLoadingResult" @click="loadBacktestResult">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                     </svg> -->
-                    <span>{{ isLoadingResult ? t('backtest.loading') : t('backtest.load') }}</span>
+                    <span :data-i18n="isLoadingResult ? 'backtest.loading' : 'backtest.load'">{{ isLoadingResult ? t('backtest.loading') : t('backtest.load') }}</span>
                   </button>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="!isRunning" @click="stopBacktest">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -245,11 +245,11 @@
                 
                 <div class="bt-analysis-grid">
                   <div class="bt-analysis-section">
-                    <h4 class="bt-analysis-section-title">Strategy settings</h4>
+                    <h4 class="bt-analysis-section-title" data-i18n="backtest.strategySettings">Strategy settings</h4>
                     <div class="bt-settings-table">
                       <div class="bt-settings-header">
-                        <span class="bt-settings-label">Setting</span>
-                        <span class="bt-settings-value">Value</span>
+                        <span class="bt-settings-label" data-i18n="backtest.setting">Setting</span>
+                        <span class="bt-settings-value" data-i18n="backtest.value">Value</span>
                       </div>
                       <div 
                         v-for="(value, key) in currentResult.strategySettings" 
@@ -263,11 +263,11 @@
                   </div>
                   
                   <div class="bt-analysis-section">
-                    <h4 class="bt-analysis-section-title">Metrics</h4>
+                    <h4 class="bt-analysis-section-title" data-i18n="backtest.metrics">Metrics</h4>
                     <div class="bt-metrics-table">
                       <div class="bt-metrics-header">
-                        <span class="bt-metrics-label">Metric</span>
-                        <span class="bt-metrics-value">Value</span>
+                        <span class="bt-metrics-label" data-i18n="backtest.metric">Metric</span>
+                        <span class="bt-metrics-value" data-i18n="backtest.value">Value</span>
                       </div>
                       <div 
                         v-for="(value, key) in currentResult.metrics" 
@@ -284,14 +284,14 @@
                 <div class="bt-analysis-tables">
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Results per Enter tag</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.resultsEnterTag">Results per Enter tag</h4>
                       <div class="bt-table-shown">
-                        <span>Shown metrics:</span>
+                        <span data-i18n="backtest.shownMetrics">Shown metrics:</span>
                         <a-select
                           v-model:value="enterTagVisibleMetrics"
                           mode="multiple"
                           class="bt-table-select"
-                          placeholder="Select metrics"
+                          :placeholder="t('backtest.selectMetrics')"
                           :style="{ minWidth: '200px' }"
                         >
                           <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
@@ -304,22 +304,22 @@
                       <table class="bt-data-table">
                         <thead>
                           <tr>
-                            <th>Enter Tag</th>
-                            <th>Trades</th>
-                            <th>Avg Profit %</th>
-                            <th>Tot Profit USDT</th>
-                            <th>Tot Profit %</th>
-                            <th>Wins</th>
-                            <th>Draws</th>
-                            <th>Losses</th>
-                            <th v-if="enterTagVisibleMetrics.includes('sqn')">SQN</th>
-                            <th v-if="enterTagVisibleMetrics.includes('cagr')">Cagr</th>
-                            <th v-if="enterTagVisibleMetrics.includes('calmar')">Calmar</th>
-                            <th v-if="enterTagVisibleMetrics.includes('expectancy')">Expectancy</th>
-                            <th v-if="enterTagVisibleMetrics.includes('profit_factor')">Profit Factor</th>
-                            <th v-if="enterTagVisibleMetrics.includes('sharpe')">Sharpe</th>
-                            <th v-if="enterTagVisibleMetrics.includes('sortino')">Sortino</th>
-                            <th v-if="enterTagVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
+                            <th data-i18n="backtest.enterTag">Enter Tag</th>
+                            <th data-i18n="backtest.trades">Trades</th>
+                            <th data-i18n="backtest.avgProfitPct">Avg Profit %</th>
+                            <th data-i18n="backtest.totProfitUsdt">Tot Profit USDT</th>
+                            <th data-i18n="backtest.totProfitPct">Tot Profit %</th>
+                            <th data-i18n="backtest.wins">Wins</th>
+                            <th data-i18n="backtest.draws">Draws</th>
+                            <th data-i18n="backtest.losses">Losses</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sqn')" data-i18n="backtest.sqn">SQN</th>
+                            <th v-if="enterTagVisibleMetrics.includes('cagr')" data-i18n="backtest.cagr">Cagr</th>
+                            <th v-if="enterTagVisibleMetrics.includes('calmar')" data-i18n="backtest.calmar">Calmar</th>
+                            <th v-if="enterTagVisibleMetrics.includes('expectancy')" data-i18n="backtest.expectancy">Expectancy</th>
+                            <th v-if="enterTagVisibleMetrics.includes('profit_factor')" data-i18n="backtest.profitFactor">Profit Factor</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sharpe')" data-i18n="backtest.sharpe">Sharpe</th>
+                            <th v-if="enterTagVisibleMetrics.includes('sortino')" data-i18n="backtest.sortino">Sortino</th>
+                            <th v-if="enterTagVisibleMetrics.includes('max_drawdown')" data-i18n="backtest.maxDrawdown">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -348,14 +348,14 @@
                   
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Results per Exit reason</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.resultsExitReason">Results per Exit reason</h4>
                       <div class="bt-table-shown">
-                        <span>Shown metrics:</span>
+                        <span data-i18n="backtest.shownMetrics">Shown metrics:</span>
                         <a-select
                           v-model:value="exitReasonVisibleMetrics"
                           mode="multiple"
                           class="bt-table-select"
-                          placeholder="Select metrics"
+                          :placeholder="t('backtest.selectMetrics')"
                           :style="{ minWidth: '200px' }"
                         >
                           <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
@@ -368,22 +368,22 @@
                       <table class="bt-data-table">
                         <thead>
                           <tr>
-                            <th>Exit Reason</th>
-                            <th>Trades</th>
-                            <th>Avg Profit %</th>
-                            <th>Tot Profit USDT</th>
-                            <th>Tot Profit %</th>
-                            <th>Wins</th>
-                            <th>Draws</th>
-                            <th>Losses</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('sqn')">SQN</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('cagr')">Cagr</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('calmar')">Calmar</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('expectancy')">Expectancy</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('profit_factor')">Profit Factor</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('sharpe')">Sharpe</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('sortino')">Sortino</th>
-                            <th v-if="exitReasonVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
+                            <th data-i18n="backtest.exitReason">Exit Reason</th>
+                            <th data-i18n="backtest.trades">Trades</th>
+                            <th data-i18n="backtest.avgProfitPct">Avg Profit %</th>
+                            <th data-i18n="backtest.totProfitUsdt">Tot Profit USDT</th>
+                            <th data-i18n="backtest.totProfitPct">Tot Profit %</th>
+                            <th data-i18n="backtest.wins">Wins</th>
+                            <th data-i18n="backtest.draws">Draws</th>
+                            <th data-i18n="backtest.losses">Losses</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sqn')" data-i18n="backtest.sqn">SQN</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('cagr')" data-i18n="backtest.cagr">Cagr</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('calmar')" data-i18n="backtest.calmar">Calmar</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('expectancy')" data-i18n="backtest.expectancy">Expectancy</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('profit_factor')" data-i18n="backtest.profitFactor">Profit Factor</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sharpe')" data-i18n="backtest.sharpe">Sharpe</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('sortino')" data-i18n="backtest.sortino">Sortino</th>
+                            <th v-if="exitReasonVisibleMetrics.includes('max_drawdown')" data-i18n="backtest.maxDrawdown">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -412,14 +412,14 @@
                   
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Results Mixed Tag</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.resultsMixedTag">Results Mixed Tag</h4>
                       <div class="bt-table-shown">
-                        <span>Shown metrics:</span>
+                        <span data-i18n="backtest.shownMetrics">Shown metrics:</span>
                         <a-select
                           v-model:value="mixTagVisibleMetrics"
                           mode="multiple"
                           class="bt-table-select"
-                          placeholder="Select metrics"
+                          :placeholder="t('backtest.selectMetrics')"
                           :style="{ minWidth: '200px' }"
                         >
                           <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
@@ -432,23 +432,23 @@
                       <table class="bt-data-table">
                         <thead>
                           <tr>
-                            <th>Enter Tag</th>
-                            <th>Exit Tag</th>
-                            <th>Trades</th>
-                            <th>Avg Profit %</th>
-                            <th>Tot Profit USDT</th>
-                            <th>Tot Profit %</th>
-                            <th>Wins</th>
-                            <th>Draws</th>
-                            <th>Losses</th>
-                            <th v-if="mixTagVisibleMetrics.includes('sqn')">SQN</th>
-                            <th v-if="mixTagVisibleMetrics.includes('cagr')">Cagr</th>
-                            <th v-if="mixTagVisibleMetrics.includes('calmar')">Calmar</th>
-                            <th v-if="mixTagVisibleMetrics.includes('expectancy')">Expectancy</th>
-                            <th v-if="mixTagVisibleMetrics.includes('profit_factor')">Profit Factor</th>
-                            <th v-if="mixTagVisibleMetrics.includes('sharpe')">Sharpe</th>
-                            <th v-if="mixTagVisibleMetrics.includes('sortino')">Sortino</th>
-                            <th v-if="mixTagVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
+                            <th data-i18n="backtest.enterTag">Enter Tag</th>
+                            <th data-i18n="backtest.exitTag">Exit Tag</th>
+                            <th data-i18n="backtest.trades">Trades</th>
+                            <th data-i18n="backtest.avgProfitPct">Avg Profit %</th>
+                            <th data-i18n="backtest.totProfitUsdt">Tot Profit USDT</th>
+                            <th data-i18n="backtest.totProfitPct">Tot Profit %</th>
+                            <th data-i18n="backtest.wins">Wins</th>
+                            <th data-i18n="backtest.draws">Draws</th>
+                            <th data-i18n="backtest.losses">Losses</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sqn')" data-i18n="backtest.sqn">SQN</th>
+                            <th v-if="mixTagVisibleMetrics.includes('cagr')" data-i18n="backtest.cagr">Cagr</th>
+                            <th v-if="mixTagVisibleMetrics.includes('calmar')" data-i18n="backtest.calmar">Calmar</th>
+                            <th v-if="mixTagVisibleMetrics.includes('expectancy')" data-i18n="backtest.expectancy">Expectancy</th>
+                            <th v-if="mixTagVisibleMetrics.includes('profit_factor')" data-i18n="backtest.profitFactor">Profit Factor</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sharpe')" data-i18n="backtest.sharpe">Sharpe</th>
+                            <th v-if="mixTagVisibleMetrics.includes('sortino')" data-i18n="backtest.sortino">Sortino</th>
+                            <th v-if="mixTagVisibleMetrics.includes('max_drawdown')" data-i18n="backtest.maxDrawdown">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -480,14 +480,14 @@
                   
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Results per pair</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.resultsPerPair">Results per pair</h4>
                       <div class="bt-table-shown">
-                        <span>Shown metrics:</span>
+                        <span data-i18n="backtest.shownMetrics">Shown metrics:</span>
                         <a-select
                           v-model:value="pairVisibleMetrics"
                           mode="multiple"
                           class="bt-table-select"
-                          placeholder="Select metrics"
+                          :placeholder="t('backtest.selectMetrics')"
                           :style="{ minWidth: '200px' }"
                         >
                           <a-select-option v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
@@ -500,22 +500,22 @@
                       <table class="bt-data-table">
                         <thead>
                           <tr>
-                            <th>Pair</th>
-                            <th>Trades</th>
-                            <th>Avg Profit %</th>
-                            <th>Tot Profit USDT</th>
-                            <th>Tot Profit %</th>
-                            <th>Wins</th>
-                            <th>Draws</th>
-                            <th>Losses</th>
-                            <th v-if="pairVisibleMetrics.includes('sqn')">SQN</th>
-                            <th v-if="pairVisibleMetrics.includes('cagr')">Cagr</th>
-                            <th v-if="pairVisibleMetrics.includes('calmar')">Calmar</th>
-                            <th v-if="pairVisibleMetrics.includes('expectancy')">Expectancy</th>
-                            <th v-if="pairVisibleMetrics.includes('profit_factor')">Profit Factor</th>
-                            <th v-if="pairVisibleMetrics.includes('sharpe')">Sharpe</th>
-                            <th v-if="pairVisibleMetrics.includes('sortino')">Sortino</th>
-                            <th v-if="pairVisibleMetrics.includes('max_drawdown')">Max Drawdown</th>
+                            <th data-i18n="backtest.pair">Pair</th>
+                            <th data-i18n="backtest.trades">Trades</th>
+                            <th data-i18n="backtest.avgProfitPct">Avg Profit %</th>
+                            <th data-i18n="backtest.totProfitUsdt">Tot Profit USDT</th>
+                            <th data-i18n="backtest.totProfitPct">Tot Profit %</th>
+                            <th data-i18n="backtest.wins">Wins</th>
+                            <th data-i18n="backtest.draws">Draws</th>
+                            <th data-i18n="backtest.losses">Losses</th>
+                            <th v-if="pairVisibleMetrics.includes('sqn')" data-i18n="backtest.sqn">SQN</th>
+                            <th v-if="pairVisibleMetrics.includes('cagr')" data-i18n="backtest.cagr">Cagr</th>
+                            <th v-if="pairVisibleMetrics.includes('calmar')" data-i18n="backtest.calmar">Calmar</th>
+                            <th v-if="pairVisibleMetrics.includes('expectancy')" data-i18n="backtest.expectancy">Expectancy</th>
+                            <th v-if="pairVisibleMetrics.includes('profit_factor')" data-i18n="backtest.profitFactor">Profit Factor</th>
+                            <th v-if="pairVisibleMetrics.includes('sharpe')" data-i18n="backtest.sharpe">Sharpe</th>
+                            <th v-if="pairVisibleMetrics.includes('sortino')" data-i18n="backtest.sortino">Sortino</th>
+                            <th v-if="pairVisibleMetrics.includes('max_drawdown')" data-i18n="backtest.maxDrawdown">Max Drawdown</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -544,7 +544,7 @@
                   
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Periodic breakdown</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.periodicBreakdown">周期细分</h4>
                       <!-- <div class="bt-table-shown">
                         <span>Shown metrics:</span>
                         <select class="bt-table-select">
@@ -566,14 +566,14 @@
                       <table class="bt-data-table">
                         <thead>
                           <tr>
-                            <th>Date</th>
-                            <th>Trades</th>
-                            <th>Total Profit</th>
-                            <th>Profit Factor</th>
-                            <th>Wins</th>
-                            <th>Draws</th>
-                            <th>Losses</th>
-                            <th>Win Rate</th>
+                            <th data-i18n="backtest.date">日期</th>
+                            <th data-i18n="backtest.trades">交易</th>
+                            <th data-i18n="backtest.totalProfit">总收益</th>
+                            <th data-i18n="backtest.profitFactor">收益因子</th>
+                            <th data-i18n="backtest.wins">盈利</th>
+                            <th data-i18n="backtest.draws">平局</th>
+                            <th data-i18n="backtest.losses">亏损</th>
+                            <th data-i18n="backtest.winRate">胜率</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -594,9 +594,9 @@
                   
                   <div class="bt-results-table">
                     <div class="bt-table-header">
-                      <h4 class="bt-table-title">Single trades</h4>
+                      <h4 class="bt-table-title" data-i18n="backtest.singleTrades">单笔交易</h4>
                       <div class="bt-table-shown">
-                        <!-- <span>Shown metrics:</span>
+                        <!-- <span data-i18n="backtest.shownMetrics">Shown metrics:</span>
                         <select class="bt-table-select">
                           <option>Profit Factor, Expectancy</option>
                         </select> -->
@@ -606,16 +606,16 @@
                       <table class="bt-trades-table">
                         <thead>
                           <tr>
-                            <th>ID</th>
-                            <th>Pair</th>
-                            <th>Amount</th>
-                            <th>Total stake amount</th>
-                            <th>Open rate</th>
-                            <th>Close rate</th>
-                            <th>Profit %</th>
-                            <th>Open date</th>
-                            <th>Close date</th>
-                            <th>Close Reason</th>
+                            <th data-i18n="backtest.id">ID</th>
+                            <th data-i18n="backtest.pair">交易对</th>
+                            <th data-i18n="backtest.amount">数量</th>
+                            <th data-i18n="backtest.totalStakeAmount">总赌注金额</th>
+                            <th data-i18n="backtest.openRate">开仓价</th>
+                            <th data-i18n="backtest.closeRate">平仓价</th>
+                            <th data-i18n="backtest.profitPct">利润%</th>
+                            <th data-i18n="backtest.openDate">开仓日期</th>
+                            <th data-i18n="backtest.closeDate">平仓日期</th>
+                            <th data-i18n="backtest.closeReason">平仓原因</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -693,7 +693,7 @@
             <div v-show="activeTab === 'visualize'" class="bt-tab-panel">
               <div v-if="currentResult" class="bt-visualization">
                 <div class="bt-chart-section">
-                  <h3 class="bt-section-title">收益曲线</h3>
+                  <h3 class="bt-section-title" data-i18n="backtest.equityCurve">收益曲线</h3>
                   <div class="bt-chart-container">
                     <div class="bt-chart">
                       <svg viewBox="0 0 800 300" class="bt-line-chart">
@@ -707,26 +707,26 @@
                         <path :d="linePath" fill="none" stroke="#4edea3" stroke-width="2" />
                       </svg>
                       <div class="bt-chart-labels">
-                        <span>第1天</span>
-                        <span>第10天</span>
-                        <span>第20天</span>
-                        <span>第30天</span>
+                        <span data-i18n="backtest.day1">第1天</span>
+                        <span data-i18n="backtest.day10">第10天</span>
+                        <span data-i18n="backtest.day20">第20天</span>
+                        <span data-i18n="backtest.day30">第30天</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div class="bt-chart-section">
-                  <h3 class="bt-section-title">收益分布</h3>
+                  <h3 class="bt-section-title" data-i18n="backtest.profitDistribution">收益分布</h3>
                   <div class="bt-bar-chart">
                     <div class="bt-bar-group">
                       <div class="bt-bar-item">
                         <div class="bt-bar bt-bar-win" :style="{ height: winRateHeight + '%' }"></div>
-                        <span>盈利</span>
+                        <span data-i18n="backtest.win">盈利</span>
                       </div>
                       <div class="bt-bar-item">
                         <div class="bt-bar bt-bar-loss" :style="{ height: (100 - winRateHeight) + '%' }"></div>
-                        <span>亏损</span>
+                        <span data-i18n="backtest.loss">亏损</span>
                       </div>
                     </div>
                   </div>
@@ -741,7 +741,7 @@
                     </div>
                     <div class="bt-metric-content">
                       <div class="bt-metric-value">{{ currentResult.sharpeRatio }}</div>
-                      <div class="bt-metric-label">夏普比率</div>
+                      <div class="bt-metric-label" data-i18n="backtest.sharpeRatio">夏普比率</div>
                     </div>
                   </div>
                   <div class="bt-metric-card">
@@ -752,7 +752,7 @@
                     </div>
                     <div class="bt-metric-content">
                       <div class="bt-metric-value">{{ currentResult.sortinoRatio }}</div>
-                      <div class="bt-metric-label">索提诺比率</div>
+                      <div class="bt-metric-label" data-i18n="backtest.sortinoRatio">索提诺比率</div>
                     </div>
                   </div>
                   <div class="bt-metric-card">
@@ -763,7 +763,7 @@
                     </div>
                     <div class="bt-metric-content">
                       <div class="bt-metric-value">{{ currentResult.volatility }}%</div>
-                      <div class="bt-metric-label">波动率</div>
+                      <div class="bt-metric-label" data-i18n="backtest.volatility">波动率</div>
                     </div>
                   </div>
                   <div class="bt-metric-card">
@@ -774,7 +774,7 @@
                     </div>
                     <div class="bt-metric-content">
                       <div class="bt-metric-value">{{ currentResult.maxProfit }}%</div>
-                      <div class="bt-metric-label">最大盈利</div>
+                      <div class="bt-metric-label" data-i18n="backtest.maxProfit">最大盈利</div>
                     </div>
                   </div>
                 </div>
@@ -784,7 +784,7 @@
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6e7591" stroke-width="1.5">
                   <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                <p>请先运行回测或加载历史结果</p>
+                <p data-i18n="backtest.pleaseRunBacktest">请先运行回测或加载历史结果</p>
               </div>
             </div>
           </div>
@@ -812,26 +812,49 @@ const freqaiModels = ref([]);
 const hasAnalysisData = ref(false);
 const savedBacktestResult = ref(null);
 const periodicTabs = ref([
-  { key: 'day', label: 'Days' },
-  { key: 'week', label: 'Weeks' },
-  { key: 'month', label: 'Months' },
-  { key: 'year', label: 'Years' },
-  { key: 'weekday', label: 'Weekday' }
+  { key: 'day', label: t('backtest.periodic.day') },
+  { key: 'week', label: t('backtest.periodic.week') },
+  { key: 'month', label: t('backtest.periodic.month') },
+  { key: 'year', label: t('backtest.periodic.year') },
+  { key: 'weekday', label: t('backtest.periodic.weekday') }
 ]);
+
+function updatePeriodicTabs() {
+  periodicTabs.value = [
+    { key: 'day', label: t('backtest.periodic.day') },
+    { key: 'week', label: t('backtest.periodic.week') },
+    { key: 'month', label: t('backtest.periodic.month') },
+    { key: 'year', label: t('backtest.periodic.year') },
+    { key: 'weekday', label: t('backtest.periodic.weekday') }
+  ];
+}
 const activePeriodicTab = ref('month');
 const currentPage = ref(1);
 const pageSize = ref(20);
 
-const metricOptions = [
-  { value: 'sqn', label: 'SQN' },
-  { value: 'cagr', label: 'Cagr' },
-  { value: 'calmar', label: 'Calmar' },
-  { value: 'expectancy', label: 'Expectancy' },
-  { value: 'profit_factor', label: 'Profit Factor' },
-  { value: 'sharpe', label: 'Sharpe' },
-  { value: 'sortino', label: 'Sortino' },
-  { value: 'max_drawdown', label: 'Max Drawdown' }
-];
+const metricOptions = ref([
+  { value: 'sqn', label: t('backtest.sqn') },
+  { value: 'cagr', label: t('backtest.cagr') },
+  { value: 'calmar', label: t('backtest.calmar') },
+  { value: 'expectancy', label: t('backtest.expectancy') },
+  { value: 'profit_factor', label: t('backtest.profitFactor') },
+  { value: 'sharpe', label: t('backtest.sharpe') },
+  { value: 'sortino', label: t('backtest.sortino') },
+  { value: 'max_drawdown', label: t('backtest.maxDrawdown') }  
+]);
+
+function updateMetricOptions() {
+  metricOptions.value = [
+    { value: 'sqn', label: t('backtest.sqn') },
+    { value: 'cagr', label: t('backtest.cagr') },
+    { value: 'calmar', label: t('backtest.calmar') },
+    { value: 'expectancy', label: t('backtest.expectancy') },
+    { value: 'profit_factor', label: t('backtest.profitFactor') },
+    { value: 'sharpe', label: t('backtest.sharpe') },
+    { value: 'sortino', label: t('backtest.sortino') },
+    { value: 'max_drawdown', label: t('backtest.maxDrawdown') }  
+  ];
+}
 
 const name = ref('')
 const enterTagVisibleMetrics = ref(['sqn', 'cagr', 'calmar', 'expectancy', 'profit_factor', 'sharpe', 'sortino', 'max_drawdown']);
@@ -1106,6 +1129,14 @@ watch(activeTab, (newTab) => {
     loadFreqaiModels();
   }
 });
+
+function handleLangChange() {
+  updateTabs();
+  updatePeriodicTabs();
+  updateMetricOptions();
+}
+
+window.addEventListener("bovin-lang-changed", handleLangChange);
 
 const loadFreqaiModels = async () => {
   try {

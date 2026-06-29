@@ -56,7 +56,7 @@
               :class="{ offline: !isSystemOnline }"
             >
               <span class="dot"></span>
-              <span>{{ isSystemOnline ? '系统在线' : '系统离线' }}</span>
+              <span :data-i18n="isSystemOnline ? 'topbar.systemOnline' : 'topbar.systemOffline'">{{ isSystemOnline ? t('topbar.systemOnline') : t('topbar.systemOffline') }}</span>
             </div>
             <!-- <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span> -->
             <!-- <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button> -->
@@ -80,18 +80,18 @@
 
         <a-modal
           v-model:visible="reloadConfigVisible"
-          title="配置重新加载"
+          :title="t('panel.reloadConfigTitle')"
           :closable="false"
           :mask-closable="false"
           :centered="true"
         >
           <div style="text-align: center; padding: 20px 0;">
             <a-spin v-if="reloadConfigLoading" :size="32" style="margin-bottom: 16px;" />
-            <div>{{ reloadConfigLoading ? '机器人正在重新加载配置，请等待10s...' : '配置已重新加载完成' }}</div>
+            <div>{{ reloadConfigLoading ? t('panel.reloadConfigLoading') : t('panel.reloadConfigDone') }}</div>
           </div>
           <template #footer>
             <a-button type="primary" :loading="reloadConfigLoading" @click="handleReloadConfigOk">
-              确定
+              {{ t('common.ok') }}
             </a-button>
           </template>
         </a-modal>
@@ -616,6 +616,11 @@ import {
   persistProfileToLocalStorage,
   normalizeStrategySlots
 } from "../store/state-core.js";
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const isSystemOnline = ref(uiState.lastPingOk);
 const reloadConfigVisible = ref(false);

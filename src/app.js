@@ -296,6 +296,7 @@ function bindPanelChromeOnce() {
       if (shell) applyDomI18n(shell);
       syncMockPillUi();
       applyTopbarDecor(uiState.lastPingOk, uiState.lastPingLatencyMs);
+      window.dispatchEvent(new CustomEvent("bovin-lang-changed", { detail: { lang: state.lang } }));
     });
   }
   
@@ -354,10 +355,10 @@ function bindPanelChromeOnce() {
     const newDryRun = !state.mockMode;
     const isMock = newDryRun;
     Modal.confirm({
-      title: isMock ? "切换到模拟模式" : "切换到实时模式",
-      content: isMock ? "确定要切换到模拟模式吗？" : "确定要切换到实时模式吗？",
-      okText: "确定",
-      cancelText: "取消",
+      title: isMock ? t('panel.switchToMock') : t('panel.switchToLive'),
+      content: isMock ? t('panel.confirmSwitchMock') : t('panel.confirmSwitchLive'),
+      okText: t('common.ok'),
+      cancelText: t('common.cancel'),
       centered: true,
       async onOk() {
         try {
