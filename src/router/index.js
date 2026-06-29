@@ -3,6 +3,7 @@ import { buildPanelRoutes } from "./routes.js";
 import { stripSensitiveQueryParamsFromUrl } from "../utils/strip-sensitive-url-params.js";
 import { uiState } from "../store/state-core.js";
 import { state } from "../store/state-core.js";
+import { refreshMonitorPageMetrics } from "../utils/monitor-page-metrics.js";
 
 export const panelRouter = createRouter({
   history: createWebHashHistory(),
@@ -42,6 +43,11 @@ panelRouter.afterEach((to) => {
     } catch {
       /* ignore */
     }
+  }
+  if (to.name === "monitor") {
+    setTimeout(() => {
+      void refreshMonitorPageMetrics();
+    }, 100);
   }
 });
 

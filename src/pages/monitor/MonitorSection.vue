@@ -122,5 +122,12 @@
 </style>
 
 <script>
+import { onMounted } from "vue";
+import { refreshMonitorPageMetrics } from "../../utils/monitor-page-metrics.js";
+
+onMounted(() => {
+  void refreshMonitorPageMetrics();
+});
+
 export * from "../../api/monitor.js";
 </script>

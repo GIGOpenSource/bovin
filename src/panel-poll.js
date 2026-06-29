@@ -396,7 +396,7 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
     openTradesTable.innerHTML =
       openTradesRows ||
       `<tr>
-        <td colspan="10" class="t-center">暂无数据</td>
+        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">暂无数据</td>
       </tr>`;
   }
 
@@ -476,7 +476,7 @@ function renderClosedTradesFromApi(tradesRaw, sectionId = null) {
     closedTradesTable.innerHTML =
       closedTradesRows ||
       `<tr>
-        <td colspan="10" class="t-center">暂无数据</td>
+        <td colspan="10" style="text-align: center; vertical-align: middle; padding: 40px 20px;">暂无数据</td>
       </tr>`;
   }
 

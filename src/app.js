@@ -409,6 +409,10 @@ export function enterShellAfterAuth() {
   
   void syncPanelPreferencesFromServer();
   
+  setTimeout(() => {
+    void refreshMonitorPageMetrics();
+  }, 100);
+  
   try {
     window.dispatchEvent(new CustomEvent("bovin-panel-auth"));
   } catch {
