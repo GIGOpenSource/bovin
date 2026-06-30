@@ -7,6 +7,7 @@ import {
 } from "../store/state-core.js";
 import { normalizeUserRestApiV1Base } from "../api/config.js";
 import { getTradesFeed } from "../api/positions.js";
+import { deleteStrategy, switchStrategy, getPanelStrategies } from "../api/config2.js";
 import { escapeHtml } from "../utils/html-utils.js";
 import { pairsFromBlacklistPayload, pairsFromWhitelistPayload } from "../utils/pairlist-parse.js";
 
@@ -685,13 +686,16 @@ export function renderControlStrategyCards(
     let pauseStopBtn = "";
     if (isActive && botRunning) {
       pauseStopBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-control-op="pause" data-endpoint="/pause">${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>` +
-                      `<button type="button" class="danger action-btn" data-method="POST" data-control-op="stop" data-endpoint="/stop">${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
+                      `<button type="button" class="ghost action-btn sc-btn-danger" data-method="POST" data-control-op="stop" data-endpoint="/stop">${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
     } else if (isActive && !botRunning) {
-      pauseStopBtn = `<button type="button" class="primary action-btn" data-method="POST" data-control-op="start" data-endpoint="/start">${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
+      pauseStopBtn = `<button type="button" class="ghost action-btn sc-btn-primary" data-method="POST" data-control-op="start" data-endpoint="/start">${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
     }
     
-    const backtestBtn = `<button type="button" class="ghost" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;
-    const forceBtn = `<button type="button" class="danger-soft" data-control-force-exit="1"${operable ? "" : ' disabled'}>${escapeHtml(t("sc.forceCloseAll"))}</button>`;
+    const backtestBtn = `<button type="button" class="ghost action-btn" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;
+    const forceBtn = `<button type="button" class="ghost action-btn sc-btn-danger" data-control-force-exit="1"${operable ? "" : ' disabled'}>${escapeHtml(t("sc.forceCloseAll"))}</button>`;
+    
+    const switchBtn = `<button type="button" class="ghost action-btn" data-strategy-switch="${escapeHtml(name)}">${escapeHtml(t("sc.strategy.switch"))}</button>`;
+    const deleteBtn = `<button type="button" class="ghost action-btn sc-btn-danger" data-strategy-delete="${escapeHtml(name)}">${escapeHtml(t("sc.strategy.delete"))}</button>`;
 
     return `<tr class="sc-table-row" data-strategy-card="${escapeHtml(name)}">
       <td class="sc-table-name">${escapeHtml(name)}</td>
@@ -700,11 +704,90 @@ export function renderControlStrategyCards(
         ${pauseStopBtn}
         ${backtestBtn}
         ${forceBtn}
+        ${switchBtn}
+        ${deleteBtn}
       </td>
     </tr>`;
   }).join("");
 
   root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<table class="sc-strategy-table"><thead><tr><th class="sc-table-th-name">${escapeHtml(t("sc.strategy.name"))}</th><th class="sc-table-th-actions">${escapeHtml(t("sc.actions"))}</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+  const cleanupPrev = root._strategyActionCleanup;
+  if (typeof cleanupPrev === "function") cleanupPrev();
+
+  const onClick = (ev) => {
+    const fromEl = ev.target instanceof Element ? ev.target : null;
+
+    const deleteBtnRaw = fromEl?.closest("button[data-strategy-delete]");
+    const deleteBtn = deleteBtnRaw instanceof HTMLButtonElement ? deleteBtnRaw : null;
+    if (deleteBtn) {
+      const strategyName = deleteBtn.getAttribute("data-strategy-delete");
+      if (!strategyName) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const confirmMsg = t("sc.strategy.confirmDelete").replace("{name}", strategyName);
+      const doConfirm = window.__strategyConfirm || ((title, content, onOk) => { if (window.confirm(content)) onOk(); });
+      doConfirm(t("modal.confirmTitle"), confirmMsg, () => {
+        void (async () => {
+          deleteBtn.disabled = true;
+          try {
+            await deleteStrategy(strategyName);
+            const panelStrategies = await getPanelStrategies();
+            uiState.panelStrategyList = Array.isArray(panelStrategies) 
+              ? panelStrategies.map(x => String(x || "").trim()).filter(Boolean)
+              : [];
+            const rowEl = deleteBtn.closest(".sc-table-row");
+            if (rowEl) {
+              rowEl.remove();
+            }
+            const tableBody = root.querySelector("tbody");
+            if (tableBody && !tableBody.children.length) {
+              root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert">${alertIconSvg("info")}<span>${escapeHtml(t("sc.strategy.noFiles"))}</span></div></article>`;
+            }
+            const doSuccess = window.__strategySuccess || ((content) => {});
+            doSuccess(t("sc.strategy.deleteSuccess"));
+          } catch (e) {
+            const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+            const doAlert = window.__strategyAlert || ((content) => window.alert(content));
+            doAlert(msg);
+          } finally {
+            deleteBtn.disabled = false;
+          }
+        })();
+      });
+      return;
+    }
+
+    const switchBtnRaw = fromEl?.closest("button[data-strategy-switch]");
+    const switchBtn = switchBtnRaw instanceof HTMLButtonElement ? switchBtnRaw : null;
+    if (switchBtn) {
+      const strategyName = switchBtn.getAttribute("data-strategy-switch");
+      if (!strategyName) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const confirmMsg = t("sc.strategy.confirmSwitch").replace("{name}", strategyName);
+      const doConfirm = window.__strategyConfirm || ((title, content, onOk) => { if (window.confirm(content)) onOk(); });
+      doConfirm(t("modal.confirmTitle"), confirmMsg, () => {
+        void (async () => {
+          switchBtn.disabled = true;
+          try {
+            await switchStrategy(strategyName);
+            window.location.reload();
+          } catch (e) {
+            const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+            const doAlert = window.__strategyAlert || ((content) => window.alert(content));
+            doAlert(msg);
+          } finally {
+            switchBtn.disabled = false;
+          }
+        })();
+      });
+      return;
+    }
+  };
+
+  root.addEventListener("click", onClick);
+  root._strategyActionCleanup = () => root.removeEventListener("click", onClick);
 }
 
 const SC_GOV_LOCK_SVG = `<span class="sc-gov-pair-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" focusable="false"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></span>`;
@@ -884,16 +967,37 @@ function renderControlStrategyRulesOut(showConfig) {
     trailDisplay = `${t("label.on")} (+${(trailingStopPositive * 100).toFixed(1)}% / ${(trailingStopOffset * 100).toFixed(1)}%)`;
   }
   
+  const canShortDisplay = cfg.can_short === true ? t("label.on") : cfg.can_short === false ? t("label.off") : "";
+  
+  const positionAdjustmentDisplay = cfg.position_adjustment_enable === true ? t("label.on") : cfg.position_adjustment_enable === false ? t("label.off") : "";
+  
+  const botNameDisplay = cfg.bot_name != null ? String(cfg.bot_name).trim() : "";
+  
+  const stakeAmountDisplay = cfg.stake_amount != null ? String(cfg.stake_amount) : "";
+  
+  const tradingModeDisplay = cfg.trading_mode != null ? String(cfg.trading_mode).trim() : "";
+  
+  const marginModeDisplay = cfg.margin_mode != null ? String(cfg.margin_mode).trim() : "";
+  
+  const maxOpenTradesDisplay = cfg.max_open_trades != null ? String(cfg.max_open_trades) : "";
+  
   const rows = [
     { label: t("sc.strategy.kpiTimeframe"), value: timeframe },
     { label: t("sc.strategy.kpiStoploss"), value: stoplossDisplay },
     { label: t("sc.strategy.kpiMinimalRoi"), value: roiDisplay },
-    { label: t("sc.strategy.kpiTrailing"), value: trailDisplay }
+    { label: t("sc.strategy.kpiTrailing"), value: trailDisplay },
+    { label: t("sc.strategy.kpiCanShort"), value: canShortDisplay },
+    { label: t("sc.strategy.kpiPositionAdjustment"), value: positionAdjustmentDisplay },
+    { label: t("sc.strategy.kpiBotName"), value: botNameDisplay },
+    { label: t("sc.strategy.kpiStakeAmount"), value: stakeAmountDisplay },
+    { label: t("sc.strategy.kpiTradingMode"), value: tradingModeDisplay },
+    { label: t("sc.strategy.kpiMarginMode"), value: marginModeDisplay },
+    { label: t("sc.strategy.kpiMaxOpenTrades"), value: maxOpenTradesDisplay }
   ].filter(row => row.value);
   
-  el.innerHTML = rows.map((row) => 
+  el.innerHTML = `<div class="sc-rules-grid">${rows.map((row) => 
     `<div class="sc-rule-row"><span class="sc-rule-label">${escapeHtml(row.label)}</span><span class="sc-rule-value">${escapeHtml(row.value)}</span></div>`
-  ).join("");
+  ).join("")}</div>`;
 }
 
 /** @param {unknown} payload GET /trades 响应（数组或 { trades } / { data }） */

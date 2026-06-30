@@ -27,6 +27,9 @@ const httpWeb = {
   },
   put(path, data, options) {
     return requestAtBase(DOWNLOAD_DATA_API_V1_BASE, path, { ...options, method: "PUT", body: JSON.stringify(data) });
+  },
+  delete(path, options) {
+    return requestAtBase(DOWNLOAD_DATA_API_V1_BASE, path, { ...options, method: "DELETE" });
   }
 };
 export const getPanelStrategies = () => httpWeb.get("/strategies");
@@ -35,3 +38,5 @@ export const getStrategyTemplates = () => httpWeb.get("/c1/templates_name");
 export const createStrategy = (strategyName, template) => httpWeb.post("/c1/strategy/create", { strategy_name: strategyName, template });
 export const saveStrategyParams = (strategyName, params) => httpWeb.put(`/c1/strategy/${encodeURIComponent(String(strategyName))}/params`, { params });
 export const saveStrategyCode = (strategyName, code) => httpWeb.put(`/c1/strategy/${encodeURIComponent(String(strategyName))}/code`, { code });
+export const deleteStrategy = (strategyName) => httpWeb.delete(`/c1/strategy/${encodeURIComponent(String(strategyName))}`);
+export const switchStrategy = (strategyName) => httpWeb.post("/c1/strategy/switch", { name: strategyName });

@@ -186,42 +186,79 @@
 }
 
 .sc-panel-config-rules h4 {
-  margin: 0 0 8px;
-  font-size: 12px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.sc-rules-pre {
+.sc-panel-config-rules :deep(.sc-rules-pre) {
   margin: 0;
-  max-height: 220px;
-  overflow: auto;
-  padding: 12px;
-  font-size: 11px;
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: visible;
+  padding: 16px;
+  font-size: 12px;
   line-height: 2;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--ft-line-rgb), 0.28);
-  background: rgba(6, 12, 28, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  background: rgba(6, 12, 28, 0.9);
   color: var(--text-main, #e8ecf8);
+  box-sizing: border-box;
+  width: 50%;
 }
 
-.sc-rule-row {
+.sc-panel-config-rules :deep(.sc-rules-grid) {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 
-.sc-rule-row:last-child {
-  margin-bottom: 0;
+.sc-panel-config-rules :deep(.sc-rule-row) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.sc-rule-label {
+.sc-panel-config-rules :deep(.sc-rule-label) {
   flex-shrink: 0;
-  width: 180px;
+  flex-grow: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.sc-rule-value {
-  flex: 1;
-  word-break: break-all;
+.sc-panel-config-rules :deep(.sc-rule-value) {
+  flex-shrink: 0;
+  flex-grow: 0;
+  color: var(--text-main, #e8ecf8);
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar) {
+  width: 6px;
+}
+
+.sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-track) {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-thumb:hover) {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .sc-checkbox-row {
@@ -1073,19 +1110,27 @@
   font-size: 12px;
 }
 
-.sc-strategy-table {
-  width: 100%;
+#controlStrategyCards {
+  grid-column: 1 / -1 !important;
+  grid-template-columns: 1fr !important;
+  width: 100% !important;
+}
+
+#controlStrategyCards :deep(table) {
+  width: 100% !important;
   border-collapse: collapse;
   background: var(--card-bg);
   border-radius: 8px;
   overflow: hidden;
+  table-layout: auto;
+  display: table !important;
 }
 
-.sc-strategy-table thead {
+#controlStrategyCards :deep(table thead) {
   background: var(--card-bg-dim);
 }
 
-.sc-strategy-table th {
+#controlStrategyCards :deep(table th) {
   text-align: left;
   padding: 12px 16px;
   font-size: 12px;
@@ -1095,49 +1140,111 @@
   letter-spacing: 0.5px;
 }
 
-.sc-table-th-name {
-  width: 40%;
+#controlStrategyCards :deep(.sc-table-th-name) {
+  width: 20%;
+  white-space: nowrap;
 }
 
-.sc-table-th-actions {
-  width: 60%;
+#controlStrategyCards :deep(.sc-table-th-actions) {
+  width: 80%;
 }
 
-.sc-table-row {
+#controlStrategyCards :deep(.sc-table-row) {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.sc-table-row:last-child {
+#controlStrategyCards :deep(.sc-table-row:last-child) {
   border-bottom: none;
 }
 
-.sc-table-row:hover {
+#controlStrategyCards :deep(.sc-table-row:hover) {
   background: var(--card-bg-hover);
 }
 
-.sc-table-name {
+#controlStrategyCards :deep(.sc-table-name) {
   padding: 12px 16px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sc-table-actions {
-  padding: 12px 16px;
+#controlStrategyCards :deep(.sc-table-actions) {
+  padding: 8px 12px;
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100% !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+  min-width: 0;
 }
 
-.sc-table-actions .action-btn {
-  font-size: 12px;
-  padding: 6px 12px;
+#controlStrategyCards :deep(.sc-table-actions button) {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-action-icon) {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-action-icon svg) {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-btn-danger) {
+  border-color: rgba(255, 140, 120, 0.5);
+  color: #ff9480;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-btn-danger:hover:not(:disabled)) {
+  border-color: rgba(255, 140, 120, 0.8);
+  background: rgba(255, 140, 120, 0.15);
+  color: #ffb4ab;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-btn-primary) {
+  border-color: rgba(100, 140, 255, 0.5);
+  color: #a0b8ff;
+}
+
+#controlStrategyCards :deep(.sc-table-actions .sc-btn-primary:hover:not(:disabled)) {
+  border-color: rgba(100, 140, 255, 0.8);
+  background: rgba(100, 140, 255, 0.15);
+  color: #c0d0ff;
+}
+
+#controlStrategyCards :deep(.sc-table-actions::-webkit-scrollbar) {
+  height: 4px;
+}
+
+#controlStrategyCards :deep(.sc-table-actions::-webkit-scrollbar-track) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+#controlStrategyCards :deep(.sc-table-actions::-webkit-scrollbar-thumb) {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 </style>
 
 <script setup>
 import { createVNode, onMounted, onUnmounted, ref, watch } from "vue";
-import { Modal } from "ant-design-vue";
+import { Modal, message } from "ant-design-vue";
 import {
   BarChartOutlined,
   CheckCircleOutlined,
@@ -1158,9 +1265,35 @@ import {
 } from "../../store/state-core.js";
 import { postStart, postReloadConfig, getShowConfig } from "../../api/control.js";
 import { postDryRunConfig } from "../../api/overview.js";
-import { getStrategyTemplates, createStrategy } from "../../api/config2.js";
+import { getStrategyTemplates, createStrategy, deleteStrategy, switchStrategy } from "../../api/config2.js";
 
 const forceSidePopupContainer = () => document.body;
+
+function strategyConfirm(title, content, onOk) {
+  Modal.confirm({
+    title,
+    content,
+    okText: "确定",
+    cancelText: "取消",
+    onOk,
+  });
+}
+
+function strategyAlert(content) {
+  Modal.info({
+    title: "提示",
+    content,
+    okText: "确定",
+  });
+}
+
+function strategySuccess(content) {
+  message.success(content);
+}
+
+window.__strategyConfirm = strategyConfirm;
+window.__strategyAlert = strategyAlert;
+window.__strategySuccess = strategySuccess;
 const forceSideVal = ref("long");
 const forceSideOptions = [
   { value: "long", label: "long" },
@@ -1228,21 +1361,22 @@ async function handleCreateStrategy() {
   const strategyName = String(strategyNameInput.value || "").trim();
 
   if (!template) {
-    window.alert(wlModalT("panel.selectTemplate"));
+    message.warning(wlModalT("panel.selectTemplate"));
     return;
   }
   if (!strategyName) {
-    window.alert(wlModalT("panel.enterStrategyName"));
+    message.warning(wlModalT("panel.enterStrategyName"));
     return;
   }
 
   try {
     await createStrategy(strategyName, template);
     createStrategyModalOpen.value = false;
+    message.success(wlModalT("panel.createStrategySuccess"));
     window.location.reload();
   } catch (e) {
     const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-    window.alert(msg);
+    message.error(msg);
   }
 }
 
