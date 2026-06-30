@@ -316,11 +316,11 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
   const closedPnlClass = profitClosedPercent >= 0 ? "positive" : "negative";
   
   const openPnlDisplay = unrealizedPercent >= 0 
-    ? `+${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(3)})` 
-    : `${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(3)})`;
+    ? `+${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(2)})` 
+    : `${unrealizedPercent.toFixed(2)}% (${unrealizedFiat.toFixed(2)})`;
   const closedPnlDisplay = profitClosedPercent >= 0 
-    ? `+${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(3)})` 
-    : `${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(3)})`;
+    ? `+${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(2)})` 
+    : `${profitClosedPercent.toFixed(2)}% (${profitClosedFiat.toFixed(2)})`;
   
   const totalBot = balance?.total_bot ?? 0;
   const modeText = isDryRun ? "dry" : "live";
@@ -352,7 +352,7 @@ function renderPositionsSectionFromStatus(statusRaw, profitAll = null, balance =
       const currentRate = pickFirstNumber(row, ["current_rate", "currentRate", "price"]);
       const pnlPct = pickFirstNumber(row, ["profit_pct", "profitPct", "unrealized_pnl_pct", "unrealizedPnlPct"]) ?? 0;
       const pnlAbs = pickFirstNumber(row, ["profit_abs", "profitAbs", "unrealized_pnl", "unrealizedPnl"]) ?? 0;
-      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})`;
+      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(2)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(2)})`;
       const openDate = pickFirstString(row, ["open_date", "openDate", "open_timestamp", "openTimestamp"]);
       const canExit = tid != null;
       const exitAttr = canExit ? ` data-forceexit-tradeid="${tid}"` : "";
@@ -449,7 +449,7 @@ function renderClosedTradesFromApi(tradesRaw, sectionId = null) {
       const closeRate = pickFirstNumber(row, ["close_rate", "closeRate"]);
       const pnlPct = pickFirstNumber(row, ["profit_pct", "profitPct"]) ?? 0;
       const pnlAbs = pickFirstNumber(row, ["profit_abs", "profitAbs", "close_profit", "closeProfit"]) ?? 0;
-      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(3)})`;
+      const pnlDisplay = pnlPct >= 0 ? `+${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(2)})` : `${pnlPct.toFixed(2)}% (${pnlAbs.toFixed(2)})`;
       const openDate = pickFirstString(row, ["open_date", "openDate", "open_timestamp", "openTimestamp"]);
       const closeDate = pickFirstString(row, ["close_date", "closeDate", "close_timestamp", "closeTimestamp"]);
       const exitReason = escapeHtml(pickFirstString(row, ["exit_reason", "exitReason"]) || "—");

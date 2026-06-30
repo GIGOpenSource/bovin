@@ -326,20 +326,20 @@
                           <tr v-for="(item, key) in currentResult.resultsPerEnterTag" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
-                            <td>{{ item.profit_mean_pct }}</td>
-                            <td>{{ item.profit_total_abs }}</td>
-                            <td>{{ item.profit_total_pct }}</td>
+                            <td>{{ formatNumber(item.profit_mean_pct) }}%</td>
+                            <td>{{ formatNumber(item.profit_total_abs) }}</td>
+                            <td>{{ formatNumber(item.profit_total_pct) }}%</td>
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sqn')">{{ formatNumber(item.sqn) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('cagr')">{{ formatNumber(item.cagr) }}%</td>
+                            <td v-if="enterTagVisibleMetrics.includes('calmar')">{{ formatNumber(item.calmar) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('expectancy')">{{ formatNumber(item.expectancy) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
+                            <td v-if="enterTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -390,20 +390,20 @@
                           <tr v-for="(item, key) in currentResult.exitReasonSummary" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
-                            <td>{{ item.profit_mean_pct }}</td>
-                            <td>{{ item.profit_total_abs }}</td>
-                            <td>{{ item.profit_total_pct }}%</td>
+                            <td>{{ formatNumber(item.profit_mean_pct) }}%</td>
+                            <td>{{ formatNumber(item.profit_total_abs) }}</td>
+                            <td>{{ formatNumber(item.profit_total_pct) }}%</td>
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sqn')">{{ formatNumber(item.sqn) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('cagr')">{{ formatNumber(item.cagr) }}%</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('calmar')">{{ formatNumber(item.calmar) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('expectancy')">{{ formatNumber(item.expectancy) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -457,20 +457,20 @@
                               <td>{{ item.key?.[0] }}</td>
                               <td>{{ item.key?.[1] }}</td>
                               <td>{{ item.trades }}</td>
-                              <td>{{ item.profit_mean_pct }}%</td>
-                              <td>{{ item.profit_total_abs }}</td>
-                              <td>{{ item.profit_total_pct }}%</td>
+                              <td>{{ formatNumber(item.profit_mean_pct) }}%</td>
+                              <td>{{ formatNumber(item.profit_total_abs) }}</td>
+                              <td>{{ formatNumber(item.profit_total_pct) }}%</td>
                               <td>{{ item.wins }}</td>
                               <td>{{ item.draws }}</td>
                               <td>{{ item.losses }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sqn')">{{ formatNumber(item.sqn) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('cagr')">{{ formatNumber(item.cagr) }}%</td>
+                              <td v-if="mixTagVisibleMetrics.includes('calmar')">{{ formatNumber(item.calmar) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('expectancy')">{{ formatNumber(item.expectancy) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
+                              <td v-if="mixTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
                             <!-- </tr> -->
                           </tr>
                         </tbody>
@@ -522,20 +522,20 @@
                           <tr v-for="(item, key) in currentResult.resultsPerPair" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
-                            <td>{{ item.profit_mean_pct }}%</td>
-                            <td>{{ item.profit_total_abs }}</td>
-                            <td>{{ item.profit_total_pct }}%</td>
+                            <td>{{ formatNumber(item.profit_mean_pct) }}%</td>
+                            <td>{{ formatNumber(item.profit_total_abs) }}</td>
+                            <td>{{ formatNumber(item.profit_total_pct) }}%</td>
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td v-if="pairVisibleMetrics.includes('sqn')">{{ item.sqn || '-' }}</td>
-                            <td v-if="pairVisibleMetrics.includes('cagr')">{{ item.cagr || '-' }}</td>
-                            <td v-if="pairVisibleMetrics.includes('calmar')">{{ item.calmar || '-' }}</td>
-                            <td v-if="pairVisibleMetrics.includes('expectancy')">{{ item.expectancy }}</td>
-                            <td v-if="pairVisibleMetrics.includes('profit_factor')">{{ item.profit_factor }}</td>
-                            <td v-if="pairVisibleMetrics.includes('sharpe')">{{ item.sharpe || '-100' }}</td>
-                            <td v-if="pairVisibleMetrics.includes('sortino')">{{ item.sortino || '-100' }}</td>
-                            <td v-if="pairVisibleMetrics.includes('max_drawdown')">{{ item.max_drawdown || '0.00%' }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sqn')">{{ formatNumber(item.sqn) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('cagr')">{{ formatNumber(item.cagr) }}%</td>
+                            <td v-if="pairVisibleMetrics.includes('calmar')">{{ formatNumber(item.calmar) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('expectancy')">{{ formatNumber(item.expectancy) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
+                            <td v-if="pairVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -580,8 +580,8 @@
                           <tr v-for="(item, index) in currentResult.periodicBreakdown" :key="index">
                             <td>{{ item.date }}</td>
                             <td>{{ item.trades }}</td>
-                            <td>{{ item.profit_abs }}</td>
-                            <td>{{ item.profit_factor }}</td>
+                            <td>{{ formatNumber(item.profit_abs) }}</td>
+                            <td>{{ formatNumber(item.profit_factor) }}</td>
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
@@ -884,6 +884,13 @@ const formatDate = (dateStr) => {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+const formatNumber = (value, decimals = 2) => {
+  if (value === undefined || value === null || value === '-') return '-';
+  const num = Number(value);
+  if (isNaN(num)) return String(value);
+  return num.toFixed(decimals);
 };
 
 const visiblePages = computed(() => {
@@ -1483,42 +1490,405 @@ const metricsFields = [
   'Worst single Trade'
 ];
 
-const getFieldValue = (data, fieldName) => {
-  const fieldMappings = {
-    'Backtesting from': ['backtesting_from', 'backtestFrom', 'startDate', 'backtest_start'],
-    'Backtesting to': ['backtesting_to', 'backtestTo', 'endDate', 'backtest_end'],
-    'Trading Mode': ['trading_mode', 'tradingMode', 'mode'],
-    'BT execution time': ['bt_execution_time', 'executionTime', 'duration'],
+const getFieldValue = (data, fieldName, isMetric = false) => {
+  const strategyFieldMappings = {
+    'Backtesting from': ['backtest_start'],
+    'Backtesting to': ['backtest_end'],
+    'Trading Mode': ['margin_mode', 'trading_mode'],
+    'BT execution time': ['backtest_run_end_ts', 'backtest_run_start_ts'],
     'Max open trades': ['max_open_trades', 'maxOpenTrades', 'maxTrades'],
     'Timeframe': ['timeframe', 'tf'],
     'Timeframe Detail': ['timeframe_detail', 'tfDetail', 'detailTimeframe'],
     'Timerange': ['timerange', 'timeRange'],
     'Stoploss': ['stoploss', 'stop_loss'],
-    'Trailing Stoploss': ['trailing_stoploss', 'trailingStop', 'trailing'],
-    'Trail only when offset is reached': ['trail_only_offset', 'trailOffset', 'offsetReached'],
+    'Trailing Stoploss': ['trailing_stop'],
+    'Trail only when offset is reached': ['trailing_only_offset_is_reached'],
     'Trailing Stop positive': ['trailing_stop_positive', 'trailPositive'],
     'Trailing stop positive offset': ['trailing_stop_positive_offset', 'trailPositiveOffset'],
-    'Custom Stoploss': ['custom_stoploss', 'customStop'],
-    'ROI': ['roi', 'ROI'],
+    'Custom Stoploss': ['use_custom_stoploss'],
+    'ROI': ['minimal_roi'],
     'Use Exit Signal': ['use_exit_signal', 'useExitSignal', 'exitSignal'],
     'Exit profit only': ['exit_profit_only', 'exitProfitOnly'],
     'Exit profit offset': ['exit_profit_offset', 'exitProfitOffset'],
     'Enable protections': ['enable_protections', 'enableProtections', 'protections'],
     'Starting balance': ['starting_balance', 'startBalance', 'initialBalance'],
     'Final balance': ['final_balance', 'endBalance', 'balance'],
-    'Avg. stake amount': ['avg_stake_amount', 'avgStake', 'stakeAmount'],
-    'Total trade volume': ['total_trade_volume', 'totalVolume', 'volume']
+    'Avg. stake amount': ['avg_stake_amount'],
+    'Total trade volume': ['total_volume']
   };
+  
+  const metricFieldMappings = {
+    'Total Profit': ['profit_total'],
+    'CAGR': ['cagr'],
+    'Sortino': ['sortino'],
+    'Sharpe': ['sharpe'],
+    'Calmar': ['calmar'],
+    'System Quality Number (SQN)': ['sqn'],
+    'Expectancy (ratio)': ['expectancy', 'expectancy_ratio'],
+    'Profit factor': ['profit_factor'],
+    'Total trades / Daily Avg Trades': ['total_trades', 'trades_per_day'],
+    'Best day': ['backtest_best_day', 'backtest_best_day_abs'],
+    'Worst day': ['backtest_worst_day', 'backtest_worst_day_abs'],
+    'Win/Draw/Loss': ['wins', 'draws', 'losses'],
+    'Days win/draw/loss': ['winning_days', 'draw_days', 'losing_days'],
+    'Max Consecutive Wins / Loss': ['max_consecutive_wins', 'max_consecutive_losses'],
+    'Rejected entry signals': ['rejected_signal'],
+    'Entry/Exit timeouts': ['timedout_entry_orders', 'timedout_exit_orders'],
+    'Canceled Trade Entries': ['canceled_trade_entries'],
+    'Canceled Entry Orders': ['canceled_entry_order'],
+    'Long / Short': ['trade_count_long', 'trade_count_short'],
+    'Total profit Long': ['profit_total_long'],
+    'Total profit Short': ['profit_total_short'],
+    'Market change': ['market_change'],
+    'Max Drawdown (Account)': ['max_relative_drawdown'],
+    'Profit at Drawdown start | end': ['max_drawdown_high', 'max_drawdown_low'],
+    '-- Wallet Balance metrics --': [],
+    'Max Drawdown (wallet balance)': ['max_relative_drawdown'],
+    'Max Drawdown abs (wallet balance)': ['max_drawdown_abs'],
+    'Drawdown duration (wallet balance)': ['drawdown_duration'],
+    'Drawdown start (wallet balance)': ['drawdown_start'],
+    'Drawdown end (wallet balance)': ['drawdown_end'],
+    'Sortino (wallet balance)': ['sortino'],
+    'Sharpe (wallet balance)': ['sharpe'],
+    'Calmar (wallet balance)': ['calmar'],
+    'Best Pair': ['best_pair'],
+    'Worst Pair': ['worst_pair'],
+    'Min. Duration winners': ['winner_holding_min_s'],
+    'Avg. Duration winners': ['winner_holding_avg_s'],
+    'Max. Duration winners': ['winner_holding_max_s'],
+    'Min. Duration Losers': ['loser_holding_min_s'],
+    'Avg. Duration Losers': ['loser_holding_avg_s'],
+    'Max. Duration Losers': ['loser_holding_max_s'],
+    'Min balance (closed trades)': ['csum_min'],
+    'Max balance (closed trades)': ['csum_max'],
+    'Best single Trade': ['best_single_trade'],
+    'Worst single Trade': ['worst_single_trade']
+  };
+  
+  const fieldMappings = isMetric ? metricFieldMappings : strategyFieldMappings;
+  
+  if (!isMetric && fieldName === 'Trading Mode') {
+    const marginMode = data['margin_mode'];
+    const tradingMode = data['trading_mode'];
+    if (marginMode !== undefined && tradingMode !== undefined) {
+      return `${marginMode} ${tradingMode}`;
+    } else if (marginMode !== undefined) {
+      return String(marginMode);
+    } else if (tradingMode !== undefined) {
+      return String(tradingMode);
+    }
+    return 'N/A';
+  }
+  
+  if (!isMetric && fieldName === 'BT execution time') {
+    const endTs = data['backtest_run_end_ts'];
+    const startTs = data['backtest_run_start_ts'];
+    if (endTs !== undefined && startTs !== undefined) {
+      const seconds = endTs - startTs;
+      return `${seconds} seconds`;
+    }
+    return 'N/A';
+  }
+  
+  if (!isMetric && fieldName === 'Stoploss') {
+    const stoploss = data['stoploss'] || data['stop_loss'];
+    if (stoploss !== undefined && stoploss !== null) {
+      const value = Number(stoploss);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}%`;
+      }
+      return String(stoploss);
+    }
+    return 'N/A';
+  }
+  
+  if (!isMetric && fieldName === 'ROI') {
+    const minimalRoi = data['minimal_roi'];
+    if (minimalRoi !== undefined && minimalRoi !== null) {
+      if (typeof minimalRoi === 'object') {
+        return JSON.stringify(minimalRoi);
+      }
+      return String(minimalRoi);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'CAGR') {
+    const cagr = data['cagr'];
+    if (cagr !== undefined && cagr !== null) {
+      const value = Number(cagr);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}%`;
+      }
+      return String(cagr);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Total Profit') {
+    const profitTotal = data['profit_total'];
+    if (profitTotal !== undefined && profitTotal !== null) {
+      const value = Number(profitTotal);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}% | ${(value * 1000).toFixed(2)} USDT`;
+      }
+      return String(profitTotal);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Total trades / Daily Avg Trades') {
+    const totalTrades = data['total_trades'];
+    const tradesPerDay = data['trades_per_day'];
+    if (totalTrades !== undefined && tradesPerDay !== undefined) {
+      return `${totalTrades} / ${tradesPerDay}`;
+    } else if (totalTrades !== undefined) {
+      return String(totalTrades);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Best day') {
+    const bestDay = data['backtest_best_day'];
+    const bestDayAbs = data['backtest_best_day_abs'];
+    if (bestDay !== undefined && bestDayAbs !== undefined) {
+      const value = Number(bestDay);
+      const absValue = Number(bestDayAbs);
+      if (!isNaN(value) && !isNaN(absValue)) {
+        return `${(value * 100).toFixed(2)}% | ${absValue.toFixed(2)} USDT`;
+      }
+      return `${bestDay} | ${bestDayAbs}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Worst day') {
+    const worstDay = data['backtest_worst_day'];
+    const worstDayAbs = data['backtest_worst_day_abs'];
+    if (worstDay !== undefined && worstDayAbs !== undefined) {
+      const value = Number(worstDay);
+      const absValue = Number(worstDayAbs);
+      if (!isNaN(value) && !isNaN(absValue)) {
+        return `${(value * 100).toFixed(2)}% | ${absValue.toFixed(2)} USDT`;
+      }
+      return `${worstDay} | ${worstDayAbs}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Win/Draw/Loss') {
+    const wins = data['wins'];
+    const draws = data['draws'];
+    const losses = data['losses'];
+    if (wins !== undefined && draws !== undefined && losses !== undefined) {
+      const total = Number(wins) + Number(losses);
+      const winRate = total > 0 ? ((Number(wins) / total) * 100).toFixed(2) : '0.00';
+      return `${wins} / ${draws} / ${losses} (WR: ${winRate}%)`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Days win/draw/loss') {
+    const winningDays = data['winning_days'];
+    const drawDays = data['draw_days'];
+    const losingDays = data['losing_days'];
+    if (winningDays !== undefined && drawDays !== undefined && losingDays !== undefined) {
+      return `${winningDays} / ${drawDays} / ${losingDays}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Max Consecutive Wins / Loss') {
+    const maxWins = data['max_consecutive_wins'];
+    const maxLosses = data['max_consecutive_losses'];
+    if (maxWins !== undefined && maxLosses !== undefined) {
+      return `${maxWins} / ${maxLosses}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Entry/Exit timeouts') {
+    const entryTimeouts = data['timedout_entry_orders'];
+    const exitTimeouts = data['timedout_exit_orders'];
+    if (entryTimeouts !== undefined && exitTimeouts !== undefined) {
+      return `${entryTimeouts} / ${exitTimeouts}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Long / Short') {
+    const longCount = data['trade_count_long'];
+    const shortCount = data['trade_count_short'];
+    if (longCount !== undefined && shortCount !== undefined) {
+      return `${longCount} / ${shortCount}`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Total profit Long') {
+    const profitLong = data['profit_total_long'];
+    if (profitLong !== undefined && profitLong !== null) {
+      const value = Number(profitLong);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}% | ${(value * 1000).toFixed(2)} USDT`;
+      }
+      return String(profitLong);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Total profit Short') {
+    const profitShort = data['profit_total_short'];
+    if (profitShort !== undefined && profitShort !== null) {
+      const value = Number(profitShort);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}% | ${(value * 1000).toFixed(2)} USDT`;
+      }
+      return String(profitShort);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Market change') {
+    const marketChange = data['market_change'];
+    if (marketChange !== undefined && marketChange !== null) {
+      const value = Number(marketChange);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}%`;
+      }
+      return String(marketChange);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Max Drawdown (Account)') {
+    const maxDrawdown = data['max_relative_drawdown'];
+    if (maxDrawdown !== undefined && maxDrawdown !== null) {
+      const value = Number(maxDrawdown);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}%`;
+      }
+      return String(maxDrawdown);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Profit at Drawdown start | end') {
+    const high = data['max_drawdown_high'];
+    const low = data['max_drawdown_low'];
+    if (high !== undefined && low !== undefined) {
+      const highVal = typeof high === 'number' || !isNaN(Number(high)) ? formatNumber(high) : high;
+      const lowVal = typeof low === 'number' || !isNaN(Number(low)) ? formatNumber(low) : low;
+      return `${highVal} USDT | ${lowVal} USDT`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === '-- Wallet Balance metrics --') {
+    return '';
+  }
+  
+  if (isMetric && fieldName === 'Max Drawdown (wallet balance)') {
+    const maxDrawdown = data['max_relative_drawdown'];
+    if (maxDrawdown !== undefined && maxDrawdown !== null) {
+      const value = Number(maxDrawdown);
+      if (!isNaN(value)) {
+        return `${(value * 100).toFixed(2)}%`;
+      }
+      return String(maxDrawdown);
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Max Drawdown abs (wallet balance)') {
+    const maxDrawdownAbs = data['max_drawdown_abs'];
+    if (maxDrawdownAbs !== undefined && maxDrawdownAbs !== null) {
+      const value = typeof maxDrawdownAbs === 'number' || !isNaN(Number(maxDrawdownAbs)) ? formatNumber(maxDrawdownAbs) : maxDrawdownAbs;
+      return `${value} USDT`;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Best Pair') {
+    const bestPair = data['best_pair'];
+    if (bestPair !== undefined && bestPair !== null) {
+      const key = bestPair.key || bestPair.pair || 'N/A';
+      const profitTotal = bestPair.profit_total !== undefined ? bestPair.profit_total : 0;
+      const value = Number(profitTotal);
+      if (!isNaN(value)) {
+        return `${key} (+${(value * 100).toFixed(2)}%)`;
+      }
+      return key;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Worst Pair') {
+    const worstPair = data['worst_pair'];
+    if (worstPair !== undefined && worstPair !== null) {
+      const key = worstPair.key || worstPair.pair || 'N/A';
+      const profitTotal = worstPair.profit_total !== undefined ? worstPair.profit_total : 0;
+      const value = Number(profitTotal);
+      if (!isNaN(value)) {
+        return `${key} (${(value * 100).toFixed(2)}%)`;
+      }
+      return key;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Best single Trade') {
+    const trade = data['best_single_trade'];
+    if (trade !== undefined && trade !== null && trade !== 'N/A') {
+      const pair = trade.pair || 'N/A';
+      const profitRatio = trade.profit_ratio !== undefined ? trade.profit_ratio : 0;
+      const profitAbs = trade.profit_abs !== undefined ? trade.profit_abs : 0;
+      const ratioValue = Number(profitRatio);
+      const absValue = Number(profitAbs);
+      if (!isNaN(ratioValue) && !isNaN(absValue)) {
+        return `${pair} ${(ratioValue * 100).toFixed(2)}% (${absValue.toFixed(2)} USDT)`;
+      }
+      return pair;
+    }
+    return 'N/A';
+  }
+  
+  if (isMetric && fieldName === 'Worst single Trade') {
+    const trade = data['worst_single_trade'];
+    if (trade !== undefined && trade !== null && trade !== 'N/A') {
+      const pair = trade.pair || 'N/A';
+      const profitRatio = trade.profit_ratio !== undefined ? trade.profit_ratio : 0;
+      const profitAbs = trade.profit_abs !== undefined ? trade.profit_abs : 0;
+      const ratioValue = Number(profitRatio);
+      const absValue = Number(profitAbs);
+      if (!isNaN(ratioValue) && !isNaN(absValue)) {
+        return `${pair} ${(ratioValue * 100).toFixed(2)}% (${absValue.toFixed(2)} USDT)`;
+      }
+      return pair;
+    }
+    return 'N/A';
+  }
   
   const possibleKeys = fieldMappings[fieldName] || [fieldName.toLowerCase().replace(/\s+/g, '_')];
   
   for (const key of possibleKeys) {
     if (data[key] !== undefined && data[key] !== null) {
-      return String(data[key]);
+      const value = data[key];
+      if (typeof value === 'number' || !isNaN(Number(value))) {
+        return formatNumber(value);
+      }
+      return String(value);
     }
   }
   
-  return data[fieldName] !== undefined ? String(data[fieldName]) : 'N/A';
+  if (data[fieldName] !== undefined) {
+    const value = data[fieldName];
+    if (typeof value === 'number' || !isNaN(Number(value))) {
+      return formatNumber(value);
+    }
+    return String(value);
+  }
+  return 'N/A';
 };
 
 const loadBacktestResult = async () => {
@@ -1531,7 +1901,18 @@ const loadBacktestResult = async () => {
       
       const strategyData = savedBacktestResult.value?.backtest_result?.strategy;
       const rawSettings = strategyData?.[strategyName] || savedBacktestResult.value || {};
-      const rawMetrics = rawSettings || {};
+      const trades = rawSettings?.trades || [];
+      const bestTrade = trades.length > 0 
+        ? trades.reduce((prev, curr) => prev.profit_abs > curr.profit_abs ? prev : curr) 
+        : null;
+      const worstTrade = trades.length > 0 
+        ? trades.reduce((prev, curr) => prev.profit_abs < curr.profit_abs ? prev : curr) 
+        : null;
+      const rawMetrics = {
+        ...rawSettings,
+        best_single_trade: bestTrade,
+        worst_single_trade: worstTrade
+      };
       
       console.log('使用策略名:', strategyName);
       console.log('原始策略设置数据:', rawSettings);
@@ -1539,14 +1920,12 @@ const loadBacktestResult = async () => {
       
       const strategySettings = {};
       strategySettingsFields.forEach(field => {
-        const fieldName = field.toLowerCase().replace(/\s+/g, '_');
-        strategySettings[field] = rawSettings[fieldName] !== undefined ? String(rawSettings[fieldName]) : 'N/A';
+        strategySettings[field] = getFieldValue(rawSettings, field);
       });
       
       const metrics = {};
       metricsFields.forEach(field => {
-        const fieldName = field.toLowerCase().replace(/\s+/g, '_');
-        metrics[field] = rawMetrics[fieldName] !== undefined ? String(rawMetrics[fieldName]) : 'N/A';
+        metrics[field] = getFieldValue(rawMetrics, field, true);
       });
       
       console.log('映射后的策略设置:', strategySettings);
