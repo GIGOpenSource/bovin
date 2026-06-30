@@ -12,11 +12,11 @@ import {
   getProfit,
   getSysinfo,
   getStatus,
-  getPanelStrategies,
   getPanelStrategySlots,
   getPanelAiOverview,
   getDaily
 } from "./api/overview.js";
+import { getPanelStrategies } from "./api/config2.js";
 import { Modal, message } from "ant-design-vue";
 import {
   getBalance,
@@ -756,6 +756,9 @@ export function startPanelPolling() {
   bindPositionsCancelOrderDelegationOnce();
   bindPendingCancelAllDelegationOnce();
   stopPanelPolling();
+  
+  fetchStrategiesOnce();
+  
   void panelTick();
   pollTimer = window.setInterval(() => {
     void panelTick();
@@ -766,6 +769,35 @@ export function stopPanelPolling() {
   if (pollTimer != null) {
     window.clearInterval(pollTimer);
     pollTimer = null;
+  }
+}
+
+let strategiesFetched = false;
+
+async function fetchStrategiesOnce() {
+  if (strategiesFetched) return;
+  strategiesFetched = true;
+  
+  try {
+    const panelStrategies = await getPanelStrategies();
+    const rawStrategies = extractPanelStrategyListPayload(panelStrategies);
+    
+    if (rawStrategies != null) {
+      uiState.panelStrategyListAll = normalizePanelStrategyNames(rawStrategies, false);
+      uiState.panelStrategyList = normalizePanelStrategyNames(rawStrategies, true);
+      
+      try {
+        window.dispatchEvent(
+          new CustomEvent("bovin-strategy-slot-names", {
+            detail: { names: uiState.panelStrategyList ?? [] }
+          })
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    /* ignore strategies fetch error */
   }
 }
 
@@ -804,7 +836,6 @@ async function panelTick() {
 
     if (currentSection === "overview" || currentSection === "control") {
       sectionRequests.push(
-        getPanelStrategies(),
         getPanelStrategySlots(),
         getPanelAiOverview(),
         getBalance(),
@@ -813,7 +844,7 @@ async function panelTick() {
         getBlacklist(),
         getTradesFeed(getNormalizedControlTradesFeedLimit())
       );
-      sectionRequestNames = ["panelStrategies", "strategySlots", "aiOverview", "balance", "daily", "whitelist", "blacklist", "tradesFeed"];
+      sectionRequestNames = ["strategySlots", "aiOverview", "balance", "daily", "whitelist", "blacklist", "tradesFeed"];
     } else if (currentSection === "positions") {
       sectionRequests.push(
         getBalance(),
@@ -840,10 +871,9 @@ async function panelTick() {
     const profit = settled[3];
     const sysinfo = settled[4];
     
-    let panelStrategies, strategySlots, aiOverview, balanceR, dailyR, wlR, blR, tradesFeedR;
+    let strategySlots, aiOverview, balanceR, dailyR, wlR, blR, tradesFeedR;
     let idx = 5;
     
-    if (sectionRequestNames.includes("panelStrategies")) panelStrategies = settled[idx++];
     if (sectionRequestNames.includes("strategySlots")) strategySlots = settled[idx++];
     if (sectionRequestNames.includes("aiOverview")) aiOverview = settled[idx++];
     if (sectionRequestNames.includes("balance")) balanceR = settled[idx++];
@@ -864,29 +894,11 @@ async function panelTick() {
     if (sysinfo.status === "fulfilled") uiState.lastSysinfo = sysinfo.value;
 
     if (currentSection === "overview" || currentSection === "control") {
-      const rawStrategies =
-        panelStrategies.status === "fulfilled" && panelStrategies.value != null
-          ? extractPanelStrategyListPayload(panelStrategies.value)
-          : null;
       const rawSlots =
         strategySlots.status === "fulfilled" && strategySlots.value != null
           ? extractPanelStrategyListPayload(strategySlots.value)
           : null;
 
-      const rawForNames = rawStrategies != null ? rawStrategies : rawSlots;
-      if (rawForNames != null) {
-        uiState.panelStrategyListAll = normalizePanelStrategyNames(rawForNames, false);
-        uiState.panelStrategyList = normalizePanelStrategyNames(rawForNames, true);
-        try {
-          window.dispatchEvent(
-            new CustomEvent("bovin-strategy-slot-names", {
-              detail: { names: uiState.panelStrategyList ?? [] }
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-      }
       if (rawSlots != null) {
         uiState.panelStrategySlotIdByName = buildPanelStrategySlotIdByName(rawSlots);
         uiState.panelStrategySlotRowsRaw = Array.isArray(rawSlots) ? rawSlots : [];

@@ -35,14 +35,14 @@
                 <h3 data-i18n="control.panelStrategyConfig">面板策略配置</h3>
                 <div class="sc-panel-config-actions">
                   <button type="button" id="btnSyncConfigAndStart" class="primary" data-i18n="btn.syncConfigStart">同步配置并启动交易器</button>
-                  <button type="button" id="btnSyncConfigOnly" class="ghost" data-i18n="btn.syncConfigOnly">仅同步配置到服务端</button>
+                  <button type="button" id="btnSyncConfigOnly" class="ghost" data-i18n="btn.syncConfigOnly">新建策略</button>
                 </div>
               </div>
               <p id="controlStrategyConfigSummary" class="sc-panel-config-summary"></p>
               <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
               <div class="sc-panel-config-rules">
                 <h4 data-i18n="control.strategyRulesOut">AI / 接管 — 策略规则输出</h4>
-                <pre id="controlStrategyRulesOut" class="mono sc-rules-pre">（暂无规则输出）</pre>
+                <div id="controlStrategyRulesOut" class="mono sc-rules-pre"></div>
               </div>
             </section>
 
@@ -79,9 +79,8 @@
               <input type="hidden" id="forceSide" value="long" />
               <a-select
                 v-model:value="forceSideVal"
+                id="forceSideSelect"
                 :options="forceSideOptions"
-                class="bovin-select-force"
-                popup-class-name="bovin-select-dropdown"
                 :get-popup-container="forceSidePopupContainer"
               />
               <button type="button" id="forceEnter" class="primary" data-i18n="btn.forceEnter">强制开仓</button>
@@ -89,6 +88,54 @@
               <div id="whitelist" class="mono"></div>
               <div id="blacklist" class="mono"></div>
             </div>
+
+            <a-modal
+              v-model:open="createStrategyModalOpen"
+              :title="wlModalT('panel.createStrategyTitle')"
+              :ok-text="wlModalT('common.ok')"
+              :cancel-text="wlModalT('common.cancel')"
+              :centered="true"
+              @ok="handleCreateStrategy"
+            >
+              <a-form layout="vertical">
+                <a-form-item :label="wlModalT('panel.strategyTemplate')">
+                  <a-select
+                    v-model:value="selectedTemplate"
+                    :options="templateOptions"
+                    :placeholder="wlModalT('panel.selectTemplate')"
+                    style="width: 100%;"
+                  />
+                </a-form-item>
+                <a-form-item :label="wlModalT('panel.strategyName')">
+                  <a-input
+                    v-model:value="strategyNameInput"
+                    :placeholder="wlModalT('panel.strategyNamePlaceholder')"
+                  />
+                </a-form-item>
+              </a-form>
+            </a-modal>
+
+            <a-modal
+              v-model:open="syncConfigModalOpen"
+              :title="wlModalT('panel.syncConfigStartTitle')"
+              :ok-text="wlModalT('common.ok')"
+              :cancel-text="wlModalT('common.cancel')"
+              :centered="true"
+              @ok="handleSyncConfigAndStart"
+            >
+              <p>{{ wlModalT(state.mockMode ? 'panel.confirmSyncConfigStartToLive' : 'panel.confirmSyncConfigStartToMock') }}</p>
+            </a-modal>
+
+            <a-modal
+              v-model:open="confirmModalOpen"
+              :title="confirmModalTitle"
+              :ok-text="wlModalT('common.ok')"
+              :cancel-text="wlModalT('common.cancel')"
+              :centered="true"
+              @ok="handleConfirmModalOk"
+            >
+              <p>{{ confirmModalContent }}</p>
+            </a-modal>
           </div>
         </section>
 </template>
@@ -150,13 +197,31 @@
   overflow: auto;
   padding: 12px;
   font-size: 11px;
-  line-height: 1.45;
+  line-height: 2;
   border-radius: 10px;
   border: 1px solid rgba(var(--ft-line-rgb), 0.28);
   background: rgba(6, 12, 28, 0.85);
   color: var(--text-main, #e8ecf8);
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+
+.sc-rule-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.sc-rule-row:last-child {
+  margin-bottom: 0;
+}
+
+.sc-rule-label {
+  flex-shrink: 0;
+  width: 180px;
+}
+
+.sc-rule-value {
+  flex: 1;
+  word-break: break-all;
 }
 
 .sc-checkbox-row {
@@ -521,7 +586,7 @@
 
 .sc-card-kpi-row {
   display: grid;
-  grid-template-columns: minmax(100px, 38%) 1fr;
+  grid-template-columns: 180px 1fr;
   gap: 8px;
   align-items: start;
 }
@@ -1007,6 +1072,67 @@
   padding: 5px 10px;
   font-size: 12px;
 }
+
+.sc-strategy-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sc-strategy-table thead {
+  background: var(--card-bg-dim);
+}
+
+.sc-strategy-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sc-table-th-name {
+  width: 40%;
+}
+
+.sc-table-th-actions {
+  width: 60%;
+}
+
+.sc-table-row {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-table-row:last-child {
+  border-bottom: none;
+}
+
+.sc-table-row:hover {
+  background: var(--card-bg-hover);
+}
+
+.sc-table-name {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.sc-table-actions {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sc-table-actions .action-btn {
+  font-size: 12px;
+  padding: 6px 12px;
+}
 </style>
 
 <script setup>
@@ -1026,9 +1152,13 @@ import { openTradesAuditModal, closeTradesAuditModal } from "../../components/co
 import { i18n } from "../../i18n/index.js";
 import {
   state,
+  uiState,
   persistProfileToLocalStorage,
   getNormalizedControlTradesFeedLimit
 } from "../../store/state-core.js";
+import { postStart, postReloadConfig, getShowConfig } from "../../api/control.js";
+import { postDryRunConfig } from "../../api/overview.js";
+import { getStrategyTemplates, createStrategy } from "../../api/config2.js";
 
 const forceSidePopupContainer = () => document.body;
 const forceSideVal = ref("long");
@@ -1037,10 +1167,84 @@ const forceSideOptions = [
   { value: "short", label: "short" }
 ];
 
+const createStrategyModalOpen = ref(false);
+const selectedTemplate = ref("");
+const strategyNameInput = ref("");
+const templateOptions = ref([]);
+
+const syncConfigModalOpen = ref(false);
+
+const confirmModalOpen = ref(false);
+const confirmModalTitle = ref("");
+const confirmModalContent = ref("");
+let confirmModalCallback = null;
+
 watch(forceSideVal, (v) => {
   const el = document.getElementById("forceSide");
   if (el instanceof HTMLInputElement && el.type === "hidden") el.value = v;
 });
+
+async function handleSyncConfigAndStart() {
+  syncConfigModalOpen.value = false;
+  try {
+    await postDryRunConfig(!state.mockMode);
+  } catch {
+    /* ignore dry run config error */
+  }
+  try {
+    await postReloadConfig();
+    if (window.__showReloadConfigModal) {
+      window.__showReloadConfigModal();
+    }
+  } catch {
+    /* ignore reload error */
+  }
+  try {
+    await postStart();
+  } catch {
+    /* ignore start error */
+  }
+  try {
+    const fresh = await getShowConfig();
+    if (fresh && typeof fresh === "object") {
+      uiState.lastShowConfig = fresh;
+    }
+  } catch {
+    /* ignore refresh error */
+  }
+  void runPanelTickOnce();
+}
+
+async function handleConfirmModalOk() {
+  confirmModalOpen.value = false;
+  if (confirmModalCallback) {
+    await confirmModalCallback();
+    confirmModalCallback = null;
+  }
+}
+
+async function handleCreateStrategy() {
+  const template = String(selectedTemplate.value || "").trim();
+  const strategyName = String(strategyNameInput.value || "").trim();
+
+  if (!template) {
+    window.alert(wlModalT("panel.selectTemplate"));
+    return;
+  }
+  if (!strategyName) {
+    window.alert(wlModalT("panel.enterStrategyName"));
+    return;
+  }
+
+  try {
+    await createStrategy(strategyName, template);
+    createStrategyModalOpen.value = false;
+    window.location.reload();
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+    window.alert(msg);
+  }
+}
 
 function wlModalT(key) {
   const lang = state.lang || "zh-CN";
@@ -1123,29 +1327,20 @@ function bindGovernanceWlRemove(root) {
     }
     if (!pair.trim()) return;
     const content = wlModalT("sc.gov.confirmRemoveWl").replace(/\{pair\}/g, pair);
-    Modal.confirm({
-      title: wlModalT("modal.confirmTitle"),
-      content,
-      icon: createVNode(ExclamationCircleFilled, {
-        style: { color: "rgb(248, 113, 113)" }
-      }),
-      okText: wlModalT("btn.confirm"),
-      cancelText: wlModalT("btn.cancel"),
-      okButtonProps: { danger: true },
-      centered: true,
-      maskClosable: true,
-      async onOk() {
-        try {
-          await deleteWhitelistPair(pair);
-          await refreshGovernanceListsOnly();
-        } catch (e) {
-          const errMsg =
-            e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-          window.alert(errMsg);
-          throw e;
-        }
+    confirmModalTitle.value = wlModalT("modal.confirmTitle");
+    confirmModalContent.value = content;
+    confirmModalCallback = async () => {
+      try {
+        await deleteWhitelistPair(pair);
+        await refreshGovernanceListsOnly();
+      } catch (e) {
+        const errMsg =
+          e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+        window.alert(errMsg);
+        throw e;
       }
-    });
+    };
+    confirmModalOpen.value = true;
   };
   root.addEventListener("click", onClick);
   unbindGovernanceWlRemove = () => root.removeEventListener("click", onClick);
@@ -1278,6 +1473,37 @@ onMounted(() => {
       }
     })();
   });
+
+  const syncStartBtn = document.getElementById("btnSyncConfigAndStart");
+  if (syncStartBtn instanceof HTMLButtonElement) {
+    syncStartBtn.addEventListener("click", () => {
+      syncConfigModalOpen.value = true;
+    });
+  }
+
+  const createStrategyBtn = document.getElementById("btnSyncConfigOnly");
+  if (createStrategyBtn instanceof HTMLButtonElement) {
+    createStrategyBtn.addEventListener("click", async () => {
+      selectedTemplate.value = "";
+      strategyNameInput.value = "";
+      templateOptions.value = [];
+      
+      try {
+        const result = await getStrategyTemplates();
+        const templates = result && result.templates ? result.templates : result;
+        if (Array.isArray(templates)) {
+          templateOptions.value = templates.map(t => ({
+            value: t.name || t.id || String(t),
+            label: t.name || t.id || String(t)
+          }));
+        }
+      } catch {
+        templateOptions.value = [];
+      }
+      
+      createStrategyModalOpen.value = true;
+    });
+  }
 });
 </script>
 

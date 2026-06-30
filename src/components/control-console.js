@@ -392,11 +392,26 @@ function mergeStrategyKpiSnapshot(strategyName, showConfig) {
 }
 
 function formatMinimalRoiBrief(roi) {
-  if (!roi || typeof roi !== "object") return null;
-  const entries = Object.entries(roi)
-    .map(([k, v]) => ({ m: Number(k), r: Number(v) }))
-    .filter((x) => Number.isFinite(x.m) && Number.isFinite(x.r))
-    .sort((a, b) => a.m - b.m);
+  if (!roi) return null;
+  let entries = [];
+  if (typeof roi === "object") {
+    entries = Object.entries(roi)
+      .map(([k, v]) => ({ m: Number(k), r: Number(v) }))
+      .filter((x) => Number.isFinite(x.m) && Number.isFinite(x.r))
+      .sort((a, b) => a.m - b.m);
+  } else if (typeof roi === "string") {
+    try {
+      const parsed = JSON.parse(roi);
+      if (parsed && typeof parsed === "object") {
+        entries = Object.entries(parsed)
+          .map(([k, v]) => ({ m: Number(k), r: Number(v) }))
+          .filter((x) => Number.isFinite(x.m) && Number.isFinite(x.r))
+          .sort((a, b) => a.m - b.m);
+      }
+    } catch {
+      return null;
+    }
+  }
   if (!entries.length) return null;
   return entries.slice(0, 6).map((e) => `${e.m}m→${(e.r * 100).toFixed(1)}%`).join(" · ");
 }
@@ -513,7 +528,8 @@ function formatStrategyGridOffCard(name, showConfig) {
 function formatPanelStrategyKpisHtml(name, stakeCur, showConfig) {
   const { aiOn, authAmt, aprPct, notes } = resolveCardEntryKpiFields(name);
   const cfg = showConfig && typeof showConfig === "object" ? showConfig : {};
-  const snap = mergeStrategyKpiSnapshot(name, cfg);
+  const detailData = uiState.strategyDetails && uiState.strategyDetails[name] ? uiState.strategyDetails[name] : {};
+  const snap = mergeStrategyKpiSnapshot(name, { ...cfg, ...detailData });
   const on = escapeHtml(t("label.on"));
   const off = escapeHtml(t("label.off"));
   const dash = "—";
@@ -546,6 +562,28 @@ function formatPanelStrategyKpisHtml(name, stakeCur, showConfig) {
   const memoLabel = escapeHtml(t("sc.strategy.kpiNotesMemo"));
   const notesDisp =
     notes.length > 140 ? `${escapeHtml(notes.slice(0, 140))}…` : escapeHtml(notes || dash);
+
+  const canShortLabel = escapeHtml(t("sc.strategy.kpiCanShort"));
+  const canShortVal = snap.can_short === true ? on : snap.can_short === false ? off : dashE;
+
+  const positionAdjustmentLabel = escapeHtml(t("sc.strategy.kpiPositionAdjustment"));
+  const positionAdjustmentVal = snap.position_adjustment_enable === true ? on : snap.position_adjustment_enable === false ? off : dashE;
+
+  const botNameLabel = escapeHtml(t("sc.strategy.kpiBotName"));
+  const botNameVal = snap.bot_name != null ? escapeHtml(String(snap.bot_name).trim()) : dashE;
+
+  const stakeAmountLabel = escapeHtml(t("sc.strategy.kpiStakeAmount"));
+  const stakeAmountVal = snap.stake_amount != null ? escapeHtml(String(snap.stake_amount)) : dashE;
+
+  const tradingModeLabel = escapeHtml(t("sc.strategy.kpiTradingMode"));
+  const tradingModeVal = snap.trading_mode != null ? escapeHtml(String(snap.trading_mode).trim()) : dashE;
+
+  const marginModeLabel = escapeHtml(t("sc.strategy.kpiMarginMode"));
+  const marginModeVal = snap.margin_mode != null ? escapeHtml(String(snap.margin_mode).trim()) : dashE;
+
+  const maxOpenTradesLabel = escapeHtml(t("sc.strategy.kpiMaxOpenTrades"));
+  const maxOpenTradesVal = snap.max_open_trades != null ? escapeHtml(String(snap.max_open_trades)) : dashE;
+
   return `<div class="sc-card-kpis" data-panel-kpis="1">
     <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${escapeHtml(t("sc.strategy.kpiTimeframe"))}</span><span class="sc-card-kpi-v mono">${tfVal}</span></div>
     <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${escapeHtml(t("sc.strategy.kpiStoploss"))}</span><span class="sc-card-kpi-v">${slVal}</span></div>
@@ -556,6 +594,13 @@ function formatPanelStrategyKpisHtml(name, stakeCur, showConfig) {
     <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${aiLabel}</span><span class="sc-card-kpi-v">${aiVal}</span></div>
     <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${amtLabel}</span><span class="sc-card-kpi-v">${amtVal}</span></div>
     <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${aprLabel}</span><span class="sc-card-kpi-v">${aprVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${canShortLabel}</span><span class="sc-card-kpi-v">${canShortVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${positionAdjustmentLabel}</span><span class="sc-card-kpi-v">${positionAdjustmentVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${botNameLabel}</span><span class="sc-card-kpi-v">${botNameVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${stakeAmountLabel}</span><span class="sc-card-kpi-v">${stakeAmountVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${tradingModeLabel}</span><span class="sc-card-kpi-v">${tradingModeVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${marginModeLabel}</span><span class="sc-card-kpi-v">${marginModeVal}</span></div>
+    <div class="sc-card-kpi-row"><span class="sc-card-kpi-k">${maxOpenTradesLabel}</span><span class="sc-card-kpi-v">${maxOpenTradesVal}</span></div>
     <div class="sc-card-kpi-row sc-card-kpi-row--memo"><span class="sc-card-kpi-k">${memoLabel}</span><span class="sc-card-kpi-v sc-card-kpi-memo">${notesDisp}</span></div>
   </div>`;
 }
@@ -617,216 +662,49 @@ export function renderControlStrategyCards(
 ) {
   const root = $("controlStrategyCards");
   if (!root) return;
-  const chipSep = " · ";
-  const activeGlobal = String(showConfig?.strategy || "").trim();
-  const settingsName = String(state.strategyName || "").trim();
-  const diskSet = new Set(
-    (Array.isArray(panelStrategies) ? panelStrategies : [])
-      .map((x) => String(x || "").trim())
-      .filter(Boolean)
-  );
-  const manualSet = new Set(
-    (Array.isArray(state.manualStrategyNames) ? state.manualStrategyNames : [])
-      .map((x) => String(x || "").trim())
-      .filter(Boolean)
-  );
-  const names = orderedStrategyNames(
-    panelStrategies,
-    activeGlobal,
-    settingsName,
-    state.manualStrategyNames
-  );
+
+  const names = (Array.isArray(panelStrategies) ? panelStrategies : [])
+    .map((x) => String(x || "").trim())
+    .filter(Boolean);
+
   if (!names.length) {
     root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert">${alertIconSvg("info")}<span>${escapeHtml(t("sc.strategy.noFiles"))}</span></div></article>`;
     return;
   }
-  const hiddenSet = new Set(
-    (Array.isArray(state.strategyHiddenFromConsole) ? state.strategyHiddenFromConsole : [])
-      .map((x) => String(x || "").trim())
-      .filter(Boolean)
-  );
-  const visibleNames = names.filter((n) => {
-    const key = String(n || "").trim();
-    return key && !hiddenSet.has(key);
-  });
-  if (!visibleNames.length) {
-    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert">${alertIconSvg("hidden")}<span>${escapeHtml(t("sc.strategy.allHiddenByPref"))}</span></div></article>`;
-    return;
-  }
-  if (visibleNames.length > 0 && visibleNames.every((n) => !entryWantsStrategyGrid(n))) {
-    const namesLine = visibleNames.map((n) => escapeHtml(n)).join(" · ");
-    const lead = escapeHtml(t("sc.strategy.allVisibleGridOffLead"));
-    root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<article class="sc-card sc-card-alert"><div class="sc-alert sc-alert--stack">
-      ${alertIconSvg("hidden")}
-      <div class="sc-alert-text"><span>${lead}</span><p class="mono sc-alert-names">${namesLine}</p>
-      <p class="muted sc-alert-sub">${escapeHtml(t("sc.strategy.entryGridOffHint"))}</p></div>
-    </div></article>`;
-    return;
-  }
-  const stakeCurGlobal = String(showConfig?.stake_currency || "").trim();
 
-  /** 机器人跑的是 config 策略 A，设置焦点是面板条目 B 且开启 AI 接管：主卡切到 B，运行态与 /start 等与同一进程对齐。 */
-  const settingsFocusEntry = settingsName ? panelEntryForStrategy(settingsName) : null;
-  const aiTakeoverSettingsFocus =
-    Boolean(settingsName) &&
-    Boolean(activeGlobal) &&
-    activeGlobal !== settingsName &&
-    Boolean(settingsFocusEntry?.aiTakeoverTrading);
+  const activeGlobal = String(showConfig?.strategy || "").trim();
+  const botRunning = normalizeBotState(showConfig?.state) === "running";
 
-  root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}${visibleNames
-    .map((name) => {
-      if (!entryWantsStrategyGrid(name)) {
-        return formatStrategyGridOffCard(name, showConfig);
-      }
-      const ent = panelEntryForStrategy(name);
-      const rowBase = normalizeUserRestApiV1Base(String(ent?.strategyRpcBase || "").trim());
-      const snap = strategyBotSnapshots && strategyBotSnapshots[name] ? strategyBotSnapshots[name] : null;
-      const hasDedicated = Boolean(rowBase);
-      const dedicatedOk = hasDedicated && snap?.showConfig && typeof snap.showConfig === "object";
+  const rows = names.map((name) => {
+    const isActive = name === activeGlobal;
+    const tradeTargetActive = isActive;
+    const operable = isActive;
+    
+    const editBtn = `<button type="button" class="ghost action-btn" data-strategy-slot-edit="${escapeHtml(name)}"><span data-i18n="sc.editConfig">${escapeHtml(t("sc.editConfig"))}</span></button>`;
+    
+    let pauseStopBtn = "";
+    if (isActive && botRunning) {
+      pauseStopBtn = `<button type="button" class="ghost action-btn" data-method="POST" data-control-op="pause" data-endpoint="/pause">${actionIconSvg("pause")}<span data-i18n="sc.pause">${escapeHtml(t("sc.pause"))}</span></button>` +
+                      `<button type="button" class="danger action-btn" data-method="POST" data-control-op="stop" data-endpoint="/stop">${actionIconSvg("stop")}<span data-i18n="sc.stop">${escapeHtml(t("sc.stop"))}</span></button>`;
+    } else if (isActive && !botRunning) {
+      pauseStopBtn = `<button type="button" class="primary action-btn" data-method="POST" data-control-op="start" data-endpoint="/start">${actionIconSvg("play")}<span data-i18n="sc.startStrategy">${escapeHtml(t("sc.startStrategy"))}</span></button>`;
+    }
+    
+    const backtestBtn = `<button type="button" class="ghost" data-i18n="sc.backtest">${escapeHtml(t("sc.backtest"))}</button>`;
+    const forceBtn = `<button type="button" class="danger-soft" data-control-force-exit="1"${operable ? "" : ' disabled'}>${escapeHtml(t("sc.forceCloseAll"))}</button>`;
 
-      const showCfgForCard =
-        hasDedicated && dedicatedOk
-          ? snap.showConfig
-          : hasDedicated && !dedicatedOk
-            ? {}
-            : showConfig;
-      const countForCard =
-        hasDedicated && dedicatedOk ? snap.count || {} : count;
-      const profitForCard =
-        hasDedicated && dedicatedOk ? snap.profit || {} : profit;
-      const statusForCard =
-        hasDedicated && dedicatedOk ? (Array.isArray(snap.status) ? snap.status : []) : statusRows;
-      const healthForCard =
-        hasDedicated && dedicatedOk ? snap.health || {} : botHealth;
+    return `<tr class="sc-table-row" data-strategy-card="${escapeHtml(name)}">
+      <td class="sc-table-name">${escapeHtml(name)}</td>
+      <td class="sc-table-actions">
+        ${editBtn}
+        ${pauseStopBtn}
+        ${backtestBtn}
+        ${forceBtn}
+      </td>
+    </tr>`;
+  }).join("");
 
-      const activeForAgg =
-        hasDedicated && dedicatedOk
-          ? String(showCfgForCard?.strategy || "").trim()
-          : activeGlobal;
-
-      const isAiTakeoverSettingsPrimary = aiTakeoverSettingsFocus && name === settingsName;
-      const isConfigStrategy =
-        !hasDedicated &&
-        Boolean(activeGlobal) &&
-        name === activeGlobal &&
-        !(aiTakeoverSettingsFocus && name !== settingsName);
-      const isPanelOnlyFocus =
-        !hasDedicated && !activeGlobal && Boolean(settingsName) && name === settingsName;
-
-      let metricsActive;
-      if (hasDedicated) metricsActive = Boolean(dedicatedOk);
-      else metricsActive = isConfigStrategy || isPanelOnlyFocus || isAiTakeoverSettingsPrimary;
-
-      const maxOpenRaw = showCfgForCard?.max_open_trades ?? countForCard?.max;
-      let maxOpen = 0;
-      if (maxOpenRaw != null && maxOpenRaw !== "" && maxOpenRaw !== "unlimited") {
-        const n = Number(maxOpenRaw);
-        if (Number.isFinite(n) && n > 0) maxOpen = n;
-      }
-      const curOpen = Number(countForCard?.current ?? countForCard?.open_trades ?? 0);
-      const slotPct = maxOpen > 0 ? Math.min(100, (curOpen / maxOpen) * 100) : 0;
-      const dryLabel = showCfgForCard?.dry_run ? t("freq.dryRun") : t("freq.live");
-      const exch = String(showCfgForCard?.exchange || "—");
-      const stateLabel = labelBotState(showCfgForCard?.state);
-      const profitPct =
-        profitForCard?.profit_all_ratio != null ? Number(profitForCard.profit_all_ratio) * 100 : null;
-      const stakeCurCard = String(showCfgForCard?.stake_currency ?? stakeCurGlobal ?? "").trim();
-      const tradingApis = panelBotTradingApisAvailable(showCfgForCard, proxyHealth, healthForCard);
-      /* 操作按钮：全局单实例沿用原主卡规则；独立 RPC 时每张卡控制自己的 trade 进程。 */
-      const { openCount, stake } = aggregateForStrategy(statusForCard, name, activeForAgg);
-      const botRunning = normalizeBotState(showCfgForCard?.state) === "running";
-      const paperOnly = Boolean(ent?.paperTrading);
-      const operable = metricsActive && tradingApis && !paperOnly;
-      let disabledHint = "";
-      if (!operable) {
-        if (metricsActive && paperOnly) {
-          disabledHint = t("sc.tradeMode.paperActionsBlocked");
-        } else if (metricsActive && !tradingApis) {
-          disabledHint = t("sc.tradeMode.actionsBlocked");
-        } else {
-          disabledHint = t("sc.strategy.inactiveHelp");
-        }
-      }
-      const runningNow = metricsActive && botRunning;
-      const chipCls = metricsActive ? (runningNow ? "ok" : "idle") : "idle";
-      let badge;
-      if (hasDedicated && dedicatedOk) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.dedicatedBotBadge"))}</span>`;
-      } else if (hasDedicated && !dedicatedOk) {
-        const errT = snap?.error ? escapeHtml(String(snap.error).slice(0, 160)) : "";
-        badge = `<span class="sc-chip idle" title="${errT}">${escapeHtml(t("sc.strategy.dedicatedBotOffline"))}</span>`;
-      } else if (isConfigStrategy) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.configActive"))}</span>`;
-      } else if (isPanelOnlyFocus || isAiTakeoverSettingsPrimary) {
-        badge = `<span class="sc-chip ${chipCls}">${escapeHtml(dryLabel)}${chipSep}${escapeHtml(exch)}${chipSep}${escapeHtml(stateLabel)}${chipSep}${escapeHtml(t("sc.strategy.panelPrefBadge"))}</span>`;
-      } else if (manualSet.has(name) && !diskSet.has(name)) {
-        badge = `<span class="sc-chip idle">${escapeHtml(t("sc.strategy.manualEntry"))}</span>`;
-      } else {
-        badge = `<span class="sc-chip idle">${escapeHtml(t("sc.strategy.available"))}</span>`;
-      }
-      let perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong>—</strong>`;
-      if (metricsActive && profitPct != null && Number.isFinite(profitPct)) {
-        const perfClass = profitPct < 0 ? "negative" : "positive";
-        const sign =
-          profitPct < 0
-            ? `<span class="sc-perf-sym sc-perf-sign" aria-hidden="true">-</span>`
-            : `<span class="sc-perf-sym sc-perf-sign" aria-hidden="true">+</span>`;
-        const num = escapeHtml(Math.abs(profitPct).toFixed(2));
-        perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong class="${perfClass}">${sign}<span class="sc-perf-num">${num}</span><span class="sc-perf-sym sc-perf-pct" aria-hidden="true">%</span><span class="sc-perf-sym sc-perf-sigma" aria-hidden="true">Σ</span></strong>`;
-      } else if (!metricsActive) {
-        perfInner = `<em data-i18n="sc.perf">${escapeHtml(t("sc.perf"))}</em><strong>—</strong>`;
-      }
-      const expBold = metricsActive
-        ? `${stake.toFixed(2)} ${escapeHtml(stakeCurCard || "—")} · ${escapeHtml(t("sc.strategy.openCount").replace("{n}", String(openCount)))}`
-        : escapeHtml(t("sc.strategy.inactiveExposure"));
-      const barPct = Math.min(100, Math.max(0, metricsActive ? slotPct : 0));
-      const midMeta = metricsActive
-        ? `<div class="sc-progress"><i style="--sc-progress-pct: ${barPct}%"></i></div>
-           <div><span data-i18n="sc.strategy.slotUse">${escapeHtml(t("sc.strategy.slotUse"))}</span><b>${maxOpen > 0 ? `${curOpen}/${maxOpen}` : String(curOpen)}</b></div>`
-        : `<div class="sc-progress"><i style="--sc-progress-pct: 0%"></i></div>
-           <div><span data-i18n="sc.lastRun">${escapeHtml(t("sc.lastRun"))}</span><b>${escapeHtml(t("sc.strategy.uptimeDash"))}</b></div>`;
-      const botRm = String(showCfgForCard?.runmode || "—");
-      const thirdMeta = `<div><span data-i18n="sc.uptime">${escapeHtml(t("sc.uptime"))}</span><b>${escapeHtml(botRm)}</b></div>`;
-      const panelKpis = formatPanelStrategyKpisHtml(name, stakeCurCard, showCfgForCard);
-      const slotRow = formatStrategySlotRowHtml(name);
-
-      let tradeDisabledHint = "";
-      if (!metricsActive && hasDedicated && !dedicatedOk) {
-        tradeDisabledHint = snap?.error
-          ? String(snap.error).slice(0, 200)
-          : t("sc.strategy.dedicatedBotOffline");
-      }
-      const actions = buildStrategyCardActionsHtml({
-        operable,
-        botRunning,
-        disabledHint,
-        tradeTargetActive: metricsActive,
-        tradeDisabledHint,
-      });
-
-      const apiBaseAttr =
-        hasDedicated && rowBase ? ` data-strategy-api-base="${encodeURIComponent(rowBase)}"` : "";
-      return `<article class="sc-card" data-strategy-card="${escapeHtml(name)}"${apiBaseAttr}>
-        <div class="sc-card-head">
-          <div class="sc-card-head-main">
-            <div class="sc-card-head-topline">
-              <h3 title="${escapeHtml(name)}">${escapeHtml(name)}</h3>
-              <div class="sc-perf">${perfInner}</div>
-            </div>
-            <div class="sc-card-head-chip">${badge}</div>
-          </div>
-        </div>
-        <div class="sc-meta">
-          <div><span data-i18n="sc.exposure">${escapeHtml(t("sc.exposure"))}</span><b>${expBold}</b></div>
-          ${midMeta}
-          ${thirdMeta}
-        </div>
-        ${panelKpis}
-        ${slotRow}
-        ${actions}
-      </article>`;
-    })
-    .join("")}`;
+  root.innerHTML = `${webserverTradeRelayInfoHtml(showConfig, proxyHealth, botHealth)}${runmodeNonTradingBannerHtml(showConfig, proxyHealth, botHealth)}<table class="sc-strategy-table"><thead><tr><th class="sc-table-th-name">${escapeHtml(t("sc.strategy.name"))}</th><th class="sc-table-th-actions">${escapeHtml(t("sc.actions"))}</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 const SC_GOV_LOCK_SVG = `<span class="sc-gov-pair-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" focusable="false"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></span>`;
@@ -967,6 +845,55 @@ export function renderControlHeroAndCards(
   );
   renderControlGovernanceLists(uiState.lastWl, uiState.lastBl, cfg);
   renderControlTradeFeed(uiState.lastTradesMini);
+  renderControlStrategyRulesOut(cfg);
+}
+
+function renderControlStrategyRulesOut(showConfig) {
+  const el = $("controlStrategyRulesOut");
+  if (!el) return;
+  const cfg = showConfig && typeof showConfig === "object" ? showConfig : {};
+  
+  const timeframe = cfg.timeframe != null ? String(cfg.timeframe).trim() : "";
+  
+  const stoploss = cfg.stoploss != null ? Number(cfg.stoploss) : null;
+  const stoplossDisplay = stoploss !== null && Number.isFinite(stoploss) 
+    ? `${(stoploss * 100).toFixed(1)}%` 
+    : "";
+  
+  const minimalRoi = cfg.minimal_roi;
+  let roiDisplay = "";
+  if (minimalRoi && typeof minimalRoi === "object") {
+    const entries = Object.entries(minimalRoi)
+      .map(([k, v]) => ({ m: Number(k), r: Number(v) }))
+      .filter((x) => Number.isFinite(x.m) && Number.isFinite(x.r))
+      .sort((a, b) => a.m - b.m);
+    if (entries.length) {
+      roiDisplay = entries.slice(0, 6).map((e) => `${e.m}m→+${(e.r * 100).toFixed(1)}%`).join(" · ");
+    } else {
+      roiDisplay = "0--";
+    }
+  } else {
+    roiDisplay = "0--";
+  }
+  
+  const trailingStop = cfg.trailing_stop === true;
+  const trailingStopPositive = cfg.trailing_stop_positive != null ? Number(cfg.trailing_stop_positive) : null;
+  const trailingStopOffset = cfg.trailing_stop_positive_offset != null ? Number(cfg.trailing_stop_positive_offset) : null;
+  let trailDisplay = trailingStop ? t("label.on") : t("label.off");
+  if (trailingStop && trailingStopPositive != null && trailingStopOffset != null) {
+    trailDisplay = `${t("label.on")} (+${(trailingStopPositive * 100).toFixed(1)}% / ${(trailingStopOffset * 100).toFixed(1)}%)`;
+  }
+  
+  const rows = [
+    { label: t("sc.strategy.kpiTimeframe"), value: timeframe },
+    { label: t("sc.strategy.kpiStoploss"), value: stoplossDisplay },
+    { label: t("sc.strategy.kpiMinimalRoi"), value: roiDisplay },
+    { label: t("sc.strategy.kpiTrailing"), value: trailDisplay }
+  ].filter(row => row.value);
+  
+  el.innerHTML = rows.map((row) => 
+    `<div class="sc-rule-row"><span class="sc-rule-label">${escapeHtml(row.label)}</span><span class="sc-rule-value">${escapeHtml(row.value)}</span></div>`
+  ).join("");
 }
 
 /** @param {unknown} payload GET /trades 响应（数组或 { trades } / { data }） */

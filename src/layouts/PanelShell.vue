@@ -487,19 +487,19 @@
 
         <div id="strategySlotModal" class="modal hidden" role="presentation">
           <div class="modal-mask" aria-hidden="true"></div>
-          <div class="modal-card modal-card--binding modal-card--strategy-slot" role="dialog" aria-modal="true" aria-labelledby="strategySlotModalTitle">
+          <div class="modal-card modal-card--binding modal-card--strategy-slot modal-card--strategy-detail" role="dialog" aria-modal="true" aria-labelledby="strategySlotModalTitle">
             <header class="modal-head modal-head--binding">
               <div class="modal-head-text">
-                <h4 id="strategySlotModalTitle" class="modal-title" data-i18n="modal.strategySlotTitle">策略 JSON / MML</h4>
-                <p class="modal-sub" data-i18n="modal.strategySlotSub">保存时以 JSON 中的 strategy 字段为策略名；下拉会随编辑自动同步。</p>
+                <h4 id="strategySlotModalTitle" class="modal-title">策略详情</h4>
+                <p class="modal-sub">查看策略参数与代码</p>
               </div>
               <button type="button" id="closeStrategySlotModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
             </header>
             <div class="modal-body">
-              <div class="strategy-slot-modal-layout">
-                <section class="strategy-slot-modal-top" aria-labelledby="strategySlotSelectLabel">
-                  <label id="strategySlotSelectLabel" class="strategy-slot-select-wrap">
-                    <span class="binding-field-label" data-i18n="label.strategySlotNameSync">策略名（随 JSON 内 strategy 同步）</span>
+              <div class="strategy-detail-modal-layout">
+                <section class="strategy-detail-modal-top">
+                  <label class="strategy-detail-select-wrap">
+                    <span class="binding-field-label">策略名</span>
                     <input type="hidden" id="mStrategySlotNameSelect" name="mStrategySlotNameSelect" value="" autocomplete="off" />
                     <a-select
                       v-model:value="strategySlotClassName"
@@ -515,25 +515,23 @@
                     />
                   </label>
                 </section>
-                <div class="strategy-slot-modal-columns">
-                  <label class="binding-field strategy-slot-field">
-                    <span class="binding-field-label" data-i18n="label.strategySlotDetailJson">详细策略 JSON</span>
-                    <textarea id="mStrategySlotDetailJson" name="mStrategySlotDetailJson" rows="10" autocomplete="off" spellcheck="false"></textarea>
-                  </label>
-                  <label class="binding-field strategy-slot-field">
-                    <span class="binding-field-label" data-i18n="label.strategySlotMml">MML</span>
-                    <textarea id="mStrategySlotMml" name="mStrategySlotMml" rows="10" autocomplete="off" spellcheck="false"></textarea>
-                  </label>
+                <div class="strategy-detail-modal-columns">
+                  <div class="strategy-detail-col strategy-detail-col--params">
+                    <div class="binding-field-label">策略参数 (params)</div>
+                    <textarea id="mStrategyParams" name="mStrategyParams" rows="10" autocomplete="off" spellcheck="false"></textarea>
+                  </div>
+                  <div class="strategy-detail-col strategy-detail-col--code">
+                    <div class="binding-field-label">策略代码 (code)</div>
+                    <textarea id="mStrategyCode" name="mStrategyCode" rows="10" autocomplete="off" spellcheck="false"></textarea>
+                  </div>
                 </div>
-                <p class="modal-hint strategy-slot-hint" data-i18n="hint.strategySlotEither">与全局「策略配置」中的扩展 JSON 不同：此处按每张策略卡片单独存储，供编排或外部工具使用。</p>
               </div>
             </div>
             <footer class="modal-actions modal-actions--split">
-              <button type="button" id="formatStrategySlotModal" class="ghost" data-i18n="btn.formatStrategySlotJson">
-                格式化 JSON
-              </button>
+              <div></div>
               <div class="modal-actions-end">
-                <button type="button" id="saveStrategySlotModal" class="primary" data-i18n="btn.saveStrategySlot">保存</button>
+                <button type="button" id="saveStrategyDetailModal" class="ghost">保存</button>
+                <button type="button" id="closeStrategyDetailModal" class="primary">关闭</button>
               </div>
             </footer>
           </div>
@@ -660,6 +658,7 @@ import {
   getPanelStrategySlots,
   patchPanelStrategySlot
 } from "../api/overview.js";
+import { getStrategyDetail, saveStrategyParams, saveStrategyCode } from "../api/config2.js";
 import {
   buildPanelStrategySlotIdByName,
   extractPanelStrategyListPayload,
@@ -816,44 +815,11 @@ function computeStrategySlotServerId(key, fromHint, mergedDj) {
 async function openStrategySlotModal(strategyName, serverIdHint = "") {
   const key = String(strategyName || "").trim();
   if (!key) return;
-  strategySlotSuppressJsonRewrite.value = true;
   strategySlotOpenKey.value = key;
-  const fromHint = String(serverIdHint || "").trim();
   const modal = document.getElementById("strategySlotModal");
-  const taJ = document.getElementById("mStrategySlotDetailJson");
-  const taM = document.getElementById("mStrategySlotMml");
-  const slots = state.strategySlots && typeof state.strategySlots === "object" ? state.strategySlots : {};
-  const slot = slots[key] || {};
-  let row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
-  /* 轮询未跑或列表未灌入 uiState 时先拉一次，否则永远没有 sid、不会请求详情 */
-  if (
-    !row &&
-    (!Array.isArray(uiState.panelStrategySlotRowsRaw) || uiState.panelStrategySlotRowsRaw.length === 0)
-  ) {
-    await syncStrategySlotsIntoUiState();
-    row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
-  }
-  const fromApiDj = (slotRowDetailJsonText(row) || "").trim();
-  const fromApiMm = (slotRowMmlText(row) || "").trim();
-  const djLocal = slot.detailJson ? String(slot.detailJson).trim() : "";
-  const mmLocal = slot.mml ? String(slot.mml).trim() : "";
-  let mergedDj = djLocal || fromApiDj;
-  let mergedMm = mmLocal || fromApiMm;
-  let sid = computeStrategySlotServerId(key, fromHint, mergedDj);
-  if (!sid) {
-    await syncStrategySlotsIntoUiState();
-    row = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
-    const fromApiDj2 = (slotRowDetailJsonText(row) || "").trim();
-    const fromApiMm2 = (slotRowMmlText(row) || "").trim();
-    mergedDj = djLocal || fromApiDj2;
-    mergedMm = mmLocal || fromApiMm2;
-    sid = computeStrategySlotServerId(key, fromHint, mergedDj);
-  }
-  strategySlotOpenServerId.value = sid;
-  if (taJ instanceof HTMLTextAreaElement) taJ.value = mergedDj;
-  if (taM instanceof HTMLTextAreaElement) taM.value = mergedMm;
-  strategySlotInitialDetailJson.value = normSlotEditorText(mergedDj);
-  strategySlotInitialMml.value = normSlotEditorText(mergedMm);
+  const paramsTa = document.getElementById("mStrategyParams");
+  const codeTa = document.getElementById("mStrategyCode");
+
   mergeStrategySlotOptionsFromNames(uiState.panelStrategyList || []);
   if (!strategySlotOptions.value.some((o) => o.value === key)) {
     strategySlotOptions.value = [...strategySlotOptions.value, { value: key, label: key }].sort((a, b) =>
@@ -861,33 +827,96 @@ async function openStrategySlotModal(strategyName, serverIdHint = "") {
     );
   }
   strategySlotClassName.value = key;
-  void nextTick(() => {
-    strategySlotSuppressJsonRewrite.value = false;
-  });
+
+  if (paramsTa instanceof HTMLTextAreaElement) paramsTa.value = "加载中...";
+  if (codeTa instanceof HTMLTextAreaElement) codeTa.value = "";
+
   modal?.classList.remove("hidden");
   const shell = document.getElementById("appRoot");
   if (shell) applyDomI18n(shell);
 
-  if (sid) {
-    try {
-      const detail = await getPanelStrategySlotDetail(sid, { includeBodies: true });
-      const modalStill = document.getElementById("strategySlotModal");
-      if (!modalStill || modalStill.classList.contains("hidden")) return;
-      const { detailJson: apiDj, mml: apiMm } = extractPanelStrategySlotDetailBodies(detail);
-      const taJ2 = document.getElementById("mStrategySlotDetailJson");
-      const taM2 = document.getElementById("mStrategySlotMml");
-      if (taJ2 instanceof HTMLTextAreaElement) taJ2.value = apiDj;
-      if (taM2 instanceof HTMLTextAreaElement) taM2.value = apiMm;
-      strategySlotInitialDetailJson.value = normSlotEditorText(apiDj);
-      strategySlotInitialMml.value = normSlotEditorText(apiMm);
-    } catch (e) {
-      console.error(e);
+  try {
+    const detail = await getStrategyDetail(key);
+    const modalStill = document.getElementById("strategySlotModal");
+    if (!modalStill || modalStill.classList.contains("hidden")) return;
+
+    const params = Array.isArray(detail?.params) ? detail.params : [];
+    const code = typeof detail?.code === "string" ? detail.code : "";
+
+    if (paramsTa instanceof HTMLTextAreaElement) {
+      paramsTa.value = JSON.stringify(params, null, 2);
+    }
+
+    if (codeTa instanceof HTMLTextAreaElement) {
+      codeTa.value = code;
+    }
+  } catch (e) {
+    console.error(e);
+    const paramsTa2 = document.getElementById("mStrategyParams");
+    if (paramsTa2 instanceof HTMLTextAreaElement) {
+      paramsTa2.value = "加载失败";
     }
   }
 }
 
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+
 function closeStrategySlotModal() {
   document.getElementById("strategySlotModal")?.classList.add("hidden");
+}
+
+async function onSaveStrategyDetailModal() {
+  const paramsTa = document.getElementById("mStrategyParams");
+  const codeTa = document.getElementById("mStrategyCode");
+  const saveBtn = document.getElementById("saveStrategyDetailModal");
+  const strategyName = String(strategySlotOpenKey.value || "").trim();
+
+  if (!strategyName) {
+    window.alert("请选择策略");
+    return;
+  }
+
+  let params = [];
+  if (paramsTa instanceof HTMLTextAreaElement) {
+    try {
+      const raw = paramsTa.value.trim();
+      params = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      window.alert("策略参数 JSON 格式错误");
+      return;
+    }
+  }
+
+  const code = codeTa instanceof HTMLTextAreaElement ? codeTa.value : "";
+
+  if (saveBtn instanceof HTMLButtonElement) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "保存中...";
+  }
+
+  try {
+    await saveStrategyParams(strategyName, params);
+    console.log(222)
+    await saveStrategyCode(strategyName, code);
+    window.alert("保存成功");
+    closeStrategySlotModal();
+  } catch (e) {
+    const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
+    window.alert(`保存失败: ${msg}`);
+  } finally {
+    if (saveBtn instanceof HTMLButtonElement) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "保存";
+    }
+  }
 }
 
 async function onSaveStrategySlotModal() {
@@ -1055,10 +1084,23 @@ function onStrategySlotModalUiClickCapture(ev) {
     onFormatStrategySlotJson();
     return;
   }
-  if (t.closest("#closeStrategySlotModal")) {
+  if (t.closest("#closeStrategySlotModal") || t.closest("#closeStrategyDetailModal")) {
     ev.preventDefault();
     ev.stopPropagation();
     closeStrategySlotModal();
+    return;
+  }
+  const saveDetailEl = t.closest("#saveStrategyDetailModal");
+  if (saveDetailEl) {
+    if (saveDetailEl instanceof HTMLButtonElement && saveDetailEl.disabled) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    void onSaveStrategyDetailModal().catch((err) => {
+      console.error(err);
+      const msg =
+        err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
+      window.alert(msg);
+    });
   }
 }
 

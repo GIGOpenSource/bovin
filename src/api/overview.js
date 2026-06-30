@@ -71,7 +71,7 @@ export const getLogs = (q) => {
 };
 
 export const postDryRunConfig = (dryRun) =>
-  http.post("/api/c1/config/dry_run", {
+  http.post("/c1/config/dry_run", {
     dry_run: dryRun,
     dry_run_wallet: 1000
   });

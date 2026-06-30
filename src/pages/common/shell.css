@@ -825,6 +825,78 @@ body {
   color: var(--text-dim, #9aa3c4);
 }
 
+.modal-card--strategy-detail {
+  width: min(1200px, calc(100vw - 28px));
+  max-height: min(92vh, 900px);
+}
+
+.strategy-detail-modal-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.strategy-detail-modal-top {
+  flex-shrink: 0;
+}
+
+.strategy-detail-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.strategy-detail-modal-columns {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 14px 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 820px) {
+  .strategy-detail-modal-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card--strategy-detail {
+    width: min(100%, calc(100vw - 24px));
+  }
+}
+
+.strategy-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.modal-card--strategy-detail #mStrategyParams,
+.modal-card--strategy-detail #mStrategyCode {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 520px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  font-family: ui-monospace, monospace;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ft-line-rgb, 120, 140, 200), 0.38);
+  background: linear-gradient(180deg, rgba(20, 32, 58, 0.95) 0%, rgba(12, 20, 40, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(232, 241, 255, 0.92);
+  resize: vertical;
+}
+
+.modal-card--strategy-detail #mStrategyParams:focus,
+.modal-card--strategy-detail #mStrategyCode:focus {
+  outline: none;
+  border-color: rgba(var(--ft-accent-rgb), 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 3px rgba(var(--ft-primary-deep-rgb), 0.16);
+}
+
 .settings-strategy-list-block {
   margin-top: 10px;
 }
