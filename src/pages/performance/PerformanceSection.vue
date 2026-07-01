@@ -136,6 +136,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { getPerformance, getEntries, getExits, getMixTags } from "../../api/performance.js";
+import { i18n } from "../../i18n/index.js";
+import { state } from "../../store/state-core.js";
+
+function t(key) {
+  const lang = state.lang || "zh-CN";
+  return i18n[lang]?.[key] ?? i18n["zh-CN"]?.[key] ?? key;
+}
 
 const tabs = [
   { key: "performance", label: "绩效统计", i18nKey: "pf.performance" },
@@ -143,13 +150,6 @@ const tabs = [
   { key: "exits", label: "退出原因", i18nKey: "pf.exits" },
   { key: "mixTag", label: "混合标签", i18nKey: "pf.mixTag" }
 ];
-
-const headerNames = {
-  performance: "Pair",
-  entries: "Enter tag",
-  exits: "Exit Reason",
-  mixTag: "Mix Tag"
-};
 
 const apiMap = {
   performance: getPerformance,
@@ -161,7 +161,7 @@ const apiMap = {
 const activeTab = ref("performance");
 const tableData = ref([]);
 
-const currentHeader = computed(() => headerNames[activeTab.value] || "Pair");
+const currentHeader = computed(() => t(`pf.header.${activeTab.value}`) || "Pair");
 
 const getFirstColumn = (item) => {
   switch (activeTab.value) {

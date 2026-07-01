@@ -303,6 +303,7 @@
   "backtest.startingCapital": "Starting capital",
   "backtest.stakeAmount": "Stake amount",
   "backtest.unlimitedStake": "Unlimited stake",
+  "backtest.enterStakeAmount": "Enter stake amount",
   "backtest.timerangeParams": "Timerange parameters",
   "backtest.enableProtections": "Enable Protections",
   "backtest.cacheBacktest": "Cache Backtest results",

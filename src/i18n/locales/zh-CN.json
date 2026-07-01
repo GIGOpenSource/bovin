@@ -303,6 +303,7 @@
   "backtest.startingCapital": "初始资金",
   "backtest.stakeAmount": "赌注金额",
   "backtest.unlimitedStake": "无限赌注",
+  "backtest.enterStakeAmount": "请输入赌注金额",
   "backtest.timerangeParams": "时间范围参数",
   "backtest.enableProtections": "启用保护",
   "backtest.cacheBacktest": "缓存回测结果",

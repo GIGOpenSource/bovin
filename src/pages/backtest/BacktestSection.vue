@@ -67,6 +67,9 @@
                       </tr>
                     </thead>
                     <tbody>
+                      <tr v-if="historyResults.length === 0">
+                        <td colspan="5" class="bt-empty-data">暂无数据</td>
+                      </tr>
                       <tr v-for="(item, index) in historyResults" :key="index">
                         <td>{{ item.strategy }}</td>
                         <td>{{ formatDetail(item) }}</td>
@@ -137,10 +140,19 @@
                 </div>
                 <div class="bt-form-row">
                   <span class="bt-form-label" data-i18n="backtest.stakeAmount">Stake amount:</span>
-                  <label class="bt-checkbox-label">
-                    <input type="checkbox" v-model="backtestParams.unlimitedStake" />
-                    <span data-i18n="backtest.unlimitedStake">Unlimited stake</span>
-                  </label>
+                  <div class="bt-stake-container">
+                    <input 
+                      v-if="!backtestParams.unlimitedStake" 
+                      type="number" 
+                      v-model="backtestParams.stakeAmount" 
+                      :placeholder="t('backtest.enterStakeAmount')"
+                      class="bt-form-input"
+                    />
+                    <label class="bt-checkbox-label">
+                      <input type="checkbox" v-model="backtestParams.unlimitedStake" />
+                      <span data-i18n="backtest.unlimitedStake">Unlimited stake</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -323,6 +335,9 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="!currentResult.resultsPerEnterTag || Object.keys(currentResult.resultsPerEnterTag).length === 0">
+                            <td colspan="16" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(item, key) in currentResult.resultsPerEnterTag" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
@@ -339,7 +354,7 @@
                             <td v-if="enterTagVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
                             <td v-if="enterTagVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
                             <td v-if="enterTagVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
-                            <td v-if="enterTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
+                            <td v-if="enterTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown ?? 0) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -387,6 +402,9 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="!currentResult.exitReasonSummary || Object.keys(currentResult.exitReasonSummary).length === 0">
+                            <td colspan="16" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(item, key) in currentResult.exitReasonSummary" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
@@ -403,7 +421,7 @@
                             <td v-if="exitReasonVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
                             <td v-if="exitReasonVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
                             <td v-if="exitReasonVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
-                            <td v-if="exitReasonVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
+                            <td v-if="exitReasonVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown ?? 0) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -452,10 +470,13 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="!currentResult.mixTagStats || Object.keys(currentResult.mixTagStats).length === 0">
+                            <td colspan="17" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(item, enterTag) in currentResult.mixTagStats" :key="enterTag">
                             <!-- <tr v-for="(item, exitTag) in exitTags" :key="`${enterTag}-${exitTag}`"> -->
-                              <td>{{ item.key?.[0] }}</td>
-                              <td>{{ item.key?.[1] }}</td>
+                              <td>{{ enterTag === 'TOTAL' ? 'TOTAL' : (Array.isArray(item.key) ? item.key[0] : (typeof item.key === 'string' ? item.key : enterTag)) }}</td>
+                              <td>{{ enterTag === 'TOTAL' ? 'TOTAL' : (Array.isArray(item.key) ? (item.key[1] || '-') : (typeof item.key === 'string' ? item.key : '-')) }}</td>
                               <td>{{ item.trades }}</td>
                               <td>{{ formatNumber(item.profit_mean_pct) }}%</td>
                               <td>{{ formatNumber(item.profit_total_abs) }}</td>
@@ -470,7 +491,7 @@
                               <td v-if="mixTagVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
                               <td v-if="mixTagVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
                               <td v-if="mixTagVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
-                              <td v-if="mixTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
+                              <td v-if="mixTagVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown ?? 0) }}%</td>
                             <!-- </tr> -->
                           </tr>
                         </tbody>
@@ -519,6 +540,9 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="!currentResult.resultsPerPair || Object.keys(currentResult.resultsPerPair).length === 0">
+                            <td colspan="16" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(item, key) in currentResult.resultsPerPair" :key="key">
                             <td>{{ item.key }}</td>
                             <td>{{ item.trades }}</td>
@@ -535,7 +559,7 @@
                             <td v-if="pairVisibleMetrics.includes('profit_factor')">{{ formatNumber(item.profit_factor) }}</td>
                             <td v-if="pairVisibleMetrics.includes('sharpe')">{{ formatNumber(item.sharpe) }}</td>
                             <td v-if="pairVisibleMetrics.includes('sortino')">{{ formatNumber(item.sortino) }}</td>
-                            <td v-if="pairVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown) }}%</td>
+                            <td v-if="pairVisibleMetrics.includes('max_drawdown')">{{ formatNumber(item.max_drawdown ?? 0) }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -577,6 +601,9 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="!currentResult.periodicBreakdown || currentResult.periodicBreakdown.length === 0">
+                            <td colspan="8" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(item, index) in currentResult.periodicBreakdown" :key="index">
                             <td>{{ item.date }}</td>
                             <td>{{ item.trades }}</td>
@@ -619,6 +646,9 @@
                           </tr>
                         </thead>
                         <tbody>
+                          <tr v-if="paginatedTrades.length === 0">
+                            <td colspan="10" class="bt-empty-data">暂无数据</td>
+                          </tr>
                           <tr v-for="(trade, index) in paginatedTrades" :key="index">
                             <td>{{ trade.is_short ? 'Short' : 'Long' }}</td>
                             <td>{{ trade.pair }}</td>
@@ -934,7 +964,13 @@ watch(activePeriodicTab, (newTab) => {
     const strategyName = selectedStrategy.value || 'DOUStrategy';
     const strategyData = savedBacktestResult.value?.backtest_result?.strategy;
     const rawSettings = strategyData?.[strategyName] || savedBacktestResult.value || {};
-    currentResult.value.periodicBreakdown = (rawSettings?.periodic_breakdown?.[newTab] || []).map(item => ({
+    
+    const periodicBreakdownData = rawSettings?.periodic_breakdown || 
+                                  strategyData?.[strategyName]?.periodic_breakdown || 
+                                  savedBacktestResult.value?.periodic_breakdown || 
+                                  {};
+    
+    currentResult.value.periodicBreakdown = (periodicBreakdownData?.[newTab] || []).map(item => ({
       date: item.date,
       trades: item.trades,
       profit_abs: item.profit_abs,
@@ -1035,7 +1071,7 @@ const timerangeParams = reactive({
 
 const dateRange = reactive({
   startDate: dayjs('2026-04-30'),
-  endDate: null,
+  endDate: dayjs(),
   timeframe: ''
 });
 
@@ -1402,7 +1438,7 @@ const resetBacktest = async () => {
     timerangeParams.freqaiIdentifier = '';
     timerangeParams.freqaiMode = '';
     dateRange.startDate = dayjs('2026-04-30');
-    dateRange.endDate = null;
+    dateRange.endDate = dayjs();
     message.success('回测已重置');
   } catch (error) {
     console.error('重置回测失败:', error);
@@ -1939,15 +1975,21 @@ const loadBacktestResult = async () => {
         exitReasonSummary: rawSettings?.exit_reason_summary || {},
         mixTagStats: rawSettings?.mix_tag_stats || {},
         resultsPerPair: rawSettings?.results_per_pair || {},
-        periodicBreakdown: (rawSettings?.periodic_breakdown?.[activePeriodicTab.value] || []).map(item => ({
-          date: item.date,
-          trades: item.trades,
-          profit_abs: item.profit_abs,
-          profit_factor: item.profit_factor,
-          wins: item.wins,
-          draws: item.draws,
-          losses: item.losses
-        })),
+        periodicBreakdown: (() => {
+          const periodicBreakdownData = rawSettings?.periodic_breakdown || 
+                                        strategyData?.[strategyName]?.periodic_breakdown || 
+                                        savedBacktestResult.value?.periodic_breakdown || 
+                                        {};
+          return (periodicBreakdownData?.[activePeriodicTab.value] || []).map(item => ({
+            date: item.date,
+            trades: item.trades,
+            profit_abs: item.profit_abs,
+            profit_factor: item.profit_factor,
+            wins: item.wins,
+            draws: item.draws,
+            losses: item.losses
+          }));
+        })(),
         trades: rawSettings?.trades || []
       };
       console.log('加载的回测结果:', currentResult.value);
@@ -2692,6 +2734,34 @@ const handleBacktest = async () => {
   margin-bottom: 0;
 }
 
+.bt-stake-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.bt-form-input {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px 12px;
+  background: var(--ft-panel-surface-inset);
+  border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
+  border-radius: 6px;
+  color: var(--text, #e8e9ed);
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.bt-form-input:focus {
+  outline: none;
+  border-color: #4edea3;
+}
+
+.bt-form-input::placeholder {
+  color: var(--text-dim, #6e7591);
+}
+
 .bt-form-label {
   font-size: 12px;
   color: var(--text-dim, #8c90a2);
@@ -3259,6 +3329,12 @@ const handleBacktest = async () => {
 .bt-data-table tbody tr:last-child td:first-child {
   color: #4edea3;
   font-weight: 600;
+}
+
+.bt-empty-data {
+  text-align: center !important;
+  color: var(--text-dim, #6e7591) !important;
+  padding: 30px 0 !important;
 }
 
 .bt-periodic-tabs {

@@ -50,7 +50,7 @@ export const getFreqaiModels = () => {
 };
 
 export const abortBacktest = () => {
-  return http.post("/backtest/abort");
+  return http.get("/backtest/abort");
 };
 
 export const getStrategy = () => {

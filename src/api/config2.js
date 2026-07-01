@@ -35,7 +35,7 @@ const httpWeb = {
 export const getPanelStrategies = () => httpWeb.get("/strategies");
 export const getStrategyDetail = (strategyName) => httpWeb.get(`/strategy/${encodeURIComponent(String(strategyName))}`);
 export const getStrategyTemplates = () => httpWeb.get("/c1/templates_name");
-export const createStrategy = (strategyName, template) => httpWeb.post("/c1/strategy/create", { strategy_name: strategyName, template });
+export const createStrategy = (strategyName, template) => httpWeb.post("/c1/strategy/create", { strategy_name: 'New2Strategy222', template:'super' });
 export const saveStrategyParams = (strategyName, params) => httpWeb.put(`/c1/strategy/${encodeURIComponent(String(strategyName))}/params`, { params });
 export const saveStrategyCode = (strategyName, code) => httpWeb.put(`/c1/strategy/${encodeURIComponent(String(strategyName))}/code`, { code });
 export const deleteStrategy = (strategyName) => httpWeb.delete(`/c1/strategy/${encodeURIComponent(String(strategyName))}`);
