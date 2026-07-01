@@ -702,7 +702,6 @@ export function renderControlStrategyCards(
       <td class="sc-table-actions">
         ${editBtn}
         ${pauseStopBtn}
-        ${backtestBtn}
         ${forceBtn}
         ${switchBtn}
         ${deleteBtn}
