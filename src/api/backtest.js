@@ -53,6 +53,6 @@ export const abortBacktest = () => {
   return http.get("/backtest/abort");
 };
 
-export const getStrategy = () => {
-  return http.get("/strategy");
+export const getStrategy = (strategyName) => {
+    return http.get(`/strategy/${strategyName}`);
 };

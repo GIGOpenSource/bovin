@@ -218,12 +218,12 @@
               <div class="bt-summary-section">
                 <h3 class="bt-section-title" data-i18n="backtest.summary">Backtesting summary</h3>
                 <div class="bt-summary-actions">
-                  <button type="button" class="bt-btn bt-btn-primary" :disabled="isRunning || !selectedStrategy" @click="handleBacktest">
-                    <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 19V5M8 9l4-4 4 4"/>
-                    </svg> -->
-                    <span :data-i18n="isRunning ? 'backtest.running' : 'backtest.start'">{{ isRunning ? t('backtest.running') : t('backtest.start') }}</span>
-                  </button>
+                  <div class="bt-backtest-btn-container">
+                    <button type="button" class="bt-btn bt-btn-primary" :disabled="isRunning || !selectedStrategy" @click="handleBacktest">
+                      <span :data-i18n="isRunning ? 'backtest.running' : 'backtest.start'">{{ isRunning ? t('backtest.running') : t('backtest.start') }}</span>
+                    </button>
+                    <span v-if="isRunning" class="bt-progress-text">{{ Math.round(backtestProgress * 100)  }}%</span>
+                  </div>
                   <button type="button" class="bt-btn bt-btn-secondary" :disabled="isRunning || isLoadingResult" @click="loadBacktestResult">
                     <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -1043,6 +1043,7 @@ const advancedExpanded = ref(false);
 const startDate = ref('2026-05-01');
 const endDate = ref('');
 const isRunning = ref(false);
+const backtestProgress = ref(0);
 const isLoadingResult = ref(false);
 const isLoadingHistory = ref(false);
 
@@ -2132,27 +2133,51 @@ const handleBacktest = async () => {
     const dateTimerange = startDateStr && endDateStr ? `${startDateStr}-${endDateStr}` : '';
 
     const params = {
-      dry_run_wallet: 1,
+      dry_run_wallet: backtestParams.startingCapital ? parseInt(backtestParams.startingCapital) : 1,
       enable_protections: timerangeParams.enableProtections,
       max_open_trades: backtestParams.maxOpenTrades ? parseInt(backtestParams.maxOpenTrades) : 1,
       stake_amount: backtestParams.unlimitedStake ? 'unlimited' : (backtestParams.stakeAmount || 'unlimited'),
       strategy: selectedStrategy.value,
       timeframe: backtestParams.timerange || '3m',
-      timerange: dateTimerange || backtestParams.timerange2 || '20260430-20260625',
-      timeframe_detail: dateRange.timeframe || backtestParams.timerange2 || '15m'
+      timerange: dateTimerange || backtestParams.timerange2 || '20260430-20260625'
     };
+
+    const detailTimeframe = dateRange.timeframe || backtestParams.timerange2;
+    if (detailTimeframe) {
+      params.timeframe_detail = detailTimeframe;
+    }
 
     if (timerangeParams.enableFreqAI) {
       params.freqai_identifier = timerangeParams.freqaiIdentifier || '1';
       params.freqai_mode = timerangeParams.freqaiMode || 'regression';
     }
 
-    await runBacktest(params);
-    message.success('回测接口调用成功');
+    let result = await runBacktest(params);
+    if (result && result.progress !== undefined) {
+      backtestProgress.value = result.progress;
+    }
+    
+    while (result && result.status === 'running') {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      result = await getBacktest();
+      if (result && result.progress !== undefined) {
+        backtestProgress.value = result.progress;
+      }
+    }
+
+    if (result && result.status === 'ended') {
+      message.success('回测完成');
+      resetBacktest();
+      await getStrategy(selectedStrategy.value);
+    } else {
+      message.error('回测未正常完成');
+    }
   } catch (error) {
     console.error('回测失败:', error);
     message.error('回测失败');
+  } finally {
     isRunning.value = false;
+    backtestProgress.value = 0;
   }
 };
 </script>
@@ -2917,6 +2942,18 @@ const handleBacktest = async () => {
 .bt-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.bt-backtest-btn-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bt-progress-text {
+  color: #4edea3;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .bt-analysis-header {
