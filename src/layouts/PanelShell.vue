@@ -1,600 +1,513 @@
 <template>
-<div class="app" id="appRoot">
-      <aside class="sidebar">
-        <div class="brand-wrap">
-          <div class="brand-dot"></div>
-          <div class="brand-block">
-            <div class="brand" data-i18n="brand.main">Bovin</div>
-            <div class="brand-sub" data-i18n="brand.sub">加密交易控制台</div>
-          </div>
+  <div class="app" id="appRoot">
+    <aside class="sidebar">
+      <div class="brand-wrap">
+        <div class="brand-dot"></div>
+        <div class="brand-block">
+          <div class="brand" data-i18n="brand.main">Bovin</div>
+          <div class="brand-sub" data-i18n="brand.sub">加密交易控制台</div>
         </div>
-        <nav class="sidebar-nav" data-i18n-aria="aria.mainNav" aria-label="主导航">
-          <button type="button" class="nav-btn" data-section="overview" data-i18n="nav.overview">系统概览</button>
-          <button type="button" class="nav-btn" data-section="positions" data-i18n="nav.positions">持仓与订单</button>
-          <button type="button" class="nav-btn" data-section="control" data-i18n="nav.control">策略AI控制台</button>
-          <button type="button" class="nav-btn" data-section="data" data-i18n="nav.data">数据面板</button>
-          <button type="button" class="nav-btn" data-section="performance" data-i18n="nav.performance">Performance</button>
-          <button type="button" class="nav-btn" data-section="period" data-i18n="nav.period">Period Breakdown</button>
-          <button type="button" class="nav-btn" data-section="pairlist" data-i18n="nav.pairlist">Pair Lists</button>
-          <button type="button" class="nav-btn" data-section="download" data-i18n="nav.download">下载数据</button>
-          <button type="button" class="nav-btn" data-section="backtest" data-i18n="nav.backtest">回测管理</button>
-          <!-- <button type="button" class="nav-btn" data-section="settings" data-i18n="nav.settings">设置中心</button> -->
-          <button type="button" class="nav-btn" data-section="monitor" data-i18n="nav.monitor">系统监控</button>
-          <!-- 暂时隐藏：接口能力面板 -->
-        </nav>
-        <div class="sidebar-footer">
-          <button
-            type="button"
-            class="status-pill status-pill-toggle"
-            id="dataSourceBadge"
-            :aria-pressed="state.mockMode ? 'true' : 'false'"
-            :class="{ 'is-mock': state.mockMode }"
-            data-i18n-aria="aria.dataSourceToggle"
-            aria-label="切换模拟数据与实时数据"
-          >
-            <span class="status-pill-label">{{ state.mockMode ? '数据源: 模拟' : '数据源: 实时' }}</span>
-            <span class="status-pill-switch" aria-hidden="true"><span class="status-pill-knob"></span></span>
+      </div>
+      <nav class="sidebar-nav" data-i18n-aria="aria.mainNav" aria-label="主导航">
+        <button type="button" class="nav-btn" data-section="overview" data-i18n="nav.overview">系统概览</button>
+        <button type="button" class="nav-btn" data-section="positions" data-i18n="nav.positions">持仓与订单</button>
+        <button type="button" class="nav-btn" data-section="control" data-i18n="nav.control">策略AI控制台</button>
+        <button type="button" class="nav-btn" data-section="data" data-i18n="nav.data">数据面板</button>
+        <button type="button" class="nav-btn" data-section="performance"
+          data-i18n="nav.performance">Performance</button>
+        <button type="button" class="nav-btn" data-section="period" data-i18n="nav.period">Period Breakdown</button>
+        <button type="button" class="nav-btn" data-section="pairlist" data-i18n="nav.pairlist">Pair Lists</button>
+        <button type="button" class="nav-btn" data-section="download" data-i18n="nav.download">下载数据</button>
+        <button type="button" class="nav-btn" data-section="backtest" data-i18n="nav.backtest">回测管理</button>
+        <!-- <button type="button" class="nav-btn" data-section="settings" data-i18n="nav.settings">设置中心</button> -->
+        <button type="button" class="nav-btn" data-section="monitor" data-i18n="nav.monitor">系统监控</button>
+        <!-- 暂时隐藏：接口能力面板 -->
+      </nav>
+      <div class="sidebar-footer">
+        <button type="button" class="status-pill status-pill-toggle" id="dataSourceBadge"
+          :aria-pressed="state.mockMode ? 'true' : 'false'" :class="{ 'is-mock': state.mockMode }"
+          data-i18n-aria="aria.dataSourceToggle" aria-label="切换模拟数据与实时数据">
+          <span class="status-pill-label">{{ state.mockMode ? '数据源: 模拟' : '数据源: 实时' }}</span>
+          <span class="status-pill-switch" aria-hidden="true"><span class="status-pill-knob"></span></span>
+        </button>
+        <div id="appVersionLabel" class="sidebar-version" aria-label="Panel version"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-brandline" data-i18n="brand.main">Bovin</div>
+          <div class="topbar-statusline">
+            <span id="topbarNetwork"></span>
+            <span id="topbarMarket"></span>
+          </div>
+          <div class="sr-only" id="pageTitle">系统概览</div>
+          <div class="sr-only" id="pageSubtitle"></div>
+        </div>
+        <div class="api-config">
+          <div class="system-online-badge" :class="{ offline: !isSystemOnline }">
+            <span class="dot"></span>
+            <span :data-i18n="isSystemOnline ? 'topbar.systemOnline' : 'topbar.systemOffline'">{{ isSystemOnline ?
+              t('topbar.systemOnline') : t('topbar.systemOffline') }}</span>
+          </div>
+          <!-- <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span> -->
+          <!-- <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button> -->
+          <button type="button" class="icon-btn" id="topbarThemeBtn" :class="{ 'is-active': isLightMode }"
+            data-i18n-aria="aria.theme" aria-label="主题">
+            <BulbOutlined class="theme-icon theme-icon-off" />
+            <BulbFilled class="theme-icon theme-icon-on" />
           </button>
-          <div id="appVersionLabel" class="sidebar-version" aria-label="Panel version"></div>
+          <!-- <button type="button" class="icon-btn" id="topbarAccountBtn" data-i18n-aria="aria.account" aria-label="账户" aria-expanded="false" aria-haspopup="dialog"><UserOutlined /></button> -->
+          <button id="langQuickToggle" type="button" class="lang-card-toggle">中 / EN</button>
+          <select id="langSwitch" class="hidden-control">
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+          </select>
+          <button id="toggleMock" type="button" class="ghost toggle-mock hidden-control" aria-pressed="false">模拟数据:
+            OFF</button>
+          <button id="openSettings" type="button" class="ghost hidden-control" data-i18n="btn.openSettings">设置</button>
+          <button id="logoutBtn" type="button" class="ghost" data-i18n="btn.logout" @click="handleLogout">退出</button>
         </div>
-      </aside>
+      </div>
 
-      <main class="main">
-        <div class="topbar">
-          <div class="topbar-left">
-            <div class="topbar-brandline" data-i18n="brand.main">Bovin</div>
-            <div class="topbar-statusline">
-              <span id="topbarNetwork"></span>
-              <span id="topbarMarket"></span>
-            </div>
-            <div class="sr-only" id="pageTitle">系统概览</div>
-            <div class="sr-only" id="pageSubtitle"></div>
-          </div>
-          <div class="api-config">
-            <div 
-              class="system-online-badge" 
-              :class="{ offline: !isSystemOnline }"
-            >
-              <span class="dot"></span>
-              <span :data-i18n="isSystemOnline ? 'topbar.systemOnline' : 'topbar.systemOffline'">{{ isSystemOnline ? t('topbar.systemOnline') : t('topbar.systemOffline') }}</span>
-            </div>
-            <!-- <span id="rpcLiveBadge" class="rpc-live-badge rpc-live-badge--poll" role="status">HTTP 轮询</span> -->
-            <!-- <button type="button" class="icon-btn" id="topbarNotifyBtn" data-i18n-aria="aria.notify" aria-label="通知" aria-expanded="false" aria-haspopup="dialog"><BellOutlined /></button> -->
-            <button type="button" class="icon-btn" id="topbarThemeBtn" :class="{ 'is-active': isLightMode }" data-i18n-aria="aria.theme" aria-label="主题">
-              <BulbOutlined class="theme-icon theme-icon-off" />
-              <BulbFilled class="theme-icon theme-icon-on" />
-            </button>
-            <!-- <button type="button" class="icon-btn" id="topbarAccountBtn" data-i18n-aria="aria.account" aria-label="账户" aria-expanded="false" aria-haspopup="dialog"><UserOutlined /></button> -->
-            <button id="langQuickToggle" type="button" class="lang-card-toggle">中 / EN</button>
-            <select id="langSwitch" class="hidden-control">
-              <option value="zh-CN">简体中文</option>
-              <option value="en">English</option>
-            </select>
-            <button id="toggleMock" type="button" class="ghost toggle-mock hidden-control" aria-pressed="false">模拟数据: OFF</button>
-            <button id="openSettings" type="button" class="ghost hidden-control" data-i18n="btn.openSettings">设置</button>
-            <button id="logoutBtn" type="button" class="ghost" data-i18n="btn.logout" @click="handleLogout">退出</button>
-          </div>
+      <PanelSections />
+
+      <a-modal v-model:visible="reloadConfigVisible" :title="t('panel.reloadConfigTitle')" :closable="false"
+        :mask-closable="false" :centered="true">
+        <div style="text-align: center; padding: 20px 0;">
+          <a-spin v-if="reloadConfigLoading" :size="32" style="margin-bottom: 16px;" />
+          <div>{{ reloadConfigLoading ? t('panel.reloadConfigLoading') : t('panel.reloadConfigDone') }}</div>
         </div>
+        <template #footer>
+          <a-button type="primary" :loading="reloadConfigLoading" @click="handleReloadConfigOk">
+            {{ t('common.ok') }}
+          </a-button>
+        </template>
+      </a-modal>
 
-        <PanelSections />
-
-        <a-modal
-          v-model:visible="reloadConfigVisible"
-          :title="t('panel.reloadConfigTitle')"
-          :closable="false"
-          :mask-closable="false"
-          :centered="true"
-        >
-          <div style="text-align: center; padding: 20px 0;">
-            <a-spin v-if="reloadConfigLoading" :size="32" style="margin-bottom: 16px;" />
-            <div>{{ reloadConfigLoading ? t('panel.reloadConfigLoading') : t('panel.reloadConfigDone') }}</div>
-          </div>
-          <template #footer>
-            <a-button type="primary" :loading="reloadConfigLoading" @click="handleReloadConfigOk">
-              {{ t('common.ok') }}
-            </a-button>
-          </template>
-        </a-modal>
-
-        <div id="apiBindingModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div class="modal-card modal-card--binding modal-card--api-binding" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="modalTitle" class="modal-title" data-i18n="modal.apiBindingTitleNew">新增 API 对接关系</h4>
-                <p class="modal-sub" data-i18n="modal.apiBindingSub">密钥写入本地面板与服务端 user_data；请勿在不可信网络填写生产凭据。</p>
-              </div>
-              <button type="button" id="closeApiBindingModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
-            </header>
-            <div class="modal-body">
-              <label class="binding-field">
-                <span class="binding-field-label" data-i18n="modal.api.bindingDisplayName">映射显示名称</span>
-                <input
-                  id="mBindingLabel"
-                  name="mBindingLabel"
-                  type="text"
-                  maxlength="120"
-                  autocomplete="off"
-                  data-i18n-placeholder="modal.api.bindingDisplayNamePh"
-                  placeholder="留空则列表显示为「映射 #序号」"
-                />
-                <p class="modal-hint" data-i18n="modal.api.bindingDisplayNameHint">用于列表标题区分多组对接；与下方交易所 id 无关。</p>
-              </label>
-              <div class="binding-grid binding-grid--modal">
-                <section class="binding-column" aria-labelledby="binding-col-llm">
-                  <h5 id="binding-col-llm" data-i18n="modal.api.colLlm">大模型 API</h5>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.llmProvider">服务商</span>
-                    <input type="hidden" id="mLlmProvider" name="mLlmProvider" value="deepseek" autocomplete="off" />
-                    <a-select
-                      v-model:value="llmProviderVal"
-                      :options="llmProviderOptions"
-                      size="large"
-                      class="bovin-select-full"
-                      popup-class-name="bovin-select-dropdown"
-                      :get-popup-container="selectPopupContainer"
-                    />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.llmBaseUrl">Base URL</span>
-                    <input id="mLlmBaseUrl" name="mLlmBaseUrl" type="url" autocomplete="url" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.llmApiKey">API Key</span>
-                    <input id="mLlmApiKey" name="mLlmApiKey" type="password" autocomplete="off" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.llmModel">模型</span>
-                    <input id="mLlmModel" name="mLlmModel" type="text" autocomplete="off" />
-                  </label>
-                  <div class="binding-field">
-                    <label class="binding-field-label" for="mBindingEnabled" data-i18n="modal.api.bindingEnabledLabel">启用本映射</label>
-                    <div class="binding-checkbox-control">
-                      <input
-                        id="mBindingEnabled"
-                        name="mBindingEnabled"
-                        type="checkbox"
-                        checked
-                        aria-describedby="mBindingEnabledHint"
-                      />
-                      <p class="modal-hint binding-checkbox-hint" id="mBindingEnabledHint" data-i18n="modal.api.bindingEnabledHint">关闭后不参与同步与生效</p>
-                    </div>
-                  </div>
-                  <div class="binding-field">
-                    <label class="binding-field-label" for="mBindToBot" data-i18n="modal.api.bindToBot">保存时同步到机器人 config（exchange 段）</label>
-                    <div class="binding-checkbox-control">
-                      <input
-                        id="mBindToBot"
-                        name="mBindToBot"
-                        type="checkbox"
-                        aria-describedby="mBindToBotHint"
-                      />
-                      <p class="modal-hint binding-checkbox-hint" id="mBindToBotHint" data-i18n="modal.api.bindToBotHint">仅一行可勾选；会写入磁盘上的主配置文件中的 exchange；须重启 trade/webserver 后进程内配置才刷新。</p>
-                    </div>
-                  </div>
-                </section>
-                <section class="binding-column" aria-labelledby="binding-col-exchange">
-                  <h5 id="binding-col-exchange" data-i18n="modal.api.colExchange">交易所 API</h5>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeRestBaseUrl">Base URL（可选）</span>
-                    <input
-                      id="mExchangeRestBaseUrl"
-                      name="mExchangeRestBaseUrl"
-                      type="text"
-                      inputmode="url"
-                      autocomplete="off"
-                      spellcheck="false"
-                      data-i18n-placeholder="modal.api.exchangeRestBaseUrlPh"
-                      placeholder="https://api.binance.com"
-                    />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiKey">API Key</span>
-                    <input id="mExchangeApiKey" name="mExchangeApiKey" type="text" autocomplete="off" spellcheck="false" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangeApiSecret">API Secret</span>
-                    <input id="mExchangeApiSecret" name="mExchangeApiSecret" type="password" autocomplete="off" />
-                  </label>
-                  <label class="binding-field">
-                    <span class="binding-field-label" data-i18n="modal.api.exchangePassphrase">Passphrase（可选）</span>
-                    <input id="mExchangePassphrase" name="mExchangePassphrase" type="password" autocomplete="off" />
-                    <p id="mExchangePassphraseNote" class="modal-hint"></p>
-                  </label>
-                  <input type="hidden" id="mExchangeName" name="mExchangeName" value="" />
-                </section>
-              </div>
+      <div id="apiBindingModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--api-binding" role="dialog" aria-modal="true"
+          aria-labelledby="modalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="modalTitle" class="modal-title" data-i18n="modal.apiBindingTitleNew">新增 API 对接关系</h4>
+              <p class="modal-sub" data-i18n="modal.apiBindingSub">密钥写入本地面板与服务端 user_data；请勿在不可信网络填写生产凭据。</p>
             </div>
-            <footer class="modal-actions modal-actions--split modal-actions--api-binding-footer">
-              <div
-                id="llmProbeFeedback"
-                class="llm-probe-feedback hidden"
-                aria-hidden="true"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                <p id="llmProbeExchangeStatusText" class="llm-probe-feedback__text"></p>
-                <p id="llmProbeLlmStatusText" class="llm-probe-feedback__text"></p>
-              </div>
-              <div class="modal-actions-row">
-                <button type="button" id="btnLlmProbe" class="ghost" data-i18n="btn.llmProbe">测试交易所与 LLM 连通性</button>
-                <div class="modal-actions-end">
-                  <button type="button" id="saveApiBindingModal" class="primary" data-i18n="btn.saveBinding">保存关系</button>
-                </div>
-              </div>
-            </footer>
-          </div>
-        </div>
-
-        <div id="panelUserModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div class="modal-card modal-card--binding modal-card--panel-user" role="dialog" aria-modal="true" aria-labelledby="panelUserModalTitle">
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="panelUserModalTitle" class="modal-title" data-i18n="users.add">新建用户</h4>
-                <p class="modal-sub" data-i18n="users.menuPermissions">菜单权限（只读 / 编辑）</p>
-              </div>
-              <button type="button" id="closePanelUserModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
-            </header>
-            <div class="modal-body">
-              <div class="binding-grid binding-grid--modal">
+            <button type="button" id="closeApiBindingModal" class="ghost modal-close-btn"
+              data-i18n="btn.close">关闭</button>
+          </header>
+          <div class="modal-body">
+            <label class="binding-field">
+              <span class="binding-field-label" data-i18n="modal.api.bindingDisplayName">映射显示名称</span>
+              <input id="mBindingLabel" name="mBindingLabel" type="text" maxlength="120" autocomplete="off"
+                data-i18n-placeholder="modal.api.bindingDisplayNamePh" placeholder="留空则列表显示为「映射 #序号」" />
+              <p class="modal-hint" data-i18n="modal.api.bindingDisplayNameHint">用于列表标题区分多组对接；与下方交易所 id 无关。</p>
+            </label>
+            <div class="binding-grid binding-grid--modal">
+              <section class="binding-column" aria-labelledby="binding-col-llm">
+                <h5 id="binding-col-llm" data-i18n="modal.api.colLlm">大模型 API</h5>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="users.username">用户名</span>
-                  <input id="puUsername" name="puUsername" type="text" autocomplete="username" />
+                  <span class="binding-field-label" data-i18n="modal.api.llmProvider">服务商</span>
+                  <input type="hidden" id="mLlmProvider" name="mLlmProvider" value="deepseek" autocomplete="off" />
+                  <a-select v-model:value="llmProviderVal" :options="llmProviderOptions" size="large"
+                    class="bovin-select-full" popup-class-name="bovin-select-dropdown"
+                    :get-popup-container="selectPopupContainer" />
                 </label>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="users.password">密码</span>
-                  <input id="puPassword" name="puPassword" type="password" autocomplete="new-password" />
-                </label>
-              </div>
-              <div class="pu-perm-grid" aria-label="menu permissions">
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.overview">系统概览</span>
-                  <input type="hidden" id="puPerm-overview" value="read" />
-                  <a-select
-                    v-model:value="puPermOverview"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.positions">持仓与订单</span>
-                  <input type="hidden" id="puPerm-positions" value="read" />
-                  <a-select
-                    v-model:value="puPermPositions"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.control">策略AI控制台</span>
-                  <input type="hidden" id="puPerm-control" value="read" />
-                  <a-select
-                    v-model:value="puPermControl"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.data">数据面板</span>
-                  <input type="hidden" id="puPerm-data" value="read" />
-                  <a-select
-                    v-model:value="puPermData"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.settings">设置中心</span>
-                  <input type="hidden" id="puPerm-settings" value="read" />
-                  <a-select
-                    v-model:value="puPermSettings"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.monitor">系统监控</span>
-                  <input type="hidden" id="puPerm-monitor" value="read" />
-                  <a-select
-                    v-model:value="puPermMonitor"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-                <div class="pu-perm-item">
-                  <span data-i18n="nav.api">接口能力面板</span>
-                  <input type="hidden" id="puPerm-api" value="read" />
-                  <a-select
-                    v-model:value="puPermApi"
-                    :options="permSelectOptions"
-                    class="bovin-select-full"
-                    popup-class-name="bovin-select-dropdown"
-                    :get-popup-container="selectPopupContainer"
-                  />
-                </div>
-              </div>
-            </div>
-            <footer class="modal-actions">
-              <button type="button" id="savePanelUserModal" class="primary" data-i18n="users.save">保存用户</button>
-            </footer>
-          </div>
-        </div>
-
-        <div id="strategyMemoModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div class="modal-card modal-card--binding modal-card--strategy-memo" role="dialog" aria-modal="true" aria-labelledby="strategyMemoModalTitle">
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="strategyMemoModalTitle" class="modal-title" data-i18n="modal.strategyConfigTitle">策略配置</h4>
-                <p class="modal-sub" data-i18n="modal.strategyConfigSub">保存至 panel_profile。</p>
-              </div>
-              <button type="button" id="closeStrategyMemoModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
-            </header>
-            <div class="modal-body">
-              <div class="binding-grid binding-grid--modal strategy-memo-grid">
-                <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyName">策略名称 / 偏好</span>
-                  <input id="mStrategyName" name="mStrategyName" type="text" autocomplete="off" maxlength="200" />
+                  <span class="binding-field-label" data-i18n="modal.api.llmBaseUrl">Base URL</span>
+                  <input id="mLlmBaseUrl" name="mLlmBaseUrl" type="url" autocomplete="url" />
                 </label>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyRpcBase">独立 trade 进程 API 基址</span>
-                  <input
-                    id="mStrategyRpcBase"
-                    name="mStrategyRpcBase"
-                    type="url"
-                    inputmode="url"
-                    autocomplete="off"
-                    spellcheck="false"
-                    maxlength="512"
-                    data-i18n-placeholder="placeholder.strategyRpcBase"
-                    placeholder="留空则使用设置中心全局 Base URL；多实例示例 http://127.0.0.1:18081/api/v1"
-                  />
-                  <p class="modal-hint binding-checkbox-hint" data-i18n="label.strategyRpcBaseHint">
-                    每个 Bovin trade 进程一个端口与独立 config/db。填此处后该策略卡片单独对该地址执行 /start、/pause、/show_config；须与全局使用相同 API 账号密码，并在各进程 config 中放行浏览器来源（CORS）。
-                  </p>
+                  <span class="binding-field-label" data-i18n="modal.api.llmApiKey">API Key</span>
+                  <input id="mLlmApiKey" name="mLlmApiKey" type="password" autocomplete="off" />
+                </label>
+                <label class="binding-field">
+                  <span class="binding-field-label" data-i18n="modal.api.llmModel">模型</span>
+                  <input id="mLlmModel" name="mLlmModel" type="text" autocomplete="off" />
                 </label>
                 <div class="binding-field">
-                  <label class="binding-field-label" for="mControlShowStrategyCards" data-i18n="settings.controlShowStrategyCards">在策略 AI 控制台展示策略卡片列表</label>
+                  <label class="binding-field-label" for="mBindingEnabled"
+                    data-i18n="modal.api.bindingEnabledLabel">启用本映射</label>
                   <div class="binding-checkbox-control">
-                    <input
-                      type="checkbox"
-                      id="mControlShowStrategyCards"
-                      name="mControlShowStrategyCards"
-                      aria-describedby="mControlShowStrategyCardsHint"
-                    />
-                    <p class="modal-hint binding-checkbox-hint" id="mControlShowStrategyCardsHint" data-i18n="settings.controlShowStrategyCardsHint">
-                      仅对本条策略生效：关闭后该策略在控制台不再展示来自 /panel/strategies 的多卡片网格，仅显示简短说明。
-                    </p>
-                  </div>
-                </div>
-                <label class="binding-field">
-                  <span class="binding-field-label">
-                    <span data-i18n="label.strategyAuthorizedAmount">授权金额</span><span id="mStrategyAuthorizedStakeCur" class="strategy-authorized-stake-cur mono"></span>
-                  </span>
-                  <input id="mStrategyAuthorizedAmount" name="mStrategyAuthorizedAmount" type="number" step="any" min="0" autocomplete="off" data-i18n-placeholder="placeholder.strategyAuthorizedAmount" />
-                </label>
-                <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyTargetAnnualReturnPct">目标年化收益 (%)</span>
-                  <input id="mStrategyTargetAnnualReturnPct" name="mStrategyTargetAnnualReturnPct" type="number" step="0.1" min="0" autocomplete="off" data-i18n-placeholder="placeholder.riskPercent" placeholder="例: 15" />
-                </label>
-                <div class="binding-field">
-                  <label class="binding-field-label" for="mAiTakeoverTrading" data-i18n="label.aiTakeoverTrading">启用 AI 接管交易</label>
-                  <div class="binding-checkbox-control">
-                    <input
-                      type="checkbox"
-                      id="mAiTakeoverTrading"
-                      name="mAiTakeoverTrading"
-                      aria-describedby="mAiTakeoverTradingHint"
-                    />
-                    <p class="modal-hint binding-checkbox-hint" id="mAiTakeoverTradingHint" data-i18n="label.aiTakeoverTradingHint">
-                      跳过经典策略路径，启用 AI 接管交易（面板标记，需外部 AI 编排配合）
-                    </p>
+                    <input id="mBindingEnabled" name="mBindingEnabled" type="checkbox" checked
+                      aria-describedby="mBindingEnabledHint" />
+                    <p class="modal-hint binding-checkbox-hint" id="mBindingEnabledHint"
+                      data-i18n="modal.api.bindingEnabledHint">关闭后不参与同步与生效</p>
                   </div>
                 </div>
                 <div class="binding-field">
-                  <label class="binding-field-label" for="mPaperTrading" data-i18n="label.paperTrading">模拟交易（仅用 AI，不调交易 API）</label>
+                  <label class="binding-field-label" for="mBindToBot" data-i18n="modal.api.bindToBot">保存时同步到机器人
+                    config（exchange 段）</label>
                   <div class="binding-checkbox-control">
-                    <input
-                      type="checkbox"
-                      id="mPaperTrading"
-                      name="mPaperTrading"
-                      aria-describedby="mPaperTradingHint"
-                    />
-                    <p class="modal-hint binding-checkbox-hint" id="mPaperTradingHint" data-i18n="label.paperTradingHint">
-                      开启后仍可使用对接里的 LLM 等 AI 接口与面板规则备忘；控制台不调用 /start、/pause 等机器人交易接口，「同步并启动」仅保存配置、不请求 /start。
-                    </p>
+                    <input id="mBindToBot" name="mBindToBot" type="checkbox" aria-describedby="mBindToBotHint" />
+                    <p class="modal-hint binding-checkbox-hint" id="mBindToBotHint" data-i18n="modal.api.bindToBotHint">
+                      仅一行可勾选；会写入磁盘上的主配置文件中的 exchange；须重启 trade/webserver 后进程内配置才刷新。</p>
                   </div>
                 </div>
-                <div class="binding-field">
-                  <label class="binding-field-label" for="mRiskUseFreqaiLimits" data-i18n="label.riskUseFreqaiLimits">优先采用 Bovin AI 回撤上限</label>
-                  <div class="binding-checkbox-control">
-                    <input
-                      type="checkbox"
-                      id="mRiskUseFreqaiLimits"
-                      name="mRiskUseFreqaiLimits"
-                      aria-describedby="mRiskUseFreqaiLimitsHint"
-                    />
-                    <p class="modal-hint binding-checkbox-hint" id="mRiskUseFreqaiLimitsHint" data-i18n="label.riskUseFreqaiLimitsHint">
-                      回撤上限优先使用 Bovin AI 的 max_training_drawdown_pct（与下方手动百分比二选一展示）
-                    </p>
-                  </div>
-                </div>
+              </section>
+              <section class="binding-column" aria-labelledby="binding-col-exchange">
+                <h5 id="binding-col-exchange" data-i18n="modal.api.colExchange">交易所 API</h5>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.riskMaxDrawdownLimitPct">最大回撤上限 (%)</span>
-                  <input id="mRiskMaxDrawdownLimitPct" name="mRiskMaxDrawdownLimitPct" type="number" step="0.1" min="0" max="100" autocomplete="off" placeholder="例: 20" data-i18n-placeholder="placeholder.riskPercent" />
+                  <span class="binding-field-label" data-i18n="modal.api.exchangeRestBaseUrl">Base URL（可选）</span>
+                  <input id="mExchangeRestBaseUrl" name="mExchangeRestBaseUrl" type="text" inputmode="url"
+                    autocomplete="off" spellcheck="false" data-i18n-placeholder="modal.api.exchangeRestBaseUrlPh"
+                    placeholder="https://api.binance.com" />
                 </label>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.riskThresholdPct">风险阈值 (%)</span>
-                  <input id="mRiskThresholdPct" name="mRiskThresholdPct" type="number" step="0.1" min="0" max="100" autocomplete="off" placeholder="例: 10" data-i18n-placeholder="placeholder.riskPercent" />
+                  <span class="binding-field-label" data-i18n="modal.api.exchangeApiKey">API Key</span>
+                  <input id="mExchangeApiKey" name="mExchangeApiKey" type="text" autocomplete="off"
+                    spellcheck="false" />
                 </label>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyNotes">说明与参数备忘</span>
-                  <textarea id="mStrategyNotes" name="mStrategyNotes" rows="4" autocomplete="off"></textarea>
+                  <span class="binding-field-label" data-i18n="modal.api.exchangeApiSecret">API Secret</span>
+                  <input id="mExchangeApiSecret" name="mExchangeApiSecret" type="password" autocomplete="off" />
                 </label>
                 <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyExtraJson">扩展 JSON（可选）</span>
-                  <textarea id="mStrategyExtraJson" name="mStrategyExtraJson" rows="4" autocomplete="off" spellcheck="false"></textarea>
+                  <span class="binding-field-label" data-i18n="modal.api.exchangePassphrase">Passphrase（可选）</span>
+                  <input id="mExchangePassphrase" name="mExchangePassphrase" type="password" autocomplete="off" />
+                  <p id="mExchangePassphraseNote" class="modal-hint"></p>
                 </label>
-                <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategyRulesOutput">策略规则输出</span>
-                  <textarea id="mStrategyRulesOutput" name="mStrategyRulesOutput" rows="6" autocomplete="off" spellcheck="false"></textarea>
-                </label>
-                <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategySlotDetailJson">详细策略 JSON</span>
-                  <textarea id="mEntrySlotDetailJson" name="mEntrySlotDetailJson" rows="6" autocomplete="off" spellcheck="false"></textarea>
-                </label>
-                <label class="binding-field">
-                  <span class="binding-field-label" data-i18n="label.strategySlotMml">MML</span>
-                  <textarea id="mEntrySlotMml" name="mEntrySlotMml" rows="6" autocomplete="off" spellcheck="false"></textarea>
-                </label>
-                <p class="modal-hint strategy-slot-hint" data-i18n="hint.strategySlotEither">与全局「扩展 JSON」不同：按策略类名存储，供控制台卡片与外部工具使用。</p>
-                <div class="binding-field">
-                  <label class="binding-field-label" for="mStrategyShowOnConsole" data-i18n="settings.manualStrategyShowOnConsole">控制台展示卡片</label>
-                  <div class="binding-checkbox-control">
-                    <input
-                      type="checkbox"
-                      id="mStrategyShowOnConsole"
-                      name="mStrategyShowOnConsole"
-                      aria-describedby="mStrategyShowOnConsoleHint"
-                    />
-                    <p class="modal-hint binding-checkbox-hint" id="mStrategyShowOnConsoleHint" data-i18n="settings.manualStrategyShowOnConsoleHint">
-                      仅对本条策略：开启后在策略 AI 控制台展示该策略对应卡片（含 JSON/MML）；未出现在 /panel/strategies 时也可手工维护类名。
-                    </p>
-                  </div>
-                </div>
-                <p class="modal-hint strategy-file-hint" data-i18n="hint.strategyFileManual">当前正在运行 Bot 的最终生效全部配置、数据来源为config.json配置文件合并策略代码内固定值，修改策略即可随动。</p>
-              </div>
+                <input type="hidden" id="mExchangeName" name="mExchangeName" value="" />
+              </section>
             </div>
-            <footer class="modal-actions">
-              <button type="button" id="saveStrategyMemoModal" class="primary" data-i18n="btn.saveStrategyConfig">保存配置</button>
-            </footer>
           </div>
-        </div>
-
-        <div id="strategySlotModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div class="modal-card modal-card--binding modal-card--strategy-slot modal-card--strategy-detail" role="dialog" aria-modal="true" aria-labelledby="strategySlotModalTitle">
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="strategySlotModalTitle" class="modal-title">策略详情</h4>
-                <p class="modal-sub">查看策略参数与代码</p>
-              </div>
-              <button type="button" id="closeStrategySlotModal" class="ghost modal-close-btn" data-i18n="btn.close">关闭</button>
-            </header>
-            <div class="modal-body">
-              <div class="strategy-detail-modal-layout">
-                <section class="strategy-detail-modal-top">
-                  <label class="strategy-detail-select-wrap">
-                    <span class="binding-field-label">策略名</span>
-                    <input type="hidden" id="mStrategySlotNameSelect" name="mStrategySlotNameSelect" value="" autocomplete="off" />
-                    <a-select
-                      v-model:value="strategySlotClassName"
-                      :options="strategySlotOptions"
-                      allow-clear
-                      show-search
-                      :filter-option="filterStrategySlotOption"
-                      class="bovin-select-full strategy-slot-ant-select"
-                      popup-class-name="bovin-select-dropdown"
-                      :get-popup-container="selectPopupContainer"
-                      :placeholder="strategySlotPlaceholder"
-                      :aria-label="strategySlotAria"
-                    />
-                  </label>
-                </section>
-                <div class="strategy-detail-modal-columns">
-                  <div class="strategy-detail-col strategy-detail-col--params">
-                    <div class="binding-field-label">策略参数 (params)</div>
-                    <textarea id="mStrategyParams" name="mStrategyParams" rows="10" autocomplete="off" spellcheck="false"></textarea>
-                  </div>
-                  <div class="strategy-detail-col strategy-detail-col--code">
-                    <div class="binding-field-label">策略代码 (code)</div>
-                    <textarea id="mStrategyCode" name="mStrategyCode" rows="10" autocomplete="off" spellcheck="false"></textarea>
-                  </div>
-                </div>
-              </div>
+          <footer class="modal-actions modal-actions--split modal-actions--api-binding-footer">
+            <div id="llmProbeFeedback" class="llm-probe-feedback hidden" aria-hidden="true" role="status"
+              aria-live="polite" aria-atomic="true">
+              <p id="llmProbeExchangeStatusText" class="llm-probe-feedback__text"></p>
+              <p id="llmProbeLlmStatusText" class="llm-probe-feedback__text"></p>
             </div>
-            <footer class="modal-actions modal-actions--split">
-              <div></div>
+            <div class="modal-actions-row">
+              <button type="button" id="btnLlmProbe" class="ghost" data-i18n="btn.llmProbe">测试交易所与 LLM 连通性</button>
               <div class="modal-actions-end">
-                <button type="button" id="saveStrategyDetailModal" class="ghost">保存</button>
-                <button type="button" id="closeStrategyDetailModal" class="primary">关闭</button>
+                <button type="button" id="saveApiBindingModal" class="primary" data-i18n="btn.saveBinding">保存关系</button>
               </div>
-            </footer>
-          </div>
-        </div>
-
-        <div id="whitelistAddModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div
-            class="modal-card modal-card--binding modal-card--whitelist-add"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="whitelistAddModalTitle"
-          >
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="whitelistAddModalTitle" class="modal-title" data-i18n="modal.whitelistAddTitle">添加白名单</h4>
-                <p class="modal-sub" data-i18n="modal.whitelistAddSub">每行一个交易对，可添加多条后一次性提交。</p>
-              </div>
-              <button type="button" id="closeWhitelistAddModal" class="ghost modal-close-btn" data-i18n="btn.close">
-                关闭
-              </button>
-            </header>
-            <div class="modal-body">
-              <div id="whitelistAddRows" class="whitelist-add-rows"></div>
-              <button type="button" id="whitelistAddRowBtn" class="ghost whitelist-add-row-btn" data-i18n="modal.whitelistAddRow">
-                添加一条
-              </button>
             </div>
-            <footer class="modal-actions">
-              <button type="button" id="saveWhitelistAddModal" class="primary" data-i18n="btn.submitWhitelistAdd">
-                提交添加
-              </button>
-            </footer>
-          </div>
+          </footer>
         </div>
+      </div>
 
-        <div id="tradesAuditModal" class="modal hidden" role="presentation">
-          <div class="modal-mask" aria-hidden="true"></div>
-          <div
-            class="modal-card modal-card--binding modal-card--trades-audit"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="tradesAuditModalTitle"
-          >
-            <header class="modal-head modal-head--binding">
-              <div class="modal-head-text">
-                <h4 id="tradesAuditModalTitle" class="modal-title" data-i18n="sc.feed.auditModalTitle">
-                  完整成交记录
-                </h4>
-                <p id="tradesAuditModalSub" class="modal-sub"></p>
+      <div id="panelUserModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--panel-user" role="dialog" aria-modal="true"
+          aria-labelledby="panelUserModalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="panelUserModalTitle" class="modal-title" data-i18n="users.add">新建用户</h4>
+              <p class="modal-sub" data-i18n="users.menuPermissions">菜单权限（只读 / 编辑）</p>
+            </div>
+            <button type="button" id="closePanelUserModal" class="ghost modal-close-btn"
+              data-i18n="btn.close">关闭</button>
+          </header>
+          <div class="modal-body">
+            <div class="binding-grid binding-grid--modal">
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="users.username">用户名</span>
+                <input id="puUsername" name="puUsername" type="text" autocomplete="username" />
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="users.password">密码</span>
+                <input id="puPassword" name="puPassword" type="password" autocomplete="new-password" />
+              </label>
+            </div>
+            <div class="pu-perm-grid" aria-label="menu permissions">
+              <div class="pu-perm-item">
+                <span data-i18n="nav.overview">系统概览</span>
+                <input type="hidden" id="puPerm-overview" value="read" />
+                <a-select v-model:value="puPermOverview" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
               </div>
-              <button type="button" id="closeTradesAuditModal" class="ghost modal-close-btn" data-i18n="btn.close">
-                关闭
-              </button>
-            </header>
-            <div class="modal-body sc-feed-audit-modal-body">
-              <div id="tradesAuditModalBody"></div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.positions">持仓与订单</span>
+                <input type="hidden" id="puPerm-positions" value="read" />
+                <a-select v-model:value="puPermPositions" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.control">策略AI控制台</span>
+                <input type="hidden" id="puPerm-control" value="read" />
+                <a-select v-model:value="puPermControl" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.data">数据面板</span>
+                <input type="hidden" id="puPerm-data" value="read" />
+                <a-select v-model:value="puPermData" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.settings">设置中心</span>
+                <input type="hidden" id="puPerm-settings" value="read" />
+                <a-select v-model:value="puPermSettings" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.monitor">系统监控</span>
+                <input type="hidden" id="puPerm-monitor" value="read" />
+                <a-select v-model:value="puPermMonitor" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
+              <div class="pu-perm-item">
+                <span data-i18n="nav.api">接口能力面板</span>
+                <input type="hidden" id="puPerm-api" value="read" />
+                <a-select v-model:value="puPermApi" :options="permSelectOptions" class="bovin-select-full"
+                  popup-class-name="bovin-select-dropdown" :get-popup-container="selectPopupContainer" />
+              </div>
             </div>
           </div>
+          <footer class="modal-actions">
+            <button type="button" id="savePanelUserModal" class="primary" data-i18n="users.save">保存用户</button>
+          </footer>
         </div>
+      </div>
 
-      </main>
-    </div>
+      <div id="strategyMemoModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--strategy-memo" role="dialog" aria-modal="true"
+          aria-labelledby="strategyMemoModalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="strategyMemoModalTitle" class="modal-title" data-i18n="modal.strategyConfigTitle">策略配置</h4>
+              <p class="modal-sub" data-i18n="modal.strategyConfigSub">保存至 panel_profile。</p>
+            </div>
+            <button type="button" id="closeStrategyMemoModal" class="ghost modal-close-btn"
+              data-i18n="btn.close">关闭</button>
+          </header>
+          <div class="modal-body">
+            <div class="binding-grid binding-grid--modal strategy-memo-grid">
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyName">策略名称 / 偏好</span>
+                <input id="mStrategyName" name="mStrategyName" type="text" autocomplete="off" maxlength="200" />
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyRpcBase">独立 trade 进程 API 基址</span>
+                <input id="mStrategyRpcBase" name="mStrategyRpcBase" type="url" inputmode="url" autocomplete="off"
+                  spellcheck="false" maxlength="512" data-i18n-placeholder="placeholder.strategyRpcBase"
+                  placeholder="留空则使用设置中心全局 Base URL；多实例示例 http://127.0.0.1:18081/api/v1" />
+                <p class="modal-hint binding-checkbox-hint" data-i18n="label.strategyRpcBaseHint">
+                  每个 Bovin trade 进程一个端口与独立 config/db。填此处后该策略卡片单独对该地址执行 /start、/pause、/show_config；须与全局使用相同 API
+                  账号密码，并在各进程
+                  config 中放行浏览器来源（CORS）。
+                </p>
+              </label>
+              <div class="binding-field">
+                <label class="binding-field-label" for="mControlShowStrategyCards"
+                  data-i18n="settings.controlShowStrategyCards">在策略 AI 控制台展示策略卡片列表</label>
+                <div class="binding-checkbox-control">
+                  <input type="checkbox" id="mControlShowStrategyCards" name="mControlShowStrategyCards"
+                    aria-describedby="mControlShowStrategyCardsHint" />
+                  <p class="modal-hint binding-checkbox-hint" id="mControlShowStrategyCardsHint"
+                    data-i18n="settings.controlShowStrategyCardsHint">
+                    仅对本条策略生效：关闭后该策略在控制台不再展示来自 /panel/strategies 的多卡片网格，仅显示简短说明。
+                  </p>
+                </div>
+              </div>
+              <label class="binding-field">
+                <span class="binding-field-label">
+                  <span data-i18n="label.strategyAuthorizedAmount">授权金额</span><span id="mStrategyAuthorizedStakeCur"
+                    class="strategy-authorized-stake-cur mono"></span>
+                </span>
+                <input id="mStrategyAuthorizedAmount" name="mStrategyAuthorizedAmount" type="number" step="any" min="0"
+                  autocomplete="off" data-i18n-placeholder="placeholder.strategyAuthorizedAmount" />
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyTargetAnnualReturnPct">目标年化收益 (%)</span>
+                <input id="mStrategyTargetAnnualReturnPct" name="mStrategyTargetAnnualReturnPct" type="number"
+                  step="0.1" min="0" autocomplete="off" data-i18n-placeholder="placeholder.riskPercent"
+                  placeholder="例: 15" />
+              </label>
+              <div class="binding-field">
+                <label class="binding-field-label" for="mAiTakeoverTrading" data-i18n="label.aiTakeoverTrading">启用 AI
+                  接管交易</label>
+                <div class="binding-checkbox-control">
+                  <input type="checkbox" id="mAiTakeoverTrading" name="mAiTakeoverTrading"
+                    aria-describedby="mAiTakeoverTradingHint" />
+                  <p class="modal-hint binding-checkbox-hint" id="mAiTakeoverTradingHint"
+                    data-i18n="label.aiTakeoverTradingHint">
+                    跳过经典策略路径，启用 AI 接管交易（面板标记，需外部 AI 编排配合）
+                  </p>
+                </div>
+              </div>
+              <div class="binding-field">
+                <label class="binding-field-label" for="mPaperTrading" data-i18n="label.paperTrading">模拟交易（仅用 AI，不调交易
+                  API）</label>
+                <div class="binding-checkbox-control">
+                  <input type="checkbox" id="mPaperTrading" name="mPaperTrading" aria-describedby="mPaperTradingHint" />
+                  <p class="modal-hint binding-checkbox-hint" id="mPaperTradingHint" data-i18n="label.paperTradingHint">
+                    开启后仍可使用对接里的 LLM 等 AI 接口与面板规则备忘；控制台不调用 /start、/pause 等机器人交易接口，「同步并启动」仅保存配置、不请求 /start。
+                  </p>
+                </div>
+              </div>
+              <div class="binding-field">
+                <label class="binding-field-label" for="mRiskUseFreqaiLimits" data-i18n="label.riskUseFreqaiLimits">优先采用
+                  Bovin
+                  AI 回撤上限</label>
+                <div class="binding-checkbox-control">
+                  <input type="checkbox" id="mRiskUseFreqaiLimits" name="mRiskUseFreqaiLimits"
+                    aria-describedby="mRiskUseFreqaiLimitsHint" />
+                  <p class="modal-hint binding-checkbox-hint" id="mRiskUseFreqaiLimitsHint"
+                    data-i18n="label.riskUseFreqaiLimitsHint">
+                    回撤上限优先使用 Bovin AI 的 max_training_drawdown_pct（与下方手动百分比二选一展示）
+                  </p>
+                </div>
+              </div>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.riskMaxDrawdownLimitPct">最大回撤上限 (%)</span>
+                <input id="mRiskMaxDrawdownLimitPct" name="mRiskMaxDrawdownLimitPct" type="number" step="0.1" min="0"
+                  max="100" autocomplete="off" placeholder="例: 20" data-i18n-placeholder="placeholder.riskPercent" />
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.riskThresholdPct">风险阈值 (%)</span>
+                <input id="mRiskThresholdPct" name="mRiskThresholdPct" type="number" step="0.1" min="0" max="100"
+                  autocomplete="off" placeholder="例: 10" data-i18n-placeholder="placeholder.riskPercent" />
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyNotes">说明与参数备忘</span>
+                <textarea id="mStrategyNotes" name="mStrategyNotes" rows="4" autocomplete="off"></textarea>
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyExtraJson">扩展 JSON（可选）</span>
+                <textarea id="mStrategyExtraJson" name="mStrategyExtraJson" rows="4" autocomplete="off"
+                  spellcheck="false"></textarea>
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategyRulesOutput">策略规则输出</span>
+                <textarea id="mStrategyRulesOutput" name="mStrategyRulesOutput" rows="6" autocomplete="off"
+                  spellcheck="false"></textarea>
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategySlotDetailJson">详细策略 JSON</span>
+                <textarea id="mEntrySlotDetailJson" name="mEntrySlotDetailJson" rows="6" autocomplete="off"
+                  spellcheck="false"></textarea>
+              </label>
+              <label class="binding-field">
+                <span class="binding-field-label" data-i18n="label.strategySlotMml">MML</span>
+                <textarea id="mEntrySlotMml" name="mEntrySlotMml" rows="6" autocomplete="off"
+                  spellcheck="false"></textarea>
+              </label>
+              <p class="modal-hint strategy-slot-hint" data-i18n="hint.strategySlotEither">与全局「扩展
+                JSON」不同：按策略类名存储，供控制台卡片与外部工具使用。</p>
+              <div class="binding-field">
+                <label class="binding-field-label" for="mStrategyShowOnConsole"
+                  data-i18n="settings.manualStrategyShowOnConsole">控制台展示卡片</label>
+                <div class="binding-checkbox-control">
+                  <input type="checkbox" id="mStrategyShowOnConsole" name="mStrategyShowOnConsole"
+                    aria-describedby="mStrategyShowOnConsoleHint" />
+                  <p class="modal-hint binding-checkbox-hint" id="mStrategyShowOnConsoleHint"
+                    data-i18n="settings.manualStrategyShowOnConsoleHint">
+                    仅对本条策略：开启后在策略 AI 控制台展示该策略对应卡片（含 JSON/MML）；未出现在 /panel/strategies 时也可手工维护类名。
+                  </p>
+                </div>
+              </div>
+              <p class="modal-hint strategy-file-hint" data-i18n="hint.strategyFileManual">当前正在运行 Bot
+                的最终生效全部配置、数据来源为config.json配置文件合并策略代码内固定值，修改策略即可随动。</p>
+            </div>
+          </div>
+          <footer class="modal-actions">
+            <button type="button" id="saveStrategyMemoModal" class="primary"
+              data-i18n="btn.saveStrategyConfig">保存配置</button>
+          </footer>
+        </div>
+      </div>
+
+      <div id="strategySlotModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--strategy-slot modal-card--strategy-detail" role="dialog"
+          aria-modal="true" aria-labelledby="strategySlotModalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="strategySlotModalTitle" class="modal-title">策略详情</h4>
+              <p class="modal-sub">查看策略参数与代码</p>
+            </div>
+            <button type="button" id="closeStrategySlotModal" class="ghost modal-close-btn"
+              data-i18n="btn.close">关闭</button>
+          </header>
+          <div class="modal-body">
+            <div class="strategy-detail-modal-layout">
+              <section class="strategy-detail-modal-top">
+                <label class="strategy-detail-select-wrap">
+                  <span class="binding-field-label">策略名</span>
+                  <a-input v-model:value="strategySlotClassName" class="bovin-select-full strategy-slot-ant-select"
+                    :placeholder="strategySlotPlaceholder" :aria-label="strategySlotAria" readonly />
+                </label>
+              </section>
+              <div class="strategy-detail-modal-columns">
+                <div class="strategy-detail-col strategy-detail-col--params">
+                  <div class="binding-field-label">策略参数 (params)</div>
+                  <textarea id="mStrategyParams" name="mStrategyParams" rows="10" autocomplete="off"
+                    spellcheck="false"></textarea>
+                </div>
+                <div class="strategy-detail-col strategy-detail-col--code">
+                  <div class="binding-field-label">策略代码 (code)</div>
+                  <textarea id="mStrategyCode" name="mStrategyCode" rows="10" autocomplete="off"
+                    spellcheck="false"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="modal-actions modal-actions--split">
+            <div></div>
+            <div class="modal-actions-end">
+              <button type="button" id="saveStrategyDetailModal" class="ghost">保存</button>
+              <button type="button" id="closeStrategyDetailModal" class="primary">关闭</button>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      <div id="whitelistAddModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--whitelist-add" role="dialog" aria-modal="true"
+          aria-labelledby="whitelistAddModalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="whitelistAddModalTitle" class="modal-title" data-i18n="modal.whitelistAddTitle">添加白名单</h4>
+              <p class="modal-sub" data-i18n="modal.whitelistAddSub">每行一个交易对，可添加多条后一次性提交。</p>
+            </div>
+            <button type="button" id="closeWhitelistAddModal" class="ghost modal-close-btn" data-i18n="btn.close">
+              关闭
+            </button>
+          </header>
+          <div class="modal-body">
+            <div id="whitelistAddRows" class="whitelist-add-rows"></div>
+            <button type="button" id="whitelistAddRowBtn" class="ghost whitelist-add-row-btn"
+              data-i18n="modal.whitelistAddRow">
+              添加一条
+            </button>
+          </div>
+          <footer class="modal-actions">
+            <button type="button" id="saveWhitelistAddModal" class="primary" data-i18n="btn.submitWhitelistAdd">
+              提交添加
+            </button>
+          </footer>
+        </div>
+      </div>
+
+      <div id="tradesAuditModal" class="modal hidden" role="presentation">
+        <div class="modal-mask" aria-hidden="true"></div>
+        <div class="modal-card modal-card--binding modal-card--trades-audit" role="dialog" aria-modal="true"
+          aria-labelledby="tradesAuditModalTitle">
+          <header class="modal-head modal-head--binding">
+            <div class="modal-head-text">
+              <h4 id="tradesAuditModalTitle" class="modal-title" data-i18n="sc.feed.auditModalTitle">
+                完整成交记录
+              </h4>
+              <p id="tradesAuditModalSub" class="modal-sub"></p>
+            </div>
+            <button type="button" id="closeTradesAuditModal" class="ghost modal-close-btn" data-i18n="btn.close">
+              关闭
+            </button>
+          </header>
+          <div class="modal-body sc-feed-audit-modal-body">
+            <div id="tradesAuditModalBody"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
 </template>
 
 <script setup>
@@ -794,13 +707,13 @@ function computeStrategySlotServerId(key, fromHint, mergedDj) {
   const djNameHint = tryStrategyNameFromJsonText(mergedDj);
   let sid = String(
     fromH ||
-      fromMap ||
-      resolvePanelStrategySlotServerId(
-        uiState.panelStrategySlotRowsRaw,
-        key,
-        djNameHint || undefined
-      ) ||
-      ""
+    fromMap ||
+    resolvePanelStrategySlotServerId(
+      uiState.panelStrategySlotRowsRaw,
+      key,
+      djNameHint || undefined
+    ) ||
+    ""
   ).trim();
   if (!sid) {
     const rowByKey = findPanelStrategySlotRow(uiState.panelStrategySlotRowsRaw, key);
@@ -955,17 +868,17 @@ async function onSaveStrategySlotModal() {
         : "";
     let sid = String(
       fromOpenRef ||
-        fromMap ||
-        fromMapFinal ||
-        resolvePanelStrategySlotServerId(
-          uiState.panelStrategySlotRowsRaw,
-          openKey,
-          finalKey,
-          fromSelect,
-          fromJson || undefined,
-          tryStrategyNameFromJsonText(dj) || undefined
-        ) ||
-        ""
+      fromMap ||
+      fromMapFinal ||
+      resolvePanelStrategySlotServerId(
+        uiState.panelStrategySlotRowsRaw,
+        openKey,
+        finalKey,
+        fromSelect,
+        fromJson || undefined,
+        tryStrategyNameFromJsonText(dj) || undefined
+      ) ||
+      ""
     ).trim();
     if (!sid) {
       for (const k of [finalKey, openKey, fromSelect].filter(Boolean)) {
@@ -1228,7 +1141,7 @@ function handleLogout() {
   uiState.panelPrefsBindingsLoadedFromDb = false;
   uiState.panelPrefsLoadErrorDetail = "";
   state.password = "";
-  
+
   if (panelRouter) {
     panelRouter.push({ name: "login" }).then(() => {
       console.log("[Logout] Redirected to login page");
