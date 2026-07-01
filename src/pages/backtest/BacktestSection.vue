@@ -612,7 +612,7 @@
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td>{{ ((item.wins / (item.wins + item.losses)) * 100).toFixed(2) || 0 }}%</td>
+                           <td>{{ isNaN(item.wins / (item.wins + item.losses)) ? '0.00' : ((item.wins / (item.wins + item.losses)) * 100).toFixed(2) }}%</td>
                           </tr>
                         </tbody>
                       </table>

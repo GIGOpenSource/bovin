@@ -1329,7 +1329,7 @@ async function handleSyncConfigAndStart() {
     /* ignore reload error */
   }
   try {
-    await postStart();
+    // await postStart();
   } catch {
     /* ignore start error */
   }
@@ -1644,8 +1644,8 @@ onMounted(() => {
         const templates = result && result.templates ? result.templates : result;
         if (Array.isArray(templates)) {
           templateOptions.value = templates.map(t => ({
-            value: t.name || t.id || String(t),
-            label: t.name || t.id || String(t)
+            value: t.id,
+            label: t.name 
           }));
         }
       } catch {
