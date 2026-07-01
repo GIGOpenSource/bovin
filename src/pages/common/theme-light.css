@@ -25,7 +25,7 @@ html[data-theme="light"] {
   --ft-modal-mask: rgba(24, 30, 48, 0.38);
   --ft-panel-surface: #ffffff;
   --ft-panel-surface-raised: #e8ebf4;
-  --ft-panel-surface-inset: #eef1f6;
+  --ft-panel-surface-inset: #ffffff;
   --ft-panel-head-bg: rgba(232, 235, 244, 0.96);
   --ft-panel-head-bg-soft: rgba(232, 235, 244, 0.72);
   --ft-table-header-bg: #dfe4f2;
