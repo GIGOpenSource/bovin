@@ -93,7 +93,6 @@ export async function requestAtBase(baseUrl, path, options = {}) {
   }
 
   const headers = {
-    "content-type": "application/json",
     ...basicAuthHeader(),
     ...Object.fromEntries(
       Object.entries(extraHeaders || {}).filter(([, v]) => v != null && v !== "")
@@ -104,6 +103,8 @@ export async function requestAtBase(baseUrl, path, options = {}) {
   if (json !== undefined) {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
     body = JSON.stringify(json);
+  } else if (body && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
   }
 
   let res;
