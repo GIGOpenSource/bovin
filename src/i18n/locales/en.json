@@ -295,6 +295,7 @@
   "backtest.th.fileName": "Filename",
   "backtest.th.actions": "Actions",
   "backtest.strategy": "Strategy",
+  "backtest.select": "default",
   "backtest.selectStrategy": "Select strategy",
   "backtest.useStrategyDefault": "Use strategy default",
   "backtest.params": "Backtesting parameters",

@@ -123,7 +123,7 @@
                 <div class="bt-form-row">
                   <span class="bt-form-label" data-i18n="backtest.detailTimeframe">Detail Timeframe:</span>
                   <a-select v-model:value="backtestParams.timerange2" class="bovin-select-full">
-                    <a-select-option v-for="opt in timeframeOptions" :key="opt.value" :value="opt.value">
+                    <a-select-option v-for="opt in detailTimeframeOptions" :key="opt.value" :value="opt.value">
                       {{ opt.label }}
                     </a-select-option>
                   </a-select>
@@ -998,8 +998,7 @@ const handleTabClick = async (tabKey) => {
 };
 
 const timeframeOptions = [
-  // { value: '', label: 'Select timeframe' },
-  // { value: 'use_strategy', label: 'Use strategy default' },
+  { value: '', label: t('backtest.select') },
   { value: '1m', label: '1m' },
   { value: '3m', label: '3m' },
   { value: '5m', label: '5m' },
@@ -1018,6 +1017,25 @@ const timeframeOptions = [
   { value: '1mo', label: '1mo' },
   { value: '1y', label: '1y' }
 ];
+
+const timeframeOrder = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '2w', '1mo', '1y'];
+
+const detailTimeframeOptions = computed(() => {
+  const selectedTf = backtestParams.timerange;
+  if (!selectedTf) {
+    return [{ value: '', label: t('backtest.select') }];
+  }
+  const selectedIndex = timeframeOrder.indexOf(selectedTf);
+  if (selectedIndex === -1 || selectedIndex === 0) {
+    return [{ value: '', label: t('backtest.select') }];
+  }
+  const options = timeframeOrder.slice(0, selectedIndex).map(v => ({
+    value: v,
+    label: v
+  }));
+  options.unshift({ value: '', label: t('backtest.select') });
+  return options;
+});
 
 const tabs = ref([
   { key: 'load', label: t('backtest.tab.load'), icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
@@ -1177,6 +1195,22 @@ watch(activeTab, (newTab) => {
   } else if (newTab === 'run') {
     loadStrategies();
     loadFreqaiModels();
+  }
+});
+
+watch(() => backtestParams.timerange, (newTf) => {
+  const currentDetail = backtestParams.timerange2;
+  if (!currentDetail) return;
+  const selectedIndex = timeframeOrder.indexOf(newTf);
+  const detailIndex = timeframeOrder.indexOf(currentDetail);
+  if (selectedIndex === -1 || selectedIndex === 0 || detailIndex >= selectedIndex) {
+    backtestParams.timerange2 = '';
+  }
+});
+
+watch(() => timerangeParams.enableFreqAI, async (enabled) => {
+  if (enabled) {
+    await loadFreqaiModels();
   }
 });
 

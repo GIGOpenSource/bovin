@@ -295,6 +295,7 @@
   "backtest.th.fileName": "文件名",
   "backtest.th.actions": "操作",
   "backtest.strategy": "策略",
+  "backtest.select": "default",
   "backtest.selectStrategy": "选择策略",
   "backtest.useStrategyDefault": "使用策略默认值",
   "backtest.params": "回测参数",
