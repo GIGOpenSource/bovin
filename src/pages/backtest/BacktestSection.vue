@@ -612,7 +612,7 @@
                             <td>{{ item.wins }}</td>
                             <td>{{ item.draws }}</td>
                             <td>{{ item.losses }}</td>
-                            <td>{{ ((item.wins / (item.wins + item.losses)) * 100).toFixed(2) }}%</td>
+                            <td>{{ ((item.wins / (item.wins + item.losses)) * 100).toFixed(2) || 0 }}%</td>
                           </tr>
                         </tbody>
                       </table>
@@ -3518,6 +3518,18 @@ const handleBacktest = async () => {
 .bt-pagination-btn:hover:not(:disabled) {
   background: rgba(var(--ft-panel-edge-rgb), 0.3);
   color: var(--text, #e8e9ed);
+}
+
+.bt-pagination-btn.active {
+  background: var(--primary, #3b82f6);
+  border-color: var(--primary, #3b82f6);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.bt-pagination-btn.active:hover {
+  background: var(--primary-strong, #4a7dff);
+  border-color: var(--primary-strong, #4a7dff);
 }
 
 .bt-pagination-btn:disabled {
