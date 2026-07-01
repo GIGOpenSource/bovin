@@ -35,6 +35,7 @@
   "panel.selectTemplate": "请选择策略模板",
   "panel.enterStrategyName": "请输入策略名称",
   "panel.createStrategySuccess": "策略创建成功",
+  "panel.createStrategyFailed": "策略创建失败",
   "modal.confirmTitle": "提示",
   "kpi.botStatus": "机器人状态",
   "kpi.openTrades": "未平仓数",

@@ -653,11 +653,13 @@ watch(() => uiState.lastPingOk, () => {
 
 window.__updateSystemOnline = updateSystemOnline;
 window.__showReloadConfigModal = showReloadConfigModal;
+window.__message = message;
 import {
   getPanelStrategySlotDetail,
   getPanelStrategySlots,
   patchPanelStrategySlot
 } from "../api/overview.js";
+import { message } from "ant-design-vue";
 import { getStrategyDetail, saveStrategyParams, saveStrategyCode } from "../api/config2.js";
 import {
   buildPanelStrategySlotIdByName,
@@ -880,7 +882,7 @@ async function onSaveStrategyDetailModal() {
   const strategyName = String(strategySlotOpenKey.value || "").trim();
 
   if (!strategyName) {
-    window.alert("请选择策略");
+    message.warning("请选择策略");
     return;
   }
 
@@ -890,7 +892,7 @@ async function onSaveStrategyDetailModal() {
       const raw = paramsTa.value.trim();
       params = raw ? JSON.parse(raw) : [];
     } catch (e) {
-      window.alert("策略参数 JSON 格式错误");
+      message.error("策略参数 JSON 格式错误");
       return;
     }
   }
@@ -906,11 +908,11 @@ async function onSaveStrategyDetailModal() {
     await saveStrategyParams(strategyName, params);
     console.log(222)
     await saveStrategyCode(strategyName, code);
-    window.alert("保存成功");
+    message.success("保存成功");
     closeStrategySlotModal();
   } catch (e) {
     const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-    window.alert(`保存失败: ${msg}`);
+    message.error(`保存失败: ${msg}`);
   } finally {
     if (saveBtn instanceof HTMLButtonElement) {
       saveBtn.disabled = false;
@@ -929,7 +931,7 @@ async function onSaveStrategySlotModal() {
   const fromSelect = String(strategySlotClassName.value ?? "").trim();
   const finalKey = fromJson || fromSelect || String(strategySlotOpenKey.value || "").trim();
   if (!finalKey) {
-    window.alert(tSlot("modal.strategySlotNeedName"));
+    message.warning(tSlot("modal.strategySlotNeedName"));
     return;
   }
   const openKey = String(strategySlotOpenKey.value || "").trim();
@@ -993,7 +995,7 @@ async function onSaveStrategySlotModal() {
     serverId = resolvePatchTargetSlotId();
   }
   if (Object.keys(patchBody).length > 0 && canSync && !serverId) {
-    window.alert(tSlot("modal.strategySlotNeedServerId"));
+    message.warning(tSlot("modal.strategySlotNeedServerId"));
   }
   if (serverId && Object.keys(patchBody).length > 0 && canSync) {
     const prevDisabled = saveBtn instanceof HTMLButtonElement ? saveBtn.disabled : false;
@@ -1002,7 +1004,7 @@ async function onSaveStrategySlotModal() {
       await patchPanelStrategySlot(serverId, patchBody);
     } catch (e) {
       const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-      window.alert(`${tSlot("modal.strategySlotPatchFail")}\n${msg}`);
+      message.error(`${tSlot("modal.strategySlotPatchFail")}\n${msg}`);
       if (saveBtn instanceof HTMLButtonElement) saveBtn.disabled = prevDisabled;
       return;
     }
@@ -1028,7 +1030,7 @@ async function onSaveStrategySlotModal() {
   } catch (err) {
     console.error(err);
     const msg = err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
-    window.alert(msg);
+    message.error(msg);
     return;
   }
   closeStrategySlotModal();
@@ -1044,7 +1046,7 @@ function onFormatStrategySlotJson() {
     ta.value = JSON.stringify(o, null, 2);
   } catch (e) {
     const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-    window.alert(msg);
+    message.error(msg);
   }
 }
 
@@ -1074,7 +1076,7 @@ function onStrategySlotModalUiClickCapture(ev) {
       console.error(err);
       const msg =
         err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
-      window.alert(msg);
+      message.error(msg);
     });
     return;
   }
@@ -1099,7 +1101,7 @@ function onStrategySlotModalUiClickCapture(ev) {
       console.error(err);
       const msg =
         err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
-      window.alert(msg);
+      message.error(msg);
     });
   }
 }

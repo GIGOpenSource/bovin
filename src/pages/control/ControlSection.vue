@@ -1265,7 +1265,7 @@ import {
 } from "../../store/state-core.js";
 import { postStart, postReloadConfig, getShowConfig } from "../../api/control.js";
 import { postDryRunConfig } from "../../api/overview.js";
-import { getStrategyTemplates, createStrategy, deleteStrategy, switchStrategy } from "../../api/config2.js";
+import { getStrategyTemplates, createStrategy, deleteStrategy, switchStrategy, getPanelStrategies } from "../../api/config2.js";
 
 const forceSidePopupContainer = () => document.body;
 
@@ -1280,11 +1280,7 @@ function strategyConfirm(title, content, onOk) {
 }
 
 function strategyAlert(content) {
-  Modal.info({
-    title: "提示",
-    content,
-    okText: "确定",
-  });
+  message.error(content);
 }
 
 function strategySuccess(content) {
@@ -1370,13 +1366,34 @@ async function handleCreateStrategy() {
   }
 
   try {
-    await createStrategy(strategyName, template);
+    const result = await createStrategy(strategyName, template);
+    if (result && typeof result === "object" && result.code !== undefined && result.code !== 200) {
+      const errorMsg = result.message || result.msg || wlModalT("panel.createStrategyFailed");
+      message.error(errorMsg);
+      return;
+    }
     createStrategyModalOpen.value = false;
     message.success(wlModalT("panel.createStrategySuccess"));
-    window.location.reload();
+    const panelStrategies = await getPanelStrategies();
+    uiState.panelStrategyList = Array.isArray(panelStrategies) 
+      ? panelStrategies.map(x => String(x || "").trim()).filter(Boolean)
+      : [];
   } catch (e) {
-    const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-    message.error(msg);
+    let errorMsg = wlModalT("panel.createStrategyFailed");
+    if (e && typeof e === "object") {
+      if (e.body && typeof e.body === "object") {
+        if (e.body.detail && typeof e.body.detail === "object" && e.body.detail.details) {
+          errorMsg = String(e.body.detail.details);
+        } else if (e.body.detail) {
+          errorMsg = String(e.body.detail);
+        } else {
+          errorMsg = e.body.message || e.body.msg || errorMsg;
+        }
+      } else if ("message" in e) {
+        errorMsg = String(e.message);
+      }
+    }
+    message.error(errorMsg);
   }
 }
 
@@ -1470,7 +1487,7 @@ function bindGovernanceWlRemove(root) {
       } catch (e) {
         const errMsg =
           e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-        window.alert(errMsg);
+        message.error(errMsg);
         throw e;
       }
     };
@@ -1543,7 +1560,7 @@ function bindWhitelistAddModal() {
       if (v) whitelist.push(v);
     }
     if (!whitelist.length) {
-      window.alert(wlModalT("modal.whitelistAddEmpty"));
+      message.warning(wlModalT("modal.whitelistAddEmpty"));
       return;
     }
     void (async () => {
@@ -1553,7 +1570,7 @@ function bindWhitelistAddModal() {
         await refreshGovernanceListsOnly();
       } catch (e) {
         const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-        window.alert(msg);
+        message.error(msg);
       }
     })();
   });
@@ -1603,7 +1620,7 @@ onMounted(() => {
         await refreshGovernanceListsOnly();
       } catch (e) {
         const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-        window.alert(msg);
+        message.error(msg);
       }
     })();
   });

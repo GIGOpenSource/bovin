@@ -83,7 +83,8 @@ export function bindControlTradeActionDelegation(controlSection) {
       const card = forceExitBtn.closest("[data-strategy-card]");
       const target = resolveTradeControlPostTarget("/forceenter", card);
       if (!target) {
-        window.alert("缺少 API 基址");
+        const doMessage = window.__message || ((type, content) => window.alert(content));
+        doMessage.error("缺少 API 基址");
         return;
       }
       ev.preventDefault();
@@ -99,7 +100,8 @@ export function bindControlTradeActionDelegation(controlSection) {
           await runPanelTickOnce();
         } catch (e) {
           const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-          window.alert(msg);
+          const doMessage = window.__message || ((type, content) => window.alert(content));
+          doMessage.error(msg);
         } finally {
           forceExitBtn.disabled = prevDisabled;
         }
@@ -123,7 +125,8 @@ export function bindControlTradeActionDelegation(controlSection) {
       target = resolveTradeControlPostTarget(endpoint, card);
     }
     if (!target) {
-      window.alert("缺少 API 基址");
+      const doMessage = window.__message || ((type, content) => window.alert(content));
+      doMessage.error("缺少 API 基址");
       return;
     }
     ev.preventDefault();
@@ -136,7 +139,8 @@ export function bindControlTradeActionDelegation(controlSection) {
         await runPanelTickOnce();
       } catch (e) {
         const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
-        window.alert(msg);
+        const doMessage = window.__message || ((type, content) => window.alert(content));
+        doMessage.error(msg);
       } finally {
         btn.disabled = prevDisabled;
       }

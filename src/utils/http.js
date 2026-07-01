@@ -93,7 +93,7 @@ export async function requestAtBase(baseUrl, path, options = {}) {
   }
 
   const headers = {
-    Accept: "application/json",
+    "content-type": "application/json",
     ...basicAuthHeader(),
     ...Object.fromEntries(
       Object.entries(extraHeaders || {}).filter(([, v]) => v != null && v !== "")

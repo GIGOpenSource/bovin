@@ -35,6 +35,7 @@
   "panel.selectTemplate": "Please select a strategy template",
   "panel.enterStrategyName": "Please enter a strategy name",
   "panel.createStrategySuccess": "Strategy created successfully",
+  "panel.createStrategyFailed": "Failed to create strategy",
   "modal.confirmTitle": "Confirm",
   "kpi.botStatus": "Bot Status",
   "kpi.openTrades": "Open Trades",

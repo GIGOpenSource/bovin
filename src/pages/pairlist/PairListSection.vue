@@ -345,7 +345,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { Modal } from "ant-design-vue";
+import { Modal, message } from "ant-design-vue";
 import { getWhitelist, getBlacklist, postBlacklist, deleteBlacklistPairs } from "../../api/positions.js";
 
 const whitelist = ref([]);
@@ -469,7 +469,7 @@ onMounted(async () => {
         await addBlacklist(value);
         closeModal();
       } catch (e) {
-        window.alert("添加失败: " + (e?.message || e));
+        message.error("添加失败: " + (e?.message || e));
       }
     }
   };
