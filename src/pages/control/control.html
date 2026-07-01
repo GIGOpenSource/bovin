@@ -31,14 +31,14 @@
 
             <section class="sc-panel-config-card" id="panelStrategyConfigCard" data-i18n-aria="aria.panelStrategyConfig" aria-label="面板策略配置">
               <div class="sc-panel-config-head">
-                <h3 data-i18n="control.panelStrategyConfig">面板策略配置</h3>
+                <h3 data-i18n="control.panelStrategyConfig">面板策略参数</h3>
                 <div class="sc-panel-config-actions">
                   <button type="button" id="btnSyncConfigAndStart" class="primary" data-i18n="btn.syncConfigStart">同步配置并启动交易器</button>
                   <button type="button" id="btnSyncConfigOnly" class="ghost" data-i18n="btn.syncConfigOnly">新建策略</button>
                 </div>
               </div>
               <p id="controlStrategyConfigSummary" class="sc-panel-config-summary"></p>
-              <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
+              <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">当前正在运行 Bot 的最终生效全部配置、数据来源为config.json配置文件合并策略代码内固定值，修改策略即可随动。</p>
               <div class="sc-panel-config-rules">
                 <h4 data-i18n="control.strategyRulesOut">AI / 接管 — 策略规则输出</h4>
                 <pre id="controlStrategyRulesOut" class="mono sc-rules-pre"></pre>

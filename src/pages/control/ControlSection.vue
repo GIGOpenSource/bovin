@@ -39,7 +39,7 @@
                 </div>
               </div>
               <p id="controlStrategyConfigSummary" class="sc-panel-config-summary"></p>
-              <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
+              <p class="sc-panel-config-hint" data-i18n="hint.strategyFileManual">当前正在运行 Bot 的最终生效全部配置、数据来源为config.json配置文件合并策略代码内固定值，修改策略即可随动。</p>
               <div class="sc-panel-config-rules">
                 <h4 data-i18n="control.strategyRulesOut">AI / 接管 — 策略规则输出</h4>
                 <div id="controlStrategyRulesOut" class="mono sc-rules-pre"></div>
@@ -147,7 +147,7 @@
   padding: 16px 18px;
   border-radius: 12px;
   border: 1px solid rgba(var(--ft-line-rgb), 0.3);
-  background: rgba(10, 18, 38, 0.55);
+  background: var(--surface-high, rgba(10, 18, 38, 0.55));
 }
 
 .sc-panel-config-head {
@@ -204,8 +204,8 @@
   line-height: 2;
   border-radius: 12px;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3);
-  background: rgba(6, 12, 28, 0.9);
-  color: var(--text-main, #e8ecf8);
+  background: var(--surface-low, rgba(6, 12, 28, 0.9));
+  color: var(--text, #e8ecf8);
   box-sizing: border-box;
   width: 50%;
 }
@@ -237,7 +237,7 @@
 .sc-panel-config-rules :deep(.sc-rule-value) {
   flex-shrink: 0;
   flex-grow: 0;
-  color: var(--text-main, #e8ecf8);
+  color: var(--text, #e8ecf8);
   font-size: 12px;
   white-space: nowrap;
   text-align: right;
@@ -248,17 +248,17 @@
 }
 
 .sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-track) {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--ft-panel-edge-rgb), 0.1);
   border-radius: 3px;
 }
 
 .sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-thumb) {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--ft-panel-edge-rgb), 0.3);
   border-radius: 3px;
 }
 
 .sc-panel-config-rules :deep(.sc-rules-pre::-webkit-scrollbar-thumb:hover) {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(var(--ft-panel-edge-rgb), 0.5);
 }
 
 .sc-checkbox-row {
@@ -1315,11 +1315,11 @@ watch(forceSideVal, (v) => {
 
 async function handleSyncConfigAndStart() {
   syncConfigModalOpen.value = false;
-  try {
-    await postDryRunConfig(!state.mockMode);
-  } catch {
-    /* ignore dry run config error */
-  }
+  // try {
+  //   await postDryRunConfig(!state.mockMode);
+  // } catch {
+  //   /* ignore dry run config error */
+  // }
   try {
     await postReloadConfig();
     if (window.__showReloadConfigModal) {

@@ -476,7 +476,7 @@
                     </p>
                   </div>
                 </div>
-                <p class="modal-hint strategy-file-hint" data-i18n="hint.strategyFileManual">要把接管期间的交易逻辑固化成可复用的主策略：请根据操作/决策日志整理要点，或借助 LLM 生成策略代码草稿，再在 user_data/strategies 中手动保存并后续迭代。本处仅存备忘与规则文本，不会自动写入 .py 策略文件。</p>
+                <p class="modal-hint strategy-file-hint" data-i18n="hint.strategyFileManual">当前正在运行 Bot 的最终生效全部配置、数据来源为config.json配置文件合并策略代码内固定值，修改策略即可随动。</p>
               </div>
             </div>
             <footer class="modal-actions">

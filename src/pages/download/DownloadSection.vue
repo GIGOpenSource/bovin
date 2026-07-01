@@ -745,11 +745,6 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 
-.dl-select:focus {
-  outline: none;
-  border-color: #4edea3;
-}
-
 .dl-select .ant-select-selector {
   background: var(--ft-panel-surface-inset) !important;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.3) !important;

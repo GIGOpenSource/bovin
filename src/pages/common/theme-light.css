@@ -107,14 +107,19 @@ html[data-theme="light"] .positions-table th {
 }
 
 html[data-theme="light"] .sc-panel-config-card {
-  background: var(--surface-high);
+  background: var(--surface-high) !important;
   border-color: var(--outline);
 }
 
 html[data-theme="light"] .sc-rules-pre {
-  background: var(--surface-low);
+  background: var(--surface-low) !important;
   border-color: var(--outline);
-  color: var(--text);
+  color: var(--text) !important;
+}
+
+html[data-theme="light"] .sc-panel-config-rules :deep(.sc-rules-pre) {
+  background: var(--surface-low) !important;
+  color: var(--text) !important;
 }
 
 html[data-theme="light"] .monitor-metric {
