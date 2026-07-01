@@ -29,17 +29,28 @@ function formatBytes(n) {
   return `${v < 10 && i > 0 ? v.toFixed(1) : Math.round(v)} ${u[i]}`;
 }
 
-function formatUptimeFromStartSec(tsSec) {
-  if (tsSec == null || !Number.isFinite(tsSec) || tsSec <= 0) return null;
-  const startMs = tsSec > 1e12 ? tsSec : Math.round(tsSec * 1000);
-  const diffMs = Date.now() - startMs;
-  if (!Number.isFinite(diffMs) || diffMs < 0) return null;
+function formatUptimeFromHealth(healthRaw) {
+  if (!healthRaw || typeof healthRaw !== "object") return null;
+  const h = /** @type {Record<string, unknown>} */ (healthRaw);
+  const lastMs = parseIsoMs(h.last_process_ts ?? h.last_process ?? h.lastProcess);
+  const startMs = parseIsoMs(h.bot_start_ts ?? h.bot_start ?? h.botStart);
+  if (!Number.isFinite(lastMs) || !Number.isFinite(startMs) || lastMs <= startMs) return null;
+  const diffMs = lastMs - startMs;
   const totalMins = Math.floor(diffMs / (60 * 1000));
   const days = Math.floor(totalMins / (60 * 24));
   const hours = Math.floor((totalMins % (60 * 24)) / 60);
   const mins = totalMins % 60;
-  if (state.lang === "en") return `${days}d ${hours}h ${mins}m`;
+  if ((state.lang || "zh-CN") === "en") return `${days}d ${hours}h ${mins}m`;
   return `${days}天 ${hours}小时 ${mins}分`;
+}
+
+function parseIsoMs(s) {
+  if (s == null) return NaN;
+  if (typeof s === "number") {
+    return s > 1e12 ? s : s * 1000;
+  }
+  const ms = Date.parse(String(s));
+  return Number.isFinite(ms) ? ms : NaN;
 }
 
 let refreshButtonBound = false;
@@ -140,11 +151,8 @@ export async function refreshMonitorPageMetrics() {
   }
 
   if (uptimeEl) {
-    const h = uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {};
-    const p = uiState.lastProfit && typeof uiState.lastProfit === "object" ? uiState.lastProfit : {};
-    const ts =
-      Number(h.bot_startup_ts ?? h.bot_start_ts ?? p.bot_start_timestamp ?? NaN);
-    const line = formatUptimeFromStartSec(ts);
+    const health = uiState.lastHealth && typeof uiState.lastHealth === "object" ? uiState.lastHealth : {};
+    const line = formatUptimeFromHealth(health);
     uptimeEl.textContent = line ?? t("monitor.uptime.na");
   }
 }

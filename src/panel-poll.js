@@ -490,29 +490,34 @@ function renderClosedTradesFromApi(tradesRaw, sectionId = null) {
 
 /** @param {unknown} raw */
 function parseIsoMs(raw) {
-  const s = String(raw ?? "").trim();
+  if (raw == null) return NaN;
+  if (typeof raw === "number") {
+    return raw > 1e12 ? raw : raw * 1000;
+  }
+  const s = String(raw).trim();
   if (!s) return NaN;
   const ms = Date.parse(s);
   return Number.isFinite(ms) ? ms : NaN;
 }
 
 /**
- * 概览页「运行时间」：按 /health 的 last_process - bot_start 计算，不使用当前时间。
+ * 概览页「运行时间」：按 /health 的 last_process_ts - bot_start_ts 计算，不使用当前时间。
  * @param {unknown} healthRaw
  * @returns {string}
  */
 function formatOverviewUptimeFromHealth(healthRaw) {
   if (!healthRaw || typeof healthRaw !== "object") return "—";
   const h = /** @type {Record<string, unknown>} */ (healthRaw);
-  const lastMs = parseIsoMs(h.last_process ?? h.lastProcess);
-  const startMs = parseIsoMs(h.bot_start ?? h.botStart);
+  const lastMs = parseIsoMs(h.last_process_ts ?? h.last_process ?? h.lastProcess);
+  const startMs = parseIsoMs(h.bot_start_ts ?? h.bot_start ?? h.botStart);
   if (!Number.isFinite(lastMs) || !Number.isFinite(startMs) || lastMs <= startMs) return "—";
   const diffMs = lastMs - startMs;
-  const totalHours = Math.floor(diffMs / (3600 * 1000));
-  const days = Math.floor(totalHours / 24);
-  const hours = totalHours % 24;
-  if ((state.lang || "zh-CN") === "en") return `${days}d ${hours}h`;
-  return `${days}天 ${hours}小时`;
+  const totalMins = Math.floor(diffMs / (60 * 1000));
+  const days = Math.floor(totalMins / (60 * 24));
+  const hours = Math.floor((totalMins % (60 * 24)) / 60);
+  const mins = totalMins % 60;
+  if ((state.lang || "zh-CN") === "en") return `${days}d ${hours}h ${mins}m`;
+  return `${days}天 ${hours}小时 ${mins}分`;
 }
 
 /**
