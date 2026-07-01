@@ -961,24 +961,30 @@ const visiblePages = computed(() => {
 
 watch(activePeriodicTab, (newTab) => {
   if (savedBacktestResult.value) {
-    const strategyName = selectedStrategy.value || 'DOUStrategy';
+    const strategyName = name.value || 'DOUStrategy';
     const strategyData = savedBacktestResult.value?.backtest_result?.strategy;
     const rawSettings = strategyData?.[strategyName] || savedBacktestResult.value || {};
     
     const periodicBreakdownData = rawSettings?.periodic_breakdown || 
                                   strategyData?.[strategyName]?.periodic_breakdown || 
                                   savedBacktestResult.value?.periodic_breakdown || 
+                                  savedBacktestResult.value?.backtest_result?.periodic_breakdown || 
                                   {};
     
-    currentResult.value.periodicBreakdown = (periodicBreakdownData?.[newTab] || []).map(item => ({
-      date: item.date,
-      trades: item.trades,
-      profit_abs: item.profit_abs,
-      profit_factor: item.profit_factor,
-      wins: item.wins,
-      draws: item.draws,
-      losses: item.losses
-    }));
+    const tabData = periodicBreakdownData?.[newTab];
+    if (Array.isArray(tabData) && tabData.length > 0) {
+      currentResult.value.periodicBreakdown = tabData.map(item => ({
+        date: item.date,
+        trades: item.trades,
+        profit_abs: item.profit_abs,
+        profit_factor: item.profit_factor,
+        wins: item.wins,
+        draws: item.draws,
+        losses: item.losses
+      }));
+    } else {
+      currentResult.value.periodicBreakdown = [];
+    }
   }
 });
 
@@ -1979,6 +1985,7 @@ const loadBacktestResult = async () => {
           const periodicBreakdownData = rawSettings?.periodic_breakdown || 
                                         strategyData?.[strategyName]?.periodic_breakdown || 
                                         savedBacktestResult.value?.periodic_breakdown || 
+                                        savedBacktestResult.value?.backtest_result?.periodic_breakdown || 
                                         {};
           return (periodicBreakdownData?.[activePeriodicTab.value] || []).map(item => ({
             date: item.date,
