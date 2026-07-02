@@ -1771,7 +1771,7 @@ onMounted(() => {
         {
           pair: pair,
           timeframe: tf,
-          columns: JSON.stringify(["enter_tag", "exit_tag"])
+          columns: JSON.stringify(["enter_tag", "exit_tag", "exit_short", "exit_long", "_exit_short_signal_close", "_exit_long_signal_close", "enter_long", "enter_short", "_enter_long_signal_close", "_enter_short_signal_close"])
         },
         { signal: abortCtl.signal }
       );

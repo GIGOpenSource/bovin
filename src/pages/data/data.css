@@ -640,13 +640,6 @@
   box-sizing: border-box;
 }
 
-.da-kline-mount canvas.da-panel-kline {
-  display: block;
-  width: 100%;
-  height: 100%;
-  vertical-align: top;
-}
-
 .da-kline-mode-toolbar {
   display: flex;
   align-items: center;

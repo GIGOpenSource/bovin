@@ -12,7 +12,7 @@ export function pairForBinanceKlinesRequest(displayPair) {
   return `${base}/${q}`;
 }
 
-/** 解析 /api/v1/pair_candles 的 columns + data 为 [openTime, o, h, l, c, v][] */
+/** 解析 /api/v1/pair_candles 的 columns + data 为 [openTime, o, h, l, c, v, qv, exitShort, exitLong, exitTag, exitShortSignalClose, exitLongSignalClose, enterLong, enterShort, enterTag, enterLongSignalClose, enterShortSignalClose][] */
 export function parseBinanceKlinesRows(raw) {
   if (!raw || typeof raw !== "object") return [];
   const data = Array.isArray(raw.data) ? raw.data : [];
@@ -24,6 +24,16 @@ export function parseBinanceKlinesRows(raw) {
   const lowIdx = columns.indexOf("low");
   const closeIdx = columns.indexOf("close");
   const volumeIdx = columns.indexOf("volume");
+  const exitShortIdx = columns.indexOf("exit_short");
+  const exitLongIdx = columns.indexOf("exit_long");
+  const exitTagIdx = columns.indexOf("exit_tag");
+  const exitShortSignalCloseIdx = columns.indexOf("_exit_short_signal_close");
+  const exitLongSignalCloseIdx = columns.indexOf("_exit_long_signal_close");
+  const enterLongIdx = columns.indexOf("enter_long");
+  const enterShortIdx = columns.indexOf("enter_short");
+  const enterTagIdx = columns.indexOf("enter_tag");
+  const enterLongSignalCloseIdx = columns.indexOf("_enter_long_signal_close");
+  const enterShortSignalCloseIdx = columns.indexOf("_enter_short_signal_close");
   
   const out = [];
   for (const row of data) {
@@ -45,7 +55,19 @@ export function parseBinanceKlinesRows(raw) {
     const vSafe = Number.isFinite(v) && v >= 0 ? v : 0;
     const qv = vSafe > 0 && c > 0 ? c * vSafe : 0;
     
-    out.push([tOpen, o, h, l, c, vSafe, qv]);
+    const exitShort = exitShortIdx >= 0 ? Number(row[exitShortIdx]) === 1 : false;
+    const exitLong = exitLongIdx >= 0 ? Number(row[exitLongIdx]) === 1 : false;
+    const exitTag = exitTagIdx >= 0 ? String(row[exitTagIdx] ?? "").trim() : "";
+    const exitShortSignalClose = exitShortSignalCloseIdx >= 0 ? Number(row[exitShortSignalCloseIdx]) : null;
+    const exitLongSignalClose = exitLongSignalCloseIdx >= 0 ? Number(row[exitLongSignalCloseIdx]) : null;
+    
+    const enterLong = enterLongIdx >= 0 ? Number(row[enterLongIdx]) === 1 : false;
+    const enterShort = enterShortIdx >= 0 ? Number(row[enterShortIdx]) === 1 : false;
+    const enterTag = enterTagIdx >= 0 ? String(row[enterTagIdx] ?? "").trim() : "";
+    const enterLongSignalClose = enterLongSignalCloseIdx >= 0 ? Number(row[enterLongSignalCloseIdx]) : null;
+    const enterShortSignalClose = enterShortSignalCloseIdx >= 0 ? Number(row[enterShortSignalCloseIdx]) : null;
+    
+    out.push([tOpen, o, h, l, c, vSafe, qv, exitShort, exitLong, exitTag, exitShortSignalClose, exitLongSignalClose, enterLong, enterShort, enterTag, enterLongSignalClose, enterShortSignalClose]);
   }
   return out;
 }
@@ -241,6 +263,10 @@ export function createLwcKline(mount) {
   let ma7Data = [];
   let ma25Data = [];
   let ma99Data = [];
+  let exitShortData = [];
+  let exitLongData = [];
+  let enterLongData = [];
+  let enterShortData = [];
 
   function showTooltip(x, y) {
     if (!tooltip) createTooltip();
@@ -271,6 +297,10 @@ export function createLwcKline(mount) {
     const ma7 = ma7Data[closestIdx];
     const ma25 = ma25Data[closestIdx];
     const ma99 = ma99Data[closestIdx];
+    const exitShort = exitShortData[closestIdx];
+    const exitLong = exitLongData[closestIdx];
+    const enterLong = enterLongData[closestIdx];
+    const enterShort = enterShortData[closestIdx];
 
     const date = new Date(candle.time * 1000);
     const timeStr = date.toLocaleString("zh-CN", { 
@@ -282,6 +312,62 @@ export function createLwcKline(mount) {
       second: "2-digit"
     });
 
+    let exitHtml = "";
+    if (exitShort?.exitShort) {
+      const exitTag = exitShort.exitTag ? `(${exitShort.exitTag})` : "";
+      const amount = exitShort.exitShortSignalClose != null && exitShort.exitShortSignalClose !== "" 
+        ? `<span style="margin-left: auto; font-family: ui-monospace; color: #f1d06e;">${Number(exitShort.exitShortSignalClose).toFixed(2)}</span>` 
+        : "";
+      exitHtml += `
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f1d06e; margin-right: 8px;"></span>
+          <span style="color: #f1d06e;">short exit${exitTag}</span>
+          ${amount}
+        </div>
+      `;
+    }
+    if (exitLong?.exitLong) {
+      const exitTag = exitLong.exitTag ? `(${exitLong.exitTag})` : "";
+      const amount = exitLong.exitLongSignalClose != null && exitLong.exitLongSignalClose !== "" 
+        ? `<span style="margin-left: auto; font-family: ui-monospace; color: #f1d06e;">${Number(exitLong.exitLongSignalClose).toFixed(2)}</span>` 
+        : "";
+      exitHtml += `
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f1d06e; margin-right: 8px;"></span>
+          <span style="color: #f1d06e;">long exit${exitTag}</span>
+          ${amount}
+        </div>
+      `;
+    }
+
+    let enterHtml = "";
+    if (enterLong?.enterLong) {
+      const enterTag = enterLong.enterTag ? `(${enterLong.enterTag})` : "";
+      const amount = enterLong.enterLongSignalClose != null && enterLong.enterLongSignalClose !== "" 
+        ? `<span style="margin-left: auto; font-family: ui-monospace; color: #4ecdc4;">${Number(enterLong.enterLongSignalClose).toFixed(2)}</span>` 
+        : "";
+      enterHtml += `
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 5px solid #4ecdc4; margin-right: 6px;"></span>
+          <span style="color: #4ecdc4;">Long Entry${enterTag}</span>
+          ${amount}
+        </div>
+      `;
+    }
+    if (enterShort?.enterShort) {
+      const enterTag = enterShort.enterTag ? `(${enterShort.enterTag})` : "";
+      const amount = enterShort.enterShortSignalClose != null && enterShort.enterShortSignalClose !== "" 
+        ? `<span style="margin-left: auto; font-family: ui-monospace; color: #4ecdc4;">${Number(enterShort.enterShortSignalClose).toFixed(2)}</span>` 
+        : "";
+      enterHtml += `
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 5px solid #4ecdc4; margin-right: 6px;"></span>
+          <span style="color: #4ecdc4;">Short entry${enterTag}</span>
+          ${amount}
+        </div>
+      `;
+    }
+
     let html = `
       <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(66,70,86,0.3); font-weight: 600; color: #e8e9ed;">${timeStr}</div>
       
@@ -290,6 +376,9 @@ export function createLwcKline(mount) {
         <span style="color: #8c90a2;">Volume</span>
         <span style="margin-left: auto; font-family: ui-monospace; color: #e8e9ed;">${(vol?.value || 0).toLocaleString()}</span>
       </div>
+
+      ${exitHtml ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(66,70,86,0.3);">${exitHtml}</div>` : ""}
+      ${enterHtml ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(66,70,86,0.3);">${enterHtml}</div>` : ""}
 
       <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(66,70,86,0.3);">
         <div style="font-weight: 600; margin-bottom: 6px; color: #ffb4ab;">Candles</div>
@@ -372,6 +461,7 @@ export function createLwcKline(mount) {
         ma25s.setData([]);
         ma99s.setData([]);
         vol.setData([]);
+        candles.setMarkers([]);
       } catch {
         // ignore
       }
@@ -411,6 +501,77 @@ export function createLwcKline(mount) {
       };
     });
     
+    exitShortData = sorted.map((r, idx) => ({
+      time: times[idx],
+      exitShort: r[7] === true,
+      exitTag: r[9] || "",
+      exitShortSignalClose: r[10],
+      low: Number(r[3])
+    }));
+    exitLongData = sorted.map((r, idx) => ({
+      time: times[idx],
+      exitLong: r[8] === true,
+      exitTag: r[9] || "",
+      exitLongSignalClose: r[11],
+      high: Number(r[2])
+    }));
+    enterLongData = sorted.map((r, idx) => ({
+      time: times[idx],
+      enterLong: r[12] === true,
+      enterTag: r[14] || "",
+      enterLongSignalClose: r[15],
+      high: Number(r[2])
+    }));
+    enterShortData = sorted.map((r, idx) => ({
+      time: times[idx],
+      enterShort: r[13] === true,
+      enterTag: r[14] || "",
+      enterShortSignalClose: r[16],
+      low: Number(r[3])
+    }));
+    
+    const exitMarkers = [];
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      const time = times[i];
+      if (r[7] === true) {
+        exitMarkers.push({
+          time: time,
+          position: "belowBar",
+          color: "#f1d06e",
+          shape: "circle",
+          text: ""
+        });
+      }
+      if (r[8] === true) {
+        exitMarkers.push({
+          time: time,
+          position: "aboveBar",
+          color: "#f1d06e",
+          shape: "circle",
+          text: ""
+        });
+      }
+      if (r[12] === true) {
+        exitMarkers.push({
+          time: time,
+          position: "aboveBar",
+          color: "#4ecdc4",
+          shape: "arrowDown",
+          text: ""
+        });
+      }
+      if (r[13] === true) {
+        exitMarkers.push({
+          time: time,
+          position: "belowBar",
+          color: "#4ecdc4",
+          shape: "arrowUp",
+          text: ""
+        });
+      }
+    }
+    
     ma7Data = ma7.map((v, idx) => ({ time: times[idx], value: Number(v) }));
     ma25Data = ma25.map((v, idx) => ({ time: times[idx], value: Number(v) }));
     ma99Data = ma99.map((v, idx) => ({ time: times[idx], value: Number(v) }));
@@ -421,6 +582,7 @@ export function createLwcKline(mount) {
       ma25s.setData(ma25sData);
       ma99s.setData(ma99sData);
       vol.setData(volumeData);
+      candles.setMarkers(exitMarkers);
       chart.timeScale().fitContent();
     } catch {
       // ignore
