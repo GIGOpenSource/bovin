@@ -640,6 +640,7 @@
   "sc.strategy.delete": "Delete",
   "sc.strategy.confirmDelete": "Are you sure you want to delete strategy \"{name}\"? This operation cannot be undone.",
   "sc.strategy.confirmSwitch": "Are you sure you want to switch to strategy \"{name}\"?",
+  "sc.strategy.switchSuccess": "Strategy switched successfully",
   "sc.strategy.deleteSuccess": "Strategy deleted successfully",
   "sc.actions": "Actions",
   "freq.state.running": "Running",

@@ -4,9 +4,19 @@
   margin: 0 auto;
 }
 
+#positions.section {
+  width: 100%;
+ overflow: hidden;
+  position: relative;
+}
+
 .positions-kpis {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .positions-block {
@@ -15,6 +25,23 @@
   border-radius: var(--ft-panel-radius);
   padding: 12px 14px;
   margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: scroll;
+
+  /* 隐藏滚动条 - Chrome、Edge、Safari */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE 旧版兼容 */
+  -ms-overflow-style: none;
+ 
+}
+.positions-table-scroll{
+  max-width: 100% !important;
+  overflow-x: scroll !important;
 }
 
 .positions-block:last-child {
@@ -44,9 +71,9 @@
 }
 
 .positions-table-shell {
+  width: 100%;
+  box-sizing: border-box;
   border-radius: var(--ft-panel-radius);
-  overflow-x: auto;
-  overflow-y: auto;
   border: 1px solid rgba(var(--ft-panel-edge-rgb), 0.2);
   max-height: 420px;
 }
@@ -58,6 +85,7 @@
 }
 
 .positions-table {
+  min-width: fit-content;
   width: 100%;
   border-collapse: collapse;
   background: var(--ft-panel-surface-inset);

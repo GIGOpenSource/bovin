@@ -8,6 +8,7 @@ import {
 import { normalizeUserRestApiV1Base } from "../api/config.js";
 import { getTradesFeed } from "../api/positions.js";
 import { deleteStrategy, switchStrategy, getPanelStrategies } from "../api/config2.js";
+import { runPanelTickOnce } from "../panel-poll.js";
 import { escapeHtml } from "../utils/html-utils.js";
 import { pairsFromBlacklistPayload, pairsFromWhitelistPayload } from "../utils/pairlist-parse.js";
 
@@ -771,7 +772,13 @@ export function renderControlStrategyCards(
           switchBtn.disabled = true;
           try {
             await switchStrategy(strategyName);
-            window.location.reload();
+            const panelStrategies = await getPanelStrategies();
+            uiState.panelStrategyList = Array.isArray(panelStrategies) 
+              ? panelStrategies.map(x => String(x || "").trim()).filter(Boolean)
+              : [];
+            await runPanelTickOnce();
+            const doSuccess = window.__strategySuccess || ((content) => {});
+            doSuccess(t("sc.strategy.switchSuccess"));
           } catch (e) {
             const msg = e && typeof e === "object" && "message" in e ? String(e.message) : String(e);
             const doAlert = window.__strategyAlert || ((content) => window.alert(content));
