@@ -11,6 +11,7 @@ import { deleteStrategy, switchStrategy, getPanelStrategies } from "../api/confi
 import { runPanelTickOnce } from "../panel-poll.js";
 import { escapeHtml } from "../utils/html-utils.js";
 import { pairsFromBlacklistPayload, pairsFromWhitelistPayload } from "../utils/pairlist-parse.js";
+import { extractPanelStrategyListPayload, normalizePanelStrategyNames } from "../utils/data-strategies-list.js";
 
 function t(key) {
   return i18n[state.lang]?.[key] || i18n["zh-CN"]?.[key] || key;
@@ -773,9 +774,11 @@ export function renderControlStrategyCards(
           try {
             await switchStrategy(strategyName);
             const panelStrategies = await getPanelStrategies();
-            uiState.panelStrategyList = Array.isArray(panelStrategies) 
-              ? panelStrategies.map(x => String(x || "").trim()).filter(Boolean)
-              : [];
+            const rawStrategies = extractPanelStrategyListPayload(panelStrategies);
+            if (rawStrategies != null) {
+              uiState.panelStrategyListAll = normalizePanelStrategyNames(rawStrategies, false);
+              uiState.panelStrategyList = normalizePanelStrategyNames(rawStrategies, true);
+            }
             await runPanelTickOnce();
             const doSuccess = window.__strategySuccess || ((content) => {});
             doSuccess(t("sc.strategy.switchSuccess"));
