@@ -1786,6 +1786,9 @@ onMounted(() => {
     } catch (e) {
       if (e?.name === "AbortError") return;
       if (myGen !== loadGen) return;
+      if (lastRows.length > 0) {
+        return;
+      }
       disposeLwc();
       const mount = pairData.querySelector("#daKlineMount");
       if (mount) {
