@@ -418,8 +418,8 @@
           aria-modal="true" aria-labelledby="strategySlotModalTitle">
           <header class="modal-head modal-head--binding">
             <div class="modal-head-text">
-              <h4 id="strategySlotModalTitle" class="modal-title">策略详情</h4>
-              <p class="modal-sub">查看策略参数与代码</p>
+              <h4 id="strategySlotModalTitle" class="modal-title" data-i18n="strategy.title">策略详情</h4>
+              <p class="modal-sub" data-i18n="strategy.subtitle">查看策略参数与代码</p>
             </div>
             <button type="button" id="closeStrategySlotModal" class="ghost modal-close-btn"
               data-i18n="btn.close">关闭</button>
@@ -428,19 +428,19 @@
             <div class="strategy-detail-modal-layout">
               <section class="strategy-detail-modal-top">
                 <label class="strategy-detail-select-wrap">
-                  <span class="binding-field-label">策略名</span>
+                  <span class="binding-field-label" data-i18n="strategy.name">策略名</span>
                   <a-input v-model:value="strategySlotClassName" class="bovin-select-full strategy-slot-ant-select"
                     :placeholder="strategySlotPlaceholder" :aria-label="strategySlotAria" readonly />
                 </label>
               </section>
               <div class="strategy-detail-modal-columns">
                 <div class="strategy-detail-col strategy-detail-col--params">
-                  <div class="binding-field-label">策略参数 (params)</div>
+                  <div class="binding-field-label" data-i18n="strategy.params">策略参数 (params)</div>
                   <textarea id="mStrategyParams" name="mStrategyParams" rows="10" autocomplete="off"
                     spellcheck="false"></textarea>
                 </div>
                 <div class="strategy-detail-col strategy-detail-col--code">
-                  <div class="binding-field-label">策略代码 (code)</div>
+                  <div class="binding-field-label" data-i18n="strategy.code">策略代码 (code)</div>
                   <textarea id="mStrategyCode" name="mStrategyCode" rows="10" autocomplete="off"
                     spellcheck="false"></textarea>
                 </div>
@@ -450,8 +450,8 @@
           <footer class="modal-actions modal-actions--split">
             <div></div>
             <div class="modal-actions-end">
-              <button type="button" id="saveStrategyDetailModal" class="ghost">保存</button>
-              <button type="button" id="closeStrategyDetailModal" class="primary">关闭</button>
+              <button type="button" id="saveStrategyDetailModal" class="ghost" data-i18n="btn.saveStrategyDetail">保存</button>
+              <button type="button" id="closeStrategyDetailModal" class="primary" data-i18n="btn.close">关闭</button>
             </div>
           </footer>
         </div>

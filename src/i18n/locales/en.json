@@ -907,5 +907,11 @@
   "pl.modal.placeholder": "e.g. BTC/USDT or BTC/*",
   "pl.modal.hint": "Wildcard matching supported, e.g. BNB/* matches all BNB pairs",
   "pl.modal.cancel": "Cancel",
-  "pl.modal.confirm": "Confirm"
+  "pl.modal.confirm": "Confirm",
+  "strategy.details": "Strategy Details",
+  "strategy.title": "Strategy Name",
+  "strategy.params": "Strategy Parameters (params)",
+  "strategy.code": "Strategy Code (code)",
+  "strategy.subtitle": "View Strategy Parameters and Code",
+  "btn.saveStrategyDetail": "Save"
 }

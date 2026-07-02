@@ -908,5 +908,11 @@
   "pl.modal.placeholder": "如 BTC/USDT 或 BTC/*",
   "pl.modal.hint": "支持通配符匹配，如 BNB/* 匹配所有 BNB 交易对",
   "pl.modal.cancel": "取消",
-  "pl.modal.confirm": "确认"
+  "pl.modal.confirm": "确认",
+  "strategy.details": "策略详情",
+  "strategy.title": "策略名", 
+  "strategy.params": "策略参数 (params)",
+  "strategy.code": "策略代码 (code)",
+  "strategy.subtitle": "查看策略参数与代码",
+  "btn.saveStrategyDetail": "保存"
 }
