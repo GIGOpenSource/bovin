@@ -531,7 +531,7 @@ export function createLwcKline(mount) {
     }));
     
     const exitMarkers = [];
-    for (let i = 0; i < sorted.length; i++) {
+       for (let i = 0; i < sorted.length; i++) {
       const r = sorted[i];
       const time = times[i];
       if (r[7] === true) {
@@ -540,7 +540,8 @@ export function createLwcKline(mount) {
           position: "belowBar",
           color: "#f1d06e",
           shape: "circle",
-          text: ""
+          text: "",
+          size:0.1
         });
       }
       if (r[8] === true) {
@@ -549,7 +550,8 @@ export function createLwcKline(mount) {
           position: "aboveBar",
           color: "#f1d06e",
           shape: "circle",
-          text: ""
+          text: "",
+          size:0.1
         });
       }
       if (r[12] === true) {
@@ -558,7 +560,8 @@ export function createLwcKline(mount) {
           position: "aboveBar",
           color: "#4ecdc4",
           shape: "arrowDown",
-          text: ""
+          text: "",
+          size:0.2
         });
       }
       if (r[13] === true) {
@@ -567,7 +570,8 @@ export function createLwcKline(mount) {
           position: "belowBar",
           color: "#4ecdc4",
           shape: "arrowUp",
-          text: ""
+          text: "",
+          size:0.2
         });
       }
     }
